@@ -1,30 +1,37 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { 
-  useGetIngredients, 
-  useGetLowStockAlerts, 
-  useCreateIngredient, 
-  useCreateStockMovement,
+import {
+  useGetIngredients,
+  useCreateIngredient,
+  useRecordStockMovement,
   useGetPurchaseOrders,
   useCreatePurchaseOrder,
   getGetIngredientsQueryKey,
-  getGetLowStockAlertsQueryKey,
   getGetPurchaseOrdersQueryKey
 } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Minus, AlertTriangle, PackageSearch, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { AlertTriangle, Package, ArrowDownUp, Plus, Search, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+function getStockStatus(current: number, min: number): { label: string; color: string; barColor: string } {
+  if (current === 0)  return { label: "Kehabisan Stok", color: "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",   barColor: "bg-rose-500" };
+  if (current < min)  return { label: "Stok Rendah",   color: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800", barColor: "bg-amber-500" };
+  if (current < min * 1.5) return { label: "Hampir Habis", color: "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-400 dark:border-yellow-800", barColor: "bg-yellow-500" };
+  return { label: "Baik", color: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800", barColor: "bg-emerald-500" };
+}
 
 export default function Stock() {
   const { user } = useAuth();
@@ -33,440 +40,437 @@ export default function Stock() {
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
-  const [isAddIngOpen, setIsAddIngOpen] = useState(false);
+  const [isIngredientOpen, setIsIngredientOpen] = useState(false);
+  const [isPoOpen, setIsPoOpen] = useState(false);
   const [movementIng, setMovementIng] = useState<any>(null);
-  const [isNewPOOpen, setIsNewPOOpen] = useState(false);
+  const [poItems, setPoItems] = useState<{ ingredientId: number; quantity: number; unitCost: number }[]>([]);
 
-  // PO line items state
-  interface POLineItem { ingredientId: number; ingredientName: string; quantity: number; unit: string; unitCost: number; totalCost: number; }
-  const [poItems, setPoItems] = useState<POLineItem[]>([]);
-  const [poIngId, setPoIngId] = useState<string>("");
-  const [poQty, setPoQty] = useState<string>("");
-  const [poUnitCost, setPoUnitCost] = useState<string>("");
-
-  const addPOItem = () => {
-    const ing = ingredients?.find((i: any) => i.id.toString() === poIngId);
-    if (!ing || !poQty || !poUnitCost) return;
-    const qty = Number(poQty);
-    const cost = Number(poUnitCost);
-    setPoItems(prev => [...prev.filter(i => i.ingredientId !== ing.id), {
-      ingredientId: ing.id,
-      ingredientName: ing.name,
-      quantity: qty,
-      unit: ing.unit,
-      unitCost: cost,
-      totalCost: qty * cost,
-    }]);
-    setPoIngId("");
-    setPoQty("");
-    setPoUnitCost("");
-  };
-
-  const removePOItem = (ingredientId: number) => setPoItems(prev => prev.filter(i => i.ingredientId !== ingredientId));
-
-  const formatIDRStock = (num: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
-
-  const poTotal = poItems.reduce((sum, i) => sum + i.totalCost, 0);
-
-  const { data: ingredients, isLoading: loadingIngs } = useGetIngredients(
+  const { data: ingredients, isLoading: loadingIngredients } = useGetIngredients(
     { branchId: branchId ?? undefined },
     { query: { enabled: !!branchId, queryKey: getGetIngredientsQueryKey({ branchId: branchId ?? undefined }) } }
   );
 
-  const { data: lowStock } = useGetLowStockAlerts(
-    { branchId: branchId ?? undefined },
-    { query: { enabled: !!branchId, queryKey: getGetLowStockAlertsQueryKey({ branchId: branchId ?? undefined }) } }
-  );
-
-  const { data: purchaseOrders } = useGetPurchaseOrders(
+  const { data: purchaseOrders, isLoading: loadingPos } = useGetPurchaseOrders(
     { branchId: branchId ?? undefined },
     { query: { enabled: !!branchId, queryKey: getGetPurchaseOrdersQueryKey({ branchId: branchId ?? undefined }) } }
   );
 
-  const createIng = useCreateIngredient();
-  const moveStock = useCreateStockMovement();
+  const createIngredient = useCreateIngredient();
+  const moveStock = useRecordStockMovement();
   const createPO = useCreatePurchaseOrder();
 
   const handleAddIngredient = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     try {
-      await createIng.mutateAsync({
+      await createIngredient.mutateAsync({
         data: {
           branchId: branchId!,
-          name: fd.get('name') as string,
-          unit: fd.get('unit') as string,
+          name: fd.get("name") as string,
+          unit: fd.get("unit") as string,
+          minStock: Number(fd.get("minStock")),
           currentStock: 0,
-          minStock: Number(fd.get('minStock')),
-          costPerUnit: fd.get('costPerUnit') ? Number(fd.get('costPerUnit')) : undefined,
+          costPerUnit: fd.get("costPerUnit") ? Number(fd.get("costPerUnit")) : 0,
         }
       });
-      toast({ title: "Ingredient added" });
+      toast({ title: "Bahan ditambahkan" });
       queryClient.invalidateQueries({ queryKey: getGetIngredientsQueryKey({ branchId: branchId ?? undefined }) });
-      setIsAddIngOpen(false);
+      setIsIngredientOpen(false);
     } catch {
-      toast({ title: "Failed to add ingredient", variant: "destructive" });
+      toast({ title: "Gagal menambahkan bahan", variant: "destructive" });
     }
   };
 
   const handleCreatePO = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const fd = new FormData(e.currentTarget);
     if (poItems.length === 0) {
-      toast({ title: "Add at least one item to the purchase order", variant: "destructive" });
+      toast({ title: "Tambahkan setidaknya satu item ke pesanan pembelian", variant: "destructive" });
       return;
     }
-    const fd = new FormData(e.currentTarget);
     try {
       await createPO.mutateAsync({
         data: {
           branchId: branchId!,
-          supplierName: fd.get('supplierName') as string,
-          expectedDelivery: fd.get('expectedDelivery') as string || undefined,
-          notes: fd.get('notes') as string || undefined,
-          items: poItems,
+          supplierName: fd.get("supplier") as string,
+          expectedDelivery: fd.get("expectedDelivery") as string || undefined,
+          notes: fd.get("notes") as string || undefined,
+          items: poItems.map(item => ({
+            ingredientId: item.ingredientId,
+            quantity: item.quantity,
+            unitCost: item.unitCost,
+          })),
         }
       });
-      toast({ title: "Purchase order created" });
+      toast({ title: "Pesanan pembelian dibuat" });
       queryClient.invalidateQueries({ queryKey: getGetPurchaseOrdersQueryKey({ branchId: branchId ?? undefined }) });
-      setIsNewPOOpen(false);
+      setIsPoOpen(false);
       setPoItems([]);
     } catch {
-      toast({ title: "Failed to create purchase order", variant: "destructive" });
+      toast({ title: "Gagal membuat pesanan pembelian", variant: "destructive" });
     }
   };
 
   const handleMovement = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    if (!movementIng) return;
     try {
       await moveStock.mutateAsync({
         data: {
-          branchId: branchId!,
           ingredientId: movementIng.id,
-          type: fd.get('type') as any,
-          quantity: Number(fd.get('quantity')),
-          notes: fd.get('notes') as string || undefined,
+          branchId: branchId!,
+          type: fd.get("type") as "in" | "out" | "adjustment",
+          quantity: Number(fd.get("quantity")),
+          notes: fd.get("notes") as string || undefined,
         }
       });
-      toast({ title: "Stock updated" });
+      toast({ title: "Stok diperbarui" });
       queryClient.invalidateQueries({ queryKey: getGetIngredientsQueryKey({ branchId: branchId ?? undefined }) });
-      queryClient.invalidateQueries({ queryKey: getGetLowStockAlertsQueryKey({ branchId: branchId ?? undefined }) });
       setMovementIng(null);
     } catch {
-      toast({ title: "Failed to update stock", variant: "destructive" });
+      toast({ title: "Gagal memperbarui stok", variant: "destructive" });
     }
   };
 
-  const filteredIngs = ingredients?.filter((i: any) => i.name.toLowerCase().includes(search.toLowerCase())) || [];
-  
-  const getStockStatus = (current: number, min: number) => {
-    if (current <= 0) return { color: "text-rose-600 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-400", text: "Out of Stock" };
-    if (current <= min) return { color: "text-destructive bg-destructive/10", text: "Low Stock" };
-    if (current <= min * 1.5) return { color: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400", text: "Running Low" };
-    return { color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-400", text: "Healthy" };
-  };
+  const filtered = ingredients?.filter((i: any) =>
+    i.name.toLowerCase().includes(search.toLowerCase())
+  ) ?? [];
+
+  const totalIngredients = ingredients?.length ?? 0;
+  const lowStockCount = ingredients?.filter((i: any) => i.currentStock < i.minStock).length ?? 0;
+  const outOfStockCount = ingredients?.filter((i: any) => i.currentStock === 0).length ?? 0;
+
+  const formatIDR = (num: number) =>
+    new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
+
+  const poTotal = poItems.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Stock & Inventory</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Manage ingredients and purchase orders</p>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Stok & Inventaris</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Kelola bahan dan pesanan pembelian</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-5 stagger-children">
-        <Card className="shadow-sm card-hover">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
-            <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground leading-tight">Total Ingredients</CardTitle>
-            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Package className="w-3.5 h-3.5 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold tabular-nums">{ingredients?.length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
-            <CardTitle className="text-[10px] sm:text-sm font-medium text-amber-800 dark:text-amber-300 leading-tight">Low Stock</CardTitle>
-            <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">{lowStock?.length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
-            <CardTitle className="text-[10px] sm:text-sm font-medium text-rose-800 dark:text-rose-300 leading-tight">Out of Stock</CardTitle>
-            <div className="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">{ingredients?.filter((i: any) => Number(i.currentStock) <= 0).length || 0}</div>
-          </CardContent>
-        </Card>
+      {/* Summary stats */}
+      <div className="grid grid-cols-3 gap-3 stagger-children">
+        {[
+          { label: "Total Bahan", value: totalIngredients, color: "text-foreground", icon: PackageSearch },
+          { label: "Stok Rendah", value: lowStockCount, color: "text-amber-600 dark:text-amber-400", icon: AlertTriangle },
+          { label: "Kehabisan Stok", value: outOfStockCount, color: "text-rose-600 dark:text-rose-400", icon: AlertTriangle },
+        ].map(s => (
+          <Card key={s.label} className="shadow-sm card-hover">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
+                <s.icon className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <div className={cn("text-2xl font-bold tabular-nums", s.color)}>{s.value}</div>
+                <div className="text-xs text-muted-foreground">{s.label}</div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <Tabs defaultValue="ingredients" className="w-full border rounded-xl bg-card shadow-sm">
-        <div className="border-b px-4 pt-1 pb-0">
-          <TabsList className="bg-transparent space-x-4 p-0">
-            <TabsTrigger value="ingredients" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none px-3 sm:px-4 pb-3 text-sm">Ingredients</TabsTrigger>
-            <TabsTrigger value="po" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none px-3 sm:px-4 pb-3 text-sm">Purchase Orders</TabsTrigger>
+      <Tabs defaultValue="ingredients">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
+          <TabsList className="bg-muted/40 rounded-xl p-1 h-auto gap-0.5">
+            <TabsTrigger value="ingredients" className="rounded-lg font-semibold text-sm">Bahan</TabsTrigger>
+            <TabsTrigger value="purchase-orders" className="rounded-lg font-semibold text-sm">Pesanan Pembelian</TabsTrigger>
           </TabsList>
+
+          <div className="flex gap-2">
+            <Input
+              placeholder="Cari bahan..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 text-sm w-full sm:w-48"
+              data-testid="input-search-stock"
+            />
+            <Dialog open={isIngredientOpen} onOpenChange={setIsIngredientOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="h-9 shrink-0" data-testid="btn-add-ingredient">
+                  <Plus className="w-4 h-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline">Tambah Bahan</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[420px]">
+                <form onSubmit={handleAddIngredient}>
+                  <DialogHeader><DialogTitle>Tambah Bahan Baru</DialogTitle></DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Nama *</Label>
+                      <Input id="name" name="name" required autoFocus data-testid="input-ing-name" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="unit">Satuan (mis., kg, L, pcs) *</Label>
+                        <Input id="unit" name="unit" required placeholder="kg" data-testid="input-ing-unit" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="minStock">Stok Minimum *</Label>
+                        <Input id="minStock" name="minStock" type="number" step="0.01" required data-testid="input-ing-min" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="costPerUnit">Biaya per Satuan (IDR) <span className="text-muted-foreground font-normal">Opsional</span></Label>
+                      <Input id="costPerUnit" name="costPerUnit" type="number" data-testid="input-ing-cost" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" disabled={createIngredient.isPending} data-testid="btn-save-ingredient">Simpan</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isPoOpen} onOpenChange={(open) => { setIsPoOpen(open); if (!open) setPoItems([]); }}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="h-9 shrink-0" data-testid="btn-new-po">
+                  <Plus className="w-4 h-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline">Pesanan Pembelian</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[640px]">
+                <form onSubmit={handleCreatePO}>
+                  <DialogHeader><DialogTitle>Pesanan Pembelian Baru</DialogTitle></DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="supplier">Nama Pemasok *</Label>
+                        <Input id="supplier" name="supplier" required data-testid="input-po-supplier" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="expectedDelivery">Perkiraan Pengiriman</Label>
+                        <Input id="expectedDelivery" name="expectedDelivery" type="date" data-testid="input-po-delivery" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">Catatan</Label>
+                      <Textarea id="notes" name="notes" placeholder="Detail pesanan atau instruksi khusus" data-testid="input-po-notes" />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label>Item Pesanan *</Label>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setPoItems(prev => [...prev, { ingredientId: 0, quantity: 1, unitCost: 0 }])}
+                        >
+                          <Plus className="w-3.5 h-3.5 mr-1" /> Tambah Baris
+                        </Button>
+                      </div>
+                      <div className="border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-muted/50">
+                              <TableHead>Bahan</TableHead>
+                              <TableHead className="w-20">Jml</TableHead>
+                              <TableHead className="w-28">Biaya Satuan (IDR)</TableHead>
+                              <TableHead className="w-8" />
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {poItems.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={4} className="text-center text-muted-foreground text-sm py-6">
+                                  Tambahkan item ke pesanan di atas
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              poItems.map((pi, idx) => (
+                                <TableRow key={idx}>
+                                  <TableCell className="py-2">
+                                    <Select
+                                      value={pi.ingredientId.toString()}
+                                      onValueChange={(val) => setPoItems(prev => prev.map((p, i) => i === idx ? { ...p, ingredientId: Number(val) } : p))}
+                                    >
+                                      <SelectTrigger className="h-8 text-xs">
+                                        <SelectValue placeholder="Pilih bahan" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {ingredients?.map((ing: any) => (
+                                          <SelectItem key={ing.id} value={ing.id.toString()}>{ing.name}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    <Input
+                                      type="number"
+                                      min="1"
+                                      value={pi.quantity}
+                                      onChange={(e) => setPoItems(prev => prev.map((p, i) => i === idx ? { ...p, quantity: Number(e.target.value) } : p))}
+                                      className="h-8 text-xs"
+                                    />
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      value={pi.unitCost}
+                                      onChange={(e) => setPoItems(prev => prev.map((p, i) => i === idx ? { ...p, unitCost: Number(e.target.value) } : p))}
+                                      className="h-8 text-xs"
+                                    />
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                      onClick={() => setPoItems(prev => prev.filter((_, i) => i !== idx))}
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                      {poTotal > 0 && (
+                        <div className="text-right text-sm font-bold mt-2 text-primary">
+                          Total: {formatIDR(poTotal)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => { setIsPoOpen(false); setPoItems([]); }}>Batal</Button>
+                    <Button type="submit" disabled={createPO.isPending} data-testid="btn-submit-po">Buat Pesanan</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
-        <TabsContent value="ingredients" className="p-0 m-0 border-none outline-none">
-          <div className="p-3 sm:p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/20">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search ingredients..." 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-background h-10"
-                data-testid="input-search-ing"
-              />
+        <TabsContent value="ingredients" className="mt-0">
+          {loadingIngredients ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
             </div>
-            <Dialog open={isAddIngOpen} onOpenChange={setIsAddIngOpen}>
-              <DialogTrigger asChild>
-                <Button data-testid="btn-add-ing"><Plus className="w-4 h-4 mr-2"/> Add Ingredient</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <form onSubmit={handleAddIngredient}>
-                  <DialogHeader>
-                    <DialogTitle>Add New Ingredient</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
-                      <Input id="name" name="name" required data-testid="input-ing-name"/>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="unit">Unit (e.g., kg, L, pcs) *</Label>
-                        <Input id="unit" name="unit" required data-testid="input-ing-unit"/>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="minStock">Minimum Stock *</Label>
-                        <Input id="minStock" name="minStock" type="number" step="0.01" required data-testid="input-ing-min"/>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="costPerUnit">Cost per Unit (IDR)</Label>
-                      <Input id="costPerUnit" name="costPerUnit" type="number" step="1" min="0" placeholder="Optional" data-testid="input-ing-cost"/>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={createIng.isPending} data-testid="btn-save-ing">Save</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-          
-          <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Ingredient</TableHead>
-                <TableHead className="min-w-[200px]">Stock Level</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden sm:table-cell">Supplier</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loadingIngs ? (
-                Array.from({length: 6}).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><div className="h-4 w-32 bg-muted rounded animate-pulse"/></TableCell>
-                    <TableCell>
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between"><div className="h-3 w-16 bg-muted rounded animate-pulse"/><div className="h-3 w-12 bg-muted rounded animate-pulse"/></div>
-                        <div className="h-2 w-full bg-muted rounded-full animate-pulse"/>
-                      </div>
-                    </TableCell>
-                    <TableCell><div className="h-5 w-20 bg-muted rounded-full animate-pulse"/></TableCell>
-                    <TableCell><div className="h-4 w-24 bg-muted rounded animate-pulse"/></TableCell>
-                    <TableCell className="text-right"><div className="h-8 w-20 bg-muted rounded ml-auto animate-pulse"/></TableCell>
+          ) : (
+            <div className="rounded-xl border overflow-hidden shadow-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead>Bahan</TableHead>
+                    <TableHead>Level Stok</TableHead>
+                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Pemasok</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
-                ))
-              ) : filteredIngs.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground text-sm">
-                    No ingredients found
-                  </TableCell>
-                </TableRow>
-              ) : null}
-              {!loadingIngs && filteredIngs.map((item: any) => {
-                const current = Number(item.currentStock);
-                const min = Number(item.minStock);
-                const status = getStockStatus(current, min);
-                const percent = Math.min(100, Math.max(0, (current / (min * 3)) * 100));
-
-                return (
-                  <TableRow key={item.id} className={current <= min ? 'bg-destructive/5 hover:bg-destructive/10' : ''}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell className="w-[300px]">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="font-bold tabular-nums">{current} {item.unit}</span>
-                        <span className="text-muted-foreground tabular-nums">Min: {min}</span>
-                      </div>
-                      <Progress value={percent} className={`h-2 ${current <= min ? '[&>div]:bg-destructive' : current <= min * 1.5 ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`} />
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={`${status.color} border-none font-semibold px-2 py-0.5`}>
-                        {status.text}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-muted-foreground">{item.supplierName || '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm" onClick={() => setMovementIng(item)} data-testid={`btn-move-${item.id}`}>
-                        <ArrowDownUp className="w-3 h-3 mr-2" /> Record
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {filtered.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-16 text-muted-foreground">
+                        <PackageSearch className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                        Bahan tidak ditemukan
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filtered.map((ing: any) => {
+                      const status = getStockStatus(Number(ing.currentStock), Number(ing.minStock));
+                      const pct = Math.min(100, ing.minStock > 0 ? (Number(ing.currentStock) / Number(ing.minStock)) * 100 : 100);
+                      return (
+                        <TableRow key={ing.id} className="hover:bg-muted/20">
+                          <TableCell>
+                            <p className="font-semibold text-sm">{ing.name}</p>
+                            <p className="text-xs text-muted-foreground">Min: {ing.minStock} {ing.unit}</p>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 min-w-[100px]">
+                              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className={cn("h-full rounded-full transition-all duration-500", status.barColor)}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-bold tabular-nums whitespace-nowrap">
+                                {ing.currentStock} <span className="text-muted-foreground font-normal text-xs">{ing.unit}</span>
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge variant="outline" className={cn("text-xs font-semibold", status.color)}>
+                              {status.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                            {ing.supplierName ?? "-"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => setMovementIng(ing)}
+                              data-testid={`btn-record-${ing.id}`}
+                            >
+                              Catat
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="po" className="p-0 m-0 border-none outline-none">
-          <div className="p-4 border-b flex justify-end bg-muted/20">
-            <Dialog open={isNewPOOpen} onOpenChange={setIsNewPOOpen}>
-              <DialogTrigger asChild>
-                <Button data-testid="btn-new-po"><Plus className="w-4 h-4 mr-2"/> New Purchase Order</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
-                <form onSubmit={handleCreatePO}>
-                  <DialogHeader>
-                    <DialogTitle>New Purchase Order</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="supplierName">Supplier Name *</Label>
-                        <Input id="supplierName" name="supplierName" required placeholder="e.g. PT Sumber Bahan" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="expectedDelivery">Expected Delivery</Label>
-                        <Input id="expectedDelivery" name="expectedDelivery" type="date" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="po-notes">Notes</Label>
-                      <Input id="po-notes" name="notes" placeholder="Order details or special instructions" />
-                    </div>
-
-                    <div className="border rounded-xl overflow-hidden">
-                      <div className="bg-muted/30 px-3 py-2 border-b flex items-center justify-between">
-                        <span className="text-sm font-semibold">Order Items *</span>
-                        {poItems.length > 0 && <span className="text-xs text-muted-foreground">{poItems.length} item{poItems.length !== 1 ? 's' : ''} · {formatIDRStock(poTotal)}</span>}
-                      </div>
-
-                      <div className="p-3 space-y-2 bg-muted/10">
-                        <div className="grid grid-cols-[1fr_80px_90px_32px] gap-1.5 items-end">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Ingredient</Label>
-                            <Select value={poIngId} onValueChange={setPoIngId}>
-                              <SelectTrigger className="h-9 text-xs">
-                                <SelectValue placeholder="Select ingredient" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {ingredients?.map((ing: any) => (
-                                  <SelectItem key={ing.id} value={ing.id.toString()}>{ing.name} ({ing.unit})</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">Qty</Label>
-                            <Input value={poQty} onChange={e => setPoQty(e.target.value)} type="number" step="0.01" min="0.01" placeholder="0" className="h-9 text-xs" />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">Unit Cost (IDR)</Label>
-                            <Input value={poUnitCost} onChange={e => setPoUnitCost(e.target.value)} type="number" step="1" min="1" placeholder="0" className="h-9 text-xs" />
-                          </div>
-                          <Button type="button" size="icon" className="h-9 w-8 shrink-0 mt-5" onClick={addPOItem} disabled={!poIngId || !poQty || !poUnitCost}>
-                            <Plus className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {poItems.length > 0 && (
-                        <div className="divide-y">
-                          {poItems.map((item: any) => (
-                            <div key={item.ingredientId} className="px-3 py-2 flex items-center justify-between gap-2 text-sm hover:bg-muted/20">
-                              <div className="flex-1 min-w-0">
-                                <span className="font-medium truncate">{item.ingredientName}</span>
-                                <span className="text-muted-foreground ml-2">{item.quantity} {item.unit} × {formatIDRStock(item.unitCost)}</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <span className="font-bold text-primary tabular-nums">{formatIDRStock(item.totalCost)}</span>
-                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => removePOItem(item.ingredientId)}>
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                          <div className="px-3 py-2 bg-muted/20 flex justify-between items-center font-bold text-sm">
-                            <span>Total</span>
-                            <span className="text-primary tabular-nums">{formatIDRStock(poTotal)}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {poItems.length === 0 && (
-                        <div className="px-3 py-4 text-center text-xs text-muted-foreground border-t">
-                          Add items to the order above
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => { setIsNewPOOpen(false); setPoItems([]); }}>Cancel</Button>
-                    <Button type="submit" disabled={createPO.isPending || poItems.length === 0}>Create Order</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-          <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead className="hidden sm:table-cell">Expected</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {purchaseOrders?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">No purchase orders found</TableCell>
-                </TableRow>
-              ) : (
-                purchaseOrders?.map((po: any) => (
-                  <TableRow key={po.id}>
-                    <TableCell>{format(new Date(po.createdAt), 'MMM dd, yyyy')}</TableCell>
-                    <TableCell className="font-medium">{po.supplierName}</TableCell>
-                    <TableCell className="tabular-nums">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(po.totalAmount))}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{po.expectedDelivery ? format(new Date(po.expectedDelivery), 'MMM dd') : '-'}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">{po.status}</Badge>
-                    </TableCell>
+        <TabsContent value="purchase-orders" className="mt-0">
+          {loadingPos ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+            </div>
+          ) : (
+            <div className="rounded-xl border overflow-hidden shadow-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Pemasok</TableHead>
+                    <TableHead>Jumlah</TableHead>
+                    <TableHead className="hidden sm:table-cell">Perkiraan</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {(!purchaseOrders || purchaseOrders.length === 0) ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-16 text-muted-foreground">
+                        Pesanan pembelian tidak ditemukan
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    purchaseOrders?.map((po: any) => (
+                      <TableRow key={po.id}>
+                        <TableCell>{format(new Date(po.createdAt), 'MMM dd, yyyy')}</TableCell>
+                        <TableCell className="font-medium">{po.supplierName}</TableCell>
+                        <TableCell className="tabular-nums">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(po.totalAmount))}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{po.expectedDelivery ? format(new Date(po.expectedDelivery), 'MMM dd') : '-'}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">{po.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -474,38 +478,37 @@ export default function Stock() {
         <DialogContent>
           <form onSubmit={handleMovement}>
             <DialogHeader>
-              <DialogTitle>Record Stock Movement: {movementIng?.name}</DialogTitle>
+              <DialogTitle>Catat Pergerakan Stok: {movementIng?.name}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="type">Movement Type *</Label>
+                <Label htmlFor="type">Jenis Pergerakan *</Label>
                 <Select name="type" required>
                   <SelectTrigger data-testid="select-move-type">
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder="Pilih jenis" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="in">Stock In (Receive)</SelectItem>
-                    <SelectItem value="out">Stock Out (Waste/Use)</SelectItem>
-                    <SelectItem value="adjustment">Adjustment (Audit)</SelectItem>
+                    <SelectItem value="in">Stok Masuk (Terima)</SelectItem>
+                    <SelectItem value="out">Stok Keluar (Penggunaan/Pemborosan)</SelectItem>
+                    <SelectItem value="adjustment">Penyesuaian (Audit)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity ({movementIng?.unit}) *</Label>
+                <Label htmlFor="quantity">Jumlah ({movementIng?.unit}) *</Label>
                 <Input id="quantity" name="quantity" type="number" step="0.01" required data-testid="input-move-qty"/>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Input id="notes" name="notes" placeholder="Reason for movement" data-testid="input-move-notes"/>
+                <Label htmlFor="notes">Catatan</Label>
+                <Input id="notes" name="notes" placeholder="Alasan pergerakan" data-testid="input-move-notes"/>
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={moveStock.isPending} data-testid="btn-save-move">Save Movement</Button>
+              <Button type="submit" disabled={moveStock.isPending} data-testid="btn-save-move">Simpan Pergerakan</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

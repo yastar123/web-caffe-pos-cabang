@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 const STATUS_CONFIG = {
   available: {
-    label: "Available",
+    label: "Tersedia",
     badgeCls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
     barCls: "bg-emerald-500",
     borderCls: "border-t-emerald-500",
@@ -21,7 +21,7 @@ const STATUS_CONFIG = {
     icon: CheckCircle2,
   },
   occupied: {
-    label: "Occupied",
+    label: "Terisi",
     badgeCls: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
     barCls: "bg-rose-500",
     borderCls: "border-t-rose-500",
@@ -29,7 +29,7 @@ const STATUS_CONFIG = {
     icon: Users,
   },
   reserved: {
-    label: "Reserved",
+    label: "Direservasi",
     badgeCls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
     barCls: "bg-amber-500",
     borderCls: "border-t-amber-500",
@@ -37,7 +37,7 @@ const STATUS_CONFIG = {
     icon: Clock,
   },
   cleaning: {
-    label: "Cleaning",
+    label: "Dibersihkan",
     badgeCls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-700",
     barCls: "bg-slate-400",
     borderCls: "border-t-slate-400",
@@ -64,7 +64,7 @@ function TableCard({ table, onStartOrder, onUpdateStatus }: {
       {/* Table number */}
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Table</div>
+          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Meja</div>
           <div className="text-4xl font-black leading-none text-foreground tracking-tight">{table.number}</div>
         </div>
         <Badge variant="outline" className={cn("text-[10px] font-bold flex items-center gap-1 shrink-0 py-0.5 px-2", cfg.badgeCls)}>
@@ -88,7 +88,7 @@ function TableCard({ table, onStartOrder, onUpdateStatus }: {
             />
           ))}
         </div>
-        <span className="font-medium">{table.capacity} seats</span>
+        <span className="font-medium">{table.capacity} kursi</span>
       </div>
 
       {/* Action */}
@@ -100,7 +100,7 @@ function TableCard({ table, onStartOrder, onUpdateStatus }: {
             onClick={() => onStartOrder(table.id)}
             data-testid={`btn-start-order-${table.id}`}
           >
-            Start Order
+            Mulai Pesanan
           </Button>
         )}
         {table.status === "occupied" && (
@@ -110,7 +110,7 @@ function TableCard({ table, onStartOrder, onUpdateStatus }: {
             onClick={() => onStartOrder(table.id)}
             data-testid={`btn-view-order-${table.id}`}
           >
-            Add Order
+            Tambah Pesanan
           </Button>
         )}
         {table.status === "cleaning" && (
@@ -121,7 +121,7 @@ function TableCard({ table, onStartOrder, onUpdateStatus }: {
             onClick={() => onUpdateStatus(table.id, "available")}
             data-testid={`btn-mark-clean-${table.id}`}
           >
-            Mark Clean
+            Tandai Bersih
           </Button>
         )}
         {table.status === "reserved" && (
@@ -131,7 +131,7 @@ function TableCard({ table, onStartOrder, onUpdateStatus }: {
             onClick={() => onUpdateStatus(table.id, "occupied")}
             data-testid={`btn-seat-reserved-${table.id}`}
           >
-            Seat Guests
+            Dudukkan Tamu
           </Button>
         )}
       </div>
@@ -162,11 +162,11 @@ export default function Tables() {
   const updateStatus = useUpdateTableStatus({
     mutation: {
       onSuccess: () => {
-        toast({ title: "Table status updated" });
+        toast({ title: "Status meja diperbarui" });
         queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
       },
       onError: () => {
-        toast({ title: "Failed to update table status", variant: "destructive" });
+        toast({ title: "Gagal memperbarui status meja", variant: "destructive" });
       },
     },
   });
@@ -219,9 +219,9 @@ export default function Tables() {
   const occupancyPct = totalTables > 0 ? Math.round((statusCounts.occupied / totalTables) * 100) : 0;
 
   const AREA_LABELS: Record<string, string> = {
-    indoor: "Indoor",
-    outdoor: "Outdoor",
-    vip: "VIP Lounge",
+    indoor: "Dalam Ruangan",
+    outdoor: "Luar Ruangan",
+    vip: "Lounge VIP",
   };
 
   return (
@@ -231,10 +231,10 @@ export default function Tables() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
             <Grid2X2 className="w-6 h-6 text-primary" />
-            Floor Plan
+            Denah Lantai
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {statusCounts.occupied} of {totalTables} tables occupied · auto-refreshes every 30s
+            {statusCounts.occupied} dari {totalTables} meja terisi · pembaruan otomatis setiap 30d
           </p>
         </div>
         <Button
@@ -245,7 +245,7 @@ export default function Tables() {
           disabled={isRefreshing}
         >
           <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin")} />
-          Refresh
+          Segarkan
         </Button>
       </div>
 
@@ -279,7 +279,7 @@ export default function Tables() {
       {totalTables > 0 && (
         <div className="px-4 py-3.5 rounded-xl border bg-card shadow-sm">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-bold">Overall Occupancy</span>
+            <span className="text-sm font-bold">Okupansi Keseluruhan</span>
             <span className={cn(
               "text-sm font-black tabular-nums",
               occupancyPct >= 80 ? "text-rose-600 dark:text-rose-400" :
@@ -299,8 +299,8 @@ export default function Tables() {
             />
           </div>
           <div className="flex justify-between mt-1.5 text-[11px] text-muted-foreground">
-            <span>0 tables</span>
-            <span className="font-medium">{statusCounts.occupied} occupied</span>
+            <span>0 meja</span>
+            <span className="font-medium">{statusCounts.occupied} terisi</span>
             <span>{totalTables} total</span>
           </div>
         </div>
@@ -334,7 +334,7 @@ export default function Tables() {
             {!tablesByArea[area]?.length ? (
               <div className="py-20 text-center border-2 border-dashed rounded-2xl bg-muted/5 text-muted-foreground">
                 <AlertCircle className="w-8 h-8 mx-auto mb-3 opacity-20" />
-                <p className="text-sm font-medium">No tables in this area</p>
+                <p className="text-sm font-medium">Tidak ada meja di area ini</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 stagger-children">

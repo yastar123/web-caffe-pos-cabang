@@ -13,13 +13,13 @@ import { useState, useEffect } from "react";
 
 function getGreeting() {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "Selamat pagi";
+  if (h < 17) return "Selamat siang";
+  return "Selamat malam";
 }
 
 function getCurrentDate() {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("id-ID", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   }).format(new Date());
 }
@@ -65,13 +65,13 @@ export default function Dashboard() {
 
   const kpiCards = [
     {
-      label: "Today's Revenue",
+      label: "Pendapatan Hari Ini",
       value: isOverviewLoading ? null : formatCurrency(overview?.todayRevenue || 0),
       sub: revenueChange === 0
-        ? <span className="text-muted-foreground flex items-center gap-1">Same as yesterday</span>
+        ? <span className="text-muted-foreground flex items-center gap-1">Sama dengan kemarin</span>
         : isPositive
-        ? <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1"><TrendingUp className="w-3 h-3" />+{revenueChange}% from yesterday</span>
-        : <span className="text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1"><TrendingDown className="w-3 h-3" />{revenueChange}% from yesterday</span>,
+        ? <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1"><TrendingUp className="w-3 h-3" />+{revenueChange}% dari kemarin</span>
+        : <span className="text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1"><TrendingDown className="w-3 h-3" />{revenueChange}% dari kemarin</span>,
       icon: DollarSign,
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
@@ -79,9 +79,9 @@ export default function Dashboard() {
       gradient: "from-primary/5 to-transparent",
     },
     {
-      label: "Active Orders",
+      label: "Pesanan Aktif",
       value: isOverviewLoading ? null : String(overview?.activeOrders || 0),
-      sub: <span className="text-muted-foreground">{overview?.todayOrders || 0} total today</span>,
+      sub: <span className="text-muted-foreground">{overview?.todayOrders || 0} total hari ini</span>,
       icon: Activity,
       iconBg: "bg-blue-500/10",
       iconColor: "text-blue-500",
@@ -89,9 +89,9 @@ export default function Dashboard() {
       gradient: "from-blue-500/5 to-transparent",
     },
     {
-      label: "Table Occupancy",
+      label: "Okupansi Meja",
       value: isOverviewLoading ? null : `${overview?.activeTables || 0} / ${overview?.totalTables || 0}`,
-      sub: <span className="text-muted-foreground">{overview?.pendingReservations || 0} upcoming reservations</span>,
+      sub: <span className="text-muted-foreground">{overview?.pendingReservations || 0} reservasi mendatang</span>,
       icon: Users,
       iconBg: "bg-secondary/10",
       iconColor: "text-secondary",
@@ -99,10 +99,10 @@ export default function Dashboard() {
       gradient: "from-secondary/5 to-transparent",
     },
     {
-      label: "Low Stock Alerts",
+      label: "Peringatan Stok Rendah",
       value: isOverviewLoading ? null : String(lowStockCount),
       sub: <span className={lowStockCount > 0 ? "text-destructive/80 font-medium" : "text-muted-foreground"}>
-        {lowStockCount > 0 ? "Items need reordering" : "All stock levels OK"}
+        {lowStockCount > 0 ? "Item perlu dipesan ulang" : "Semua level stok OK"}
       </span>,
       icon: AlertTriangle,
       iconBg: lowStockCount > 0 ? "bg-destructive/10" : "bg-muted",
@@ -114,13 +114,13 @@ export default function Dashboard() {
   ];
 
   const quickActions = [
-    { label: "Open POS", href: "/pos", icon: ListOrdered, color: "bg-primary", desc: "Take orders", shadow: "shadow-primary/30" },
-    { label: "Tables", href: "/tables", icon: Grid2X2, color: "bg-blue-500", desc: "Floor plan", shadow: "shadow-blue-500/30" },
-    { label: "Kitchen", href: "/kitchen", icon: ChefHat, color: "bg-orange-500", desc: "Live queue", shadow: "shadow-orange-500/30" },
-    { label: "Reports", href: "/reports", icon: BarChart3, color: "bg-secondary", desc: "Analytics", shadow: "shadow-secondary/30" },
+    { label: "Buka POS", href: "/pos", icon: ListOrdered, color: "bg-primary", desc: "Ambil pesanan", shadow: "shadow-primary/30" },
+    { label: "Meja", href: "/tables", icon: Grid2X2, color: "bg-blue-500", desc: "Denah lantai", shadow: "shadow-blue-500/30" },
+    { label: "Dapur", href: "/kitchen", icon: ChefHat, color: "bg-orange-500", desc: "Antrean langsung", shadow: "shadow-orange-500/30" },
+    { label: "Laporan", href: "/reports", icon: BarChart3, color: "bg-secondary", desc: "Analitik", shadow: "shadow-secondary/30" },
   ];
 
-  const clockDisplay = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const clockDisplay = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
@@ -136,7 +136,7 @@ export default function Dashboard() {
               {getCurrentDate()}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Dasbor</h1>
           <p className="text-muted-foreground mt-0.5 text-sm sm:hidden">
             <CalendarDays className="w-3 h-3 inline mr-1" />{getCurrentDate()}
           </p>
@@ -147,7 +147,7 @@ export default function Dashboard() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            Live · {clockDisplay}
+            Langsung · {clockDisplay}
           </Badge>
           <Button
             variant="outline"
@@ -156,7 +156,7 @@ export default function Dashboard() {
             onClick={handleRefresh}
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Refresh
+            Segarkan
           </Button>
         </div>
       </div>
@@ -237,12 +237,12 @@ export default function Dashboard() {
           <CardHeader className="px-4 sm:px-6 pt-5 pb-3 border-b bg-muted/20">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base sm:text-lg font-bold">Peak Hours</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">Order volume by hour today</CardDescription>
+                <CardTitle className="text-base sm:text-lg font-bold">Jam Sibuk</CardTitle>
+                <CardDescription className="text-xs sm:text-sm mt-1">Volume pesanan per jam hari ini</CardDescription>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-primary/8 text-primary px-2.5 py-1 rounded-full border border-primary/15">
                 <div className="w-2 h-2 rounded-full bg-primary" />
-                Orders
+                Pesanan
               </div>
             </div>
           </CardHeader>
@@ -261,7 +261,7 @@ export default function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis
                     dataKey="hour"
-                    tickFormatter={(tick) => `${tick}h`}
+                    tickFormatter={(tick) => `${tick}j`}
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={11}
                     tickLine={false}
@@ -285,7 +285,7 @@ export default function Dashboard() {
                       boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
                     }}
                     labelFormatter={(label) => `${label}:00 – ${Number(label) + 1}:00`}
-                    formatter={(val: number) => [val, "Orders"]}
+                    formatter={(val: number) => [val, "Pesanan"]}
                   />
                   <Area
                     type="monotone"
@@ -302,7 +302,7 @@ export default function Dashboard() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground border border-dashed rounded-xl gap-3 bg-muted/5">
                 <Activity className="w-9 h-9 opacity-20" />
-                <span className="text-sm">No order data for today yet</span>
+                <span className="text-sm">Belum ada data pesanan hari ini</span>
               </div>
             )}
           </CardContent>
@@ -313,13 +313,13 @@ export default function Dashboard() {
           <CardHeader className="px-4 sm:px-6 pt-5 pb-3 border-b bg-muted/20 shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base sm:text-lg font-bold">Needs Attention</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1">Items below minimum stock</CardDescription>
+                <CardTitle className="text-base sm:text-lg font-bold">Perlu Perhatian</CardTitle>
+                <CardDescription className="text-xs sm:text-sm mt-1">Item di bawah stok minimum</CardDescription>
               </div>
               {(lowStock?.length ?? 0) > 0 && (
                 <Button variant="ghost" size="sm" className="text-xs h-7 text-primary gap-1 px-2" asChild>
                   <Link href="/stock">
-                    View all <ArrowRight className="w-3 h-3" />
+                    Lihat semua <ArrowRight className="w-3 h-3" />
                   </Link>
                 </Button>
               )}
@@ -358,7 +358,7 @@ export default function Dashboard() {
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                   <ShoppingBag className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">All stock levels optimal</p>
+                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Semua level stok optimal</p>
               </div>
             )}
           </CardContent>

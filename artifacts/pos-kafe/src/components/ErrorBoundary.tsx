@@ -43,9 +43,9 @@ export class ErrorBoundary extends React.Component<Props, State> {
               <AlertTriangle className="w-8 h-8 text-destructive" />
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight">Something went wrong</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Terjadi Kesalahan</h1>
               <p className="text-muted-foreground text-sm">
-                An unexpected error occurred. Your data is safe — try refreshing the page or going back to the dashboard.
+                Terjadi kesalahan yang tidak terduga. Data Anda aman — coba segarkan halaman atau kembali ke dasbor.
               </p>
             </div>
             {this.state.error && (
@@ -57,10 +57,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
             )}
             <div className="flex gap-3 justify-center">
               <Button variant="outline" onClick={this.handleReset} className="gap-2">
-                <RefreshCw className="w-4 h-4" /> Try Again
+                <RefreshCw className="w-4 h-4" /> Coba Lagi
               </Button>
               <Button onClick={this.handleGoHome} className="gap-2">
-                <Home className="w-4 h-4" /> Go to Dashboard
+                <Home className="w-4 h-4" /> Ke Dasbor
               </Button>
             </div>
           </div>

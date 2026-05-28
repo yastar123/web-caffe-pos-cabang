@@ -49,8 +49,8 @@ interface CartItem {
 }
 
 const PAYMENT_METHODS = [
-  { key: "cash" as const, label: "Cash", Icon: Banknote },
-  { key: "card" as const, label: "Card", Icon: CreditCard },
+  { key: "cash" as const, label: "Tunai", Icon: Banknote },
+  { key: "card" as const, label: "Kartu", Icon: CreditCard },
   { key: "qris" as const, label: "QRIS", Icon: QrCode },
   { key: "ewallet" as const, label: "E-Wallet", Icon: Wallet },
 ];
@@ -156,7 +156,7 @@ export default function POS() {
     if (!selectedTable || cart.length === 0) return;
     if (!paymentMethod) {
       setShowPaymentHint(true);
-      toast({ title: "Select a payment method", description: "Please choose how the customer will pay.", variant: "destructive" });
+      toast({ title: "Pilih metode pembayaran", description: "Pilih cara pembayaran pelanggan.", variant: "destructive" });
       return;
     }
     setShowPaymentHint(false);
@@ -178,7 +178,7 @@ export default function POS() {
           method: paymentMethod as any,
         }
       });
-      toast({ title: "Order processed successfully" });
+      toast({ title: "Pesanan berhasil diproses" });
       setCart([]);
       setNotes("");
       setDiscountAmount(0);
@@ -188,7 +188,7 @@ export default function POS() {
       queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
       setLocation("/tables");
     } catch {
-      toast({ title: "Failed to process order", variant: "destructive" });
+      toast({ title: "Gagal memproses pesanan", variant: "destructive" });
     }
   };
 
@@ -197,8 +197,8 @@ export default function POS() {
       {cart.length === 0 ? (
         <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl p-8 text-center">
           <UtensilsCrossed className="h-10 w-10 mb-3 opacity-20" />
-          <p className="font-medium text-sm">Cart is empty</p>
-          <p className="text-xs opacity-70 mt-1">Tap menu items to add them</p>
+          <p className="font-medium text-sm">Keranjang kosong</p>
+          <p className="text-xs opacity-70 mt-1">Ketuk item menu untuk menambahkan</p>
         </div>
       ) : (
         <>
@@ -245,7 +245,7 @@ export default function POS() {
           ))}
           <div className="pt-3">
             <Textarea
-              placeholder="Add order notes (optional)..."
+              placeholder="Tambah catatan pesanan (opsional)..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-[72px] resize-none text-sm bg-muted/30"
@@ -264,7 +264,7 @@ export default function POS() {
           <span className="font-medium text-foreground tabular-nums">{formatIDR(subtotal)}</span>
         </div>
         <div className="flex justify-between items-center text-muted-foreground">
-          <span>Discount</span>
+          <span>Diskon</span>
           <div className="w-24">
             <Input
               type="number"
@@ -276,7 +276,7 @@ export default function POS() {
           </div>
         </div>
         <div className="flex justify-between text-muted-foreground">
-          <span>Tax ({Math.round(TAX_RATE * 100)}%)</span>
+          <span>Pajak ({Math.round(TAX_RATE * 100)}%)</span>
           <span className="font-medium text-foreground tabular-nums">{formatIDR(tax)}</span>
         </div>
         <div className="flex justify-between items-center font-bold text-base pt-2 border-t">
@@ -288,11 +288,11 @@ export default function POS() {
       {/* Payment methods */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Payment Method</span>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Metode Pembayaran</span>
           {showPaymentHint && !paymentMethod && (
             <div className="flex items-center gap-1 text-destructive text-xs font-medium">
               <AlertCircle className="w-3 h-3" />
-              Required
+              Wajib dipilih
             </div>
           )}
         </div>
@@ -324,12 +324,12 @@ export default function POS() {
         onClick={handleProcessOrder}
         data-testid="btn-process-order"
       >
-        {createOrder.isPending || processPayment.isPending ? "Processing..." : "Process Order"}
+        {createOrder.isPending || processPayment.isPending ? "Memproses..." : "Proses Pesanan"}
       </Button>
 
       {!paymentMethod && cart.length > 0 && selectedTable && (
         <p className="text-center text-xs text-muted-foreground">
-          Select a payment method to complete the order
+          Pilih metode pembayaran untuk menyelesaikan pesanan
         </p>
       )}
     </div>
@@ -344,7 +344,7 @@ export default function POS() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search menu items..."
+                placeholder="Cari item menu..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-10"
@@ -357,7 +357,7 @@ export default function POS() {
             ) : (
               <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
                 <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/40 rounded-xl gap-0.5">
-                  <TabsTrigger value="all" className="rounded-lg text-xs font-semibold">All</TabsTrigger>
+                  <TabsTrigger value="all" className="rounded-lg text-xs font-semibold">Semua</TabsTrigger>
                   {categories?.map((cat: any) => (
                     <TabsTrigger key={cat.id} value={cat.id.toString()} className="rounded-lg text-xs font-semibold whitespace-nowrap">
                       {cat.name}
@@ -376,7 +376,7 @@ export default function POS() {
             ) : filteredItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl p-8 text-center">
                 <Search className="h-10 w-10 mb-3 opacity-20" />
-                <p className="font-medium">No items found</p>
+                <p className="font-medium">Item tidak ditemukan</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -405,7 +405,7 @@ export default function POS() {
                         )}
                         {!item.isAvailable && (
                           <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                            <span className="text-xs font-bold text-destructive bg-destructive/10 border border-destructive/20 px-2 py-1 rounded-full">Sold Out</span>
+                            <span className="text-xs font-bold text-destructive bg-destructive/10 border border-destructive/20 px-2 py-1 rounded-full">Habis</span>
                           </div>
                         )}
                         {inCart && (
@@ -436,20 +436,20 @@ export default function POS() {
           <div className="p-4 border-b shrink-0 flex items-center gap-3">
             <Select value={selectedTable} onValueChange={setSelectedTable}>
               <SelectTrigger className="flex-1" data-testid="select-table">
-                <SelectValue placeholder="Select Table" />
+                <SelectValue placeholder="Pilih Meja" />
               </SelectTrigger>
               <SelectContent>
                 {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
                   <SelectItem key={t.id} value={t.id.toString()}>
-                    Table {t.number}
-                    {t.status === "occupied" ? " (occupied)" : ""}
+                    Meja {t.number}
+                    {t.status === "occupied" ? " (terisi)" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {cart.length > 0 && (
               <Badge variant="secondary" className="shrink-0 font-bold">
-                {totalItems} items
+                {totalItems} item
               </Badge>
             )}
           </div>
@@ -466,7 +466,7 @@ export default function POS() {
             onClick={() => setCartOpen(true)}
           >
             <ShoppingCart className="w-5 h-5 mr-2.5" />
-            {totalItems} item{totalItems !== 1 ? "s" : ""} · {formatIDR(grandTotal)}
+            {totalItems} item · {formatIDR(grandTotal)}
           </Button>
         </div>
       )}
@@ -487,16 +487,16 @@ export default function POS() {
               >
                 <XIcon className="w-4 h-4" />
               </Button>
-              <SheetTitle className="flex-1 text-left text-base">Your Order</SheetTitle>
+              <SheetTitle className="flex-1 text-left text-base">Pesanan Anda</SheetTitle>
               <div className="shrink-0">
                 <Select value={selectedTable} onValueChange={setSelectedTable}>
                   <SelectTrigger className="w-[140px] h-8 text-xs" data-testid="select-table-mobile">
-                    <SelectValue placeholder="Select Table" />
+                    <SelectValue placeholder="Pilih Meja" />
                   </SelectTrigger>
                   <SelectContent>
                     {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
                       <SelectItem key={t.id} value={t.id.toString()}>
-                        Table {t.number}
+                        Meja {t.number}
                       </SelectItem>
                     ))}
                   </SelectContent>

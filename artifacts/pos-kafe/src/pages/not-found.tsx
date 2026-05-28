@@ -34,22 +34,22 @@ export default function NotFound() {
           404
         </p>
 
-        <h1 className="text-2xl font-bold text-foreground mb-3 tracking-tight">Page not found</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-3 tracking-tight">Halaman tidak ditemukan</h1>
         <p className="text-muted-foreground text-sm mb-8 leading-relaxed max-w-sm mx-auto">
-          The page you're looking for doesn't exist or has been moved. Head back to the dashboard to continue your shift.
+          Halaman yang Anda cari tidak ada atau telah dipindahkan. Kembali ke dasbor untuk melanjutkan giliran Anda.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button asChild className="gap-2 shadow-sm min-w-[160px]">
             <Link href="/dashboard">
               <Home className="w-4 h-4" />
-              Back to Dashboard
+              Kembali ke Dasbor
             </Link>
           </Button>
           <Button asChild variant="outline" className="gap-2 min-w-[140px]">
             <Link href="/pos">
               <ArrowLeft className="w-4 h-4" />
-              Open POS
+              Buka POS
             </Link>
           </Button>
         </div>

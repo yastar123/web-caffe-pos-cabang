@@ -78,14 +78,14 @@ function OrderCard({ order, onUpdateStatus, isUpdating }: {
               #{order.orderNumber}
             </CardTitle>
             <div className="text-xs text-muted-foreground font-medium mt-0.5">
-              Table {order.tableNumber || "Takeaway"}
+              Meja {order.tableNumber || "Bawa Pulang"}
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
             <TimerBadge createdAt={order.createdAt} />
             {allReady && (
               <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
-                ✓ Done
+                ✓ Selesai
               </span>
             )}
           </div>
@@ -138,7 +138,7 @@ function OrderCard({ order, onUpdateStatus, isUpdating }: {
                       onClick={() => onUpdateStatus(order.orderId, item.id, "processing")}
                       disabled={isUpdating}
                     >
-                      Start
+                      Mulai
                     </Button>
                   )}
                   {item.kitchenStatus === "processing" && (
@@ -148,25 +148,25 @@ function OrderCard({ order, onUpdateStatus, isUpdating }: {
                       onClick={() => onUpdateStatus(order.orderId, item.id, "ready")}
                       disabled={isUpdating}
                     >
-                      Ready
+                      Siap
                     </Button>
                   )}
                   {item.kitchenStatus === "ready" && (
                     <div className="flex flex-col items-end gap-1">
                       <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-semibold text-[10px] h-5 px-1.5">
                         <CheckSquare className="w-2.5 h-2.5 mr-1" />
-                        Ready
+                        Siap
                       </Badge>
                       <button
                         className="text-[10px] text-muted-foreground hover:text-foreground underline underline-offset-2"
                         onClick={() => onUpdateStatus(order.orderId, item.id, "served")}
                       >
-                        Served
+                        Disajikan
                       </button>
                     </div>
                   )}
                   {item.kitchenStatus === "served" && (
-                    <span className="text-[10px] text-muted-foreground font-medium">Served</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">Disajikan</span>
                   )}
                 </div>
               </div>
@@ -181,29 +181,29 @@ function OrderCard({ order, onUpdateStatus, isUpdating }: {
 const COLUMNS = [
   {
     key: "new",
-    label: "New Orders",
+    label: "Pesanan Baru",
     color: "text-blue-600 dark:text-blue-400",
     dot: "bg-blue-500",
     headerBg: "bg-blue-50/80 dark:bg-blue-950/20 border-b border-blue-100 dark:border-blue-900",
-    emptyText: "No new orders",
+    emptyText: "Tidak ada pesanan baru",
     icon: Zap,
   },
   {
     key: "processing",
-    label: "Cooking",
+    label: "Memasak",
     color: "text-orange-600 dark:text-orange-400",
     dot: "bg-orange-500",
     headerBg: "bg-orange-50/80 dark:bg-orange-950/20 border-b border-orange-100 dark:border-orange-900",
-    emptyText: "Nothing cooking",
+    emptyText: "Tidak ada yang dimasak",
     icon: Flame,
   },
   {
     key: "ready",
-    label: "Ready to Serve",
+    label: "Siap Disajikan",
     color: "text-emerald-600 dark:text-emerald-400",
     dot: "bg-emerald-500",
     headerBg: "bg-emerald-50/80 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900",
-    emptyText: "No items ready yet",
+    emptyText: "Belum ada item siap",
     icon: CheckSquare,
   },
 ] as const;
@@ -229,7 +229,7 @@ export default function Kitchen() {
   const updateItemStatus = useUpdateKitchenItemStatus({
     mutation: {
       onError: () => {
-        toast({ title: "Failed to update status", variant: "destructive" });
+        toast({ title: "Gagal memperbarui status", variant: "destructive" });
       }
     }
   });
@@ -257,16 +257,14 @@ export default function Kitchen() {
         )
       );
       queryClient.invalidateQueries({ queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined }) });
-      toast({ title: `${readyItems.length} item${readyItems.length !== 1 ? "s" : ""} marked as served` });
+      toast({ title: `${readyItems.length} item ditandai disajikan` });
     } catch {
-      toast({ title: "Some items could not be served", variant: "destructive" });
+      toast({ title: "Beberapa item tidak dapat disajikan", variant: "destructive" });
     } finally {
       setIsServingAll(false);
     }
   };
 
-  // Build columns: an order appears in a column based on the "dominant" item status
-  // (earliest stage wins — if any item is "new", it shows in New column, etc.)
   const getOrderColumn = (order: any): "new" | "processing" | "ready" | null => {
     const statuses = order.items.map((i: any) => i.kitchenStatus);
     if (statuses.includes("new")) return "new";
@@ -318,10 +316,10 @@ export default function Kitchen() {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
               <ChefHat className="w-6 h-6 text-primary" />
-              Kitchen Display
+              Tampilan Dapur
             </h1>
             <p className="text-muted-foreground text-xs mt-0.5">
-              {totalActive > 0 ? `${totalActive} active order${totalActive !== 1 ? "s" : ""}` : "No active orders"} · auto-refreshes every 20s
+              {totalActive > 0 ? `${totalActive} pesanan aktif` : "Tidak ada pesanan aktif"} · pembaruan otomatis setiap 20d
             </p>
           </div>
 
@@ -334,7 +332,7 @@ export default function Kitchen() {
                 disabled={isServingAll}
               >
                 <CheckCheck className="w-3.5 h-3.5" />
-                {isServingAll ? "Serving..." : `Serve All Ready (${readyCount})`}
+                {isServingAll ? "Menyajikan..." : `Sajikan Semua Siap (${readyCount})`}
               </Button>
             )}
             <button
@@ -342,7 +340,7 @@ export default function Kitchen() {
               className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 hover:bg-muted/70 hover:text-foreground px-3 py-1.5 rounded-full border transition-colors"
             >
               <RefreshCw className="w-3 h-3" />
-              Refresh
+              Segarkan
             </button>
           </div>
         </div>
@@ -356,8 +354,8 @@ export default function Kitchen() {
               <ChefHat className="w-10 h-10 opacity-25" />
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold">Kitchen is clear!</p>
-              <p className="text-sm opacity-60 mt-1">No active orders at the moment</p>
+              <p className="text-xl font-bold">Dapur bersih!</p>
+              <p className="text-sm opacity-60 mt-1">Tidak ada pesanan aktif saat ini</p>
             </div>
           </div>
         ) : (

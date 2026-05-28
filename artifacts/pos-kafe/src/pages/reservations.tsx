@@ -24,18 +24,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
-  pending:   { label: "Pending",   color: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",   dot: "bg-amber-500"   },
-  confirmed: { label: "Confirmed", color: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",     dot: "bg-blue-500"    },
-  seated:    { label: "Seated",    color: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800", dot: "bg-emerald-500" },
-  cancelled: { label: "Cancelled", color: "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",     dot: "bg-rose-500"    },
+  pending:   { label: "Menunggu",     color: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",   dot: "bg-amber-500"   },
+  confirmed: { label: "Dikonfirmasi", color: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",     dot: "bg-blue-500"    },
+  seated:    { label: "Duduk",        color: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800", dot: "bg-emerald-500" },
+  cancelled: { label: "Dibatalkan",   color: "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",     dot: "bg-rose-500"    },
 };
 
 function formatDateLabel(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
-  if (isToday(d)) return "Today";
-  if (isTomorrow(d)) return "Tomorrow";
-  if (isYesterday(d)) return "Yesterday";
-  return format(d, "EEE, MMM d");
+  if (isToday(d)) return "Hari Ini";
+  if (isTomorrow(d)) return "Besok";
+  if (isYesterday(d)) return "Kemarin";
+  return format(d, "EEE, d MMM");
 }
 
 export default function Reservations() {
@@ -80,21 +80,21 @@ export default function Reservations() {
           notes: fd.get("notes") as string || undefined,
         }
       });
-      toast({ title: "Reservation created successfully" });
+      toast({ title: "Reservasi berhasil dibuat" });
       queryClient.invalidateQueries({ queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date }) });
       setIsNewOpen(false);
     } catch {
-      toast({ title: "Failed to create reservation", variant: "destructive" });
+      toast({ title: "Gagal membuat reservasi", variant: "destructive" });
     }
   };
 
   const handleStatus = async (id: number, newStatus: string) => {
     try {
       await updateRes.mutateAsync({ id, data: { status: newStatus as any } });
-      toast({ title: "Status updated" });
+      toast({ title: "Status diperbarui" });
       queryClient.invalidateQueries({ queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date }) });
     } catch {
-      toast({ title: "Failed to update status", variant: "destructive" });
+      toast({ title: "Gagal memperbarui status", variant: "destructive" });
     }
   };
 
@@ -117,11 +117,11 @@ export default function Reservations() {
           notes: fd.get("notes") as string || undefined,
         }
       });
-      toast({ title: "Reservation updated" });
+      toast({ title: "Reservasi diperbarui" });
       queryClient.invalidateQueries({ queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date }) });
       setEditingRes(null);
     } catch {
-      toast({ title: "Failed to update reservation", variant: "destructive" });
+      toast({ title: "Gagal memperbarui reservasi", variant: "destructive" });
     }
   };
 
@@ -137,15 +137,23 @@ export default function Reservations() {
   const seated = allRes.filter((r: any) => r.status === "seated").length;
   const totalGuests = allRes.reduce((s: number, r: any) => s + (r.guestCount || 0), 0);
 
+  const STATUS_TAB_LABELS: Record<string, string> = {
+    all: "Semua",
+    pending: "Menunggu",
+    confirmed: "Dikonfirmasi",
+    seated: "Duduk",
+    cancelled: "Dibatalkan",
+  };
+
   const ReservationForm = ({ defaultValues, onSubmit, isPending }: { defaultValues?: any; onSubmit: (e: React.FormEvent<HTMLFormElement>) => void; isPending: boolean }) => (
     <div className="grid gap-4 py-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Guest Name *</Label>
+          <Label htmlFor="name">Nama Tamu *</Label>
           <Input id="name" name="name" required defaultValue={defaultValues?.customerName} autoFocus data-testid="input-name" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone *</Label>
+          <Label htmlFor="phone">Telepon *</Label>
           <Input id="phone" name="phone" required defaultValue={defaultValues?.customerPhone} data-testid="input-phone" />
         </div>
       </div>
@@ -155,26 +163,26 @@ export default function Reservations() {
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="date">Date *</Label>
+          <Label htmlFor="date">Tanggal *</Label>
           <Input id="date" name="date" type="date" required defaultValue={defaultValues?.date || date} data-testid="input-res-date" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="time">Time *</Label>
+          <Label htmlFor="time">Waktu *</Label>
           <Input id="time" name="time" type="time" required defaultValue={defaultValues?.time} data-testid="input-res-time" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="guests">Guests *</Label>
+          <Label htmlFor="guests">Tamu *</Label>
           <Input id="guests" name="guests" type="number" min="1" required defaultValue={defaultValues?.guestCount} data-testid="input-guests" />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="tableId">Table</Label>
+          <Label htmlFor="tableId">Meja</Label>
           <Select name="tableId" defaultValue={defaultValues?.tableId ? defaultValues.tableId.toString() : "none"}>
-            <SelectTrigger data-testid="select-res-table"><SelectValue placeholder="Unassigned" /></SelectTrigger>
+            <SelectTrigger data-testid="select-res-table"><SelectValue placeholder="Belum Ditugaskan" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">Unassigned</SelectItem>
-              {tables?.map((t: any) => <SelectItem key={t.id} value={t.id.toString()}>Table {t.number}</SelectItem>)}
+              <SelectItem value="none">Belum Ditugaskan</SelectItem>
+              {tables?.map((t: any) => <SelectItem key={t.id} value={t.id.toString()}>Meja {t.number}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -184,8 +192,8 @@ export default function Reservations() {
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="notes">Special Requests</Label>
-        <Textarea id="notes" name="notes" placeholder="Allergy info, seating preference..." defaultValue={defaultValues?.notes || ""} data-testid="input-notes" />
+        <Label htmlFor="notes">Permintaan Khusus</Label>
+        <Textarea id="notes" name="notes" placeholder="Info alergi, preferensi tempat duduk..." defaultValue={defaultValues?.notes || ""} data-testid="input-notes" />
       </div>
     </div>
   );
@@ -196,19 +204,19 @@ export default function Reservations() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Reservations</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Manage bookings and table assignments</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Reservasi</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Kelola pemesanan dan penugasan meja</p>
         </div>
         <Dialog open={isNewOpen} onOpenChange={setIsNewOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="btn-new-reservation">+ New Reservation</Button>
+            <Button data-testid="btn-new-reservation">+ Reservasi Baru</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <form onSubmit={handleCreate}>
-              <DialogHeader><DialogTitle>New Reservation</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Reservasi Baru</DialogTitle></DialogHeader>
               <ReservationForm onSubmit={handleCreate} isPending={createRes.isPending} />
               <DialogFooter>
-                <Button type="submit" disabled={createRes.isPending} data-testid="btn-submit-res">Save Reservation</Button>
+                <Button type="submit" disabled={createRes.isPending} data-testid="btn-submit-res">Simpan Reservasi</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -218,10 +226,10 @@ export default function Reservations() {
       {/* Summary stat bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
         {[
-          { label: "Total Reservations", value: allRes.length, sub: `${totalGuests} guests`, color: "text-foreground", icon: CalendarDays },
-          { label: "Pending", value: pending, sub: "awaiting confirm", color: "text-amber-600 dark:text-amber-400", icon: Clock },
-          { label: "Confirmed", value: confirmed, sub: "ready to seat", color: "text-blue-600 dark:text-blue-400", icon: Check },
-          { label: "Seated", value: seated, sub: "currently dining", color: "text-emerald-600 dark:text-emerald-400", icon: Users },
+          { label: "Total Reservasi", value: allRes.length, sub: `${totalGuests} tamu`, color: "text-foreground", icon: CalendarDays },
+          { label: "Menunggu", value: pending, sub: "menunggu konfirmasi", color: "text-amber-600 dark:text-amber-400", icon: Clock },
+          { label: "Dikonfirmasi", value: confirmed, sub: "siap didudukkan", color: "text-blue-600 dark:text-blue-400", icon: Check },
+          { label: "Duduk", value: seated, sub: "sedang makan", color: "text-emerald-600 dark:text-emerald-400", icon: Users },
         ].map((s) => (
           <Card key={s.label} className="shadow-sm card-hover">
             <CardContent className="p-3 sm:p-4 flex items-center gap-3">
@@ -258,7 +266,7 @@ export default function Reservations() {
           </Button>
           {date !== format(new Date(), "yyyy-MM-dd") && (
             <Button variant="ghost" size="sm" className="text-xs h-9" onClick={() => setDate(format(new Date(), "yyyy-MM-dd"))}>
-              Today
+              Hari Ini
             </Button>
           )}
           <span className="hidden sm:inline text-sm font-semibold text-muted-foreground">{formatDateLabel(date)}</span>
@@ -267,8 +275,8 @@ export default function Reservations() {
         <Tabs value={status} onValueChange={setStatus}>
           <TabsList className="overflow-x-auto justify-start flex-nowrap h-auto p-1 bg-muted/40 rounded-xl gap-0.5">
             {["all", "pending", "confirmed", "seated", "cancelled"].map((s) => (
-              <TabsTrigger key={s} value={s} className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap capitalize">
-                {s === "all" ? "All" : s}
+              <TabsTrigger key={s} value={s} className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">
+                {STATUS_TAB_LABELS[s] ?? s}
                 {s !== "all" && s !== "cancelled" && (
                   <span className="ml-1 text-[10px] opacity-60">
                     ({allRes.filter((r: any) => r.status === s).length})
@@ -291,10 +299,10 @@ export default function Reservations() {
             <CalendarDays className="w-8 h-8 opacity-25" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold">No reservations for {formatDateLabel(date)}</h3>
-            <p className="text-sm text-muted-foreground mt-1">Try another date or create a new reservation</p>
+            <h3 className="text-lg font-semibold">Tidak ada reservasi untuk {formatDateLabel(date)}</h3>
+            <p className="text-sm text-muted-foreground mt-1">Coba tanggal lain atau buat reservasi baru</p>
           </div>
-          <Button variant="outline" onClick={() => setIsNewOpen(true)}>+ New Reservation</Button>
+          <Button variant="outline" onClick={() => setIsNewOpen(true)}>+ Reservasi Baru</Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
@@ -326,12 +334,12 @@ export default function Reservations() {
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Users className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span className="font-semibold text-foreground">{res.guestCount} pax</span>
+                      <span className="font-semibold text-foreground">{res.guestCount} tamu</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground col-span-2">
-                      <div className="w-3.5 h-3.5 rounded bg-primary/10 flex items-center justify-center text-[9px] font-bold text-primary border border-primary/20 shrink-0">T</div>
+                      <div className="w-3.5 h-3.5 rounded bg-primary/10 flex items-center justify-center text-[9px] font-bold text-primary border border-primary/20 shrink-0">M</div>
                       <span className="font-semibold text-foreground">
-                        {res.tableNumber ? `Table ${res.tableNumber}` : <span className="text-muted-foreground font-normal">Unassigned</span>}
+                        {res.tableNumber ? `Meja ${res.tableNumber}` : <span className="text-muted-foreground font-normal">Belum Ditugaskan</span>}
                       </span>
                     </div>
                   </div>
@@ -347,7 +355,7 @@ export default function Reservations() {
                   {res.status === "pending" && (
                     <>
                       <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => handleStatus(res.id, "confirmed")} data-testid={`btn-confirm-${res.id}`}>
-                        <Check className="w-3.5 h-3.5 mr-1" /> Confirm
+                        <Check className="w-3.5 h-3.5 mr-1" /> Konfirmasi
                       </Button>
                       <Button size="sm" variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 h-8" onClick={() => handleStatus(res.id, "cancelled")} data-testid={`btn-cancel-${res.id}`}>
                         <X className="w-3.5 h-3.5" />
@@ -356,16 +364,16 @@ export default function Reservations() {
                   )}
                   {res.status === "confirmed" && (
                     <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700 h-8" onClick={() => handleStatus(res.id, "seated")} data-testid={`btn-seat-${res.id}`}>
-                      <LogIn className="w-3.5 h-3.5 mr-1" /> Seat Guests
+                      <LogIn className="w-3.5 h-3.5 mr-1" /> Dudukkan Tamu
                     </Button>
                   )}
                   {res.status === "seated" && (
                     <div className="text-sm font-medium text-emerald-600 flex w-full justify-center items-center py-1 gap-1">
-                      <Check className="w-4 h-4" /> Currently Dining
+                      <Check className="w-4 h-4" /> Sedang Makan
                     </div>
                   )}
                   {res.status === "cancelled" && (
-                    <div className="text-xs text-muted-foreground flex w-full justify-center items-center py-1">Cancelled</div>
+                    <div className="text-xs text-muted-foreground flex w-full justify-center items-center py-1">Dibatalkan</div>
                   )}
                   {res.status !== "cancelled" && res.status !== "seated" && (
                     <Button size="sm" variant="ghost" className="shrink-0 h-8 w-8 p-0" onClick={() => setEditingRes(res)} title="Edit">
@@ -384,11 +392,11 @@ export default function Reservations() {
         <DialogContent className="sm:max-w-[500px]">
           {editingRes && (
             <form onSubmit={handleEdit}>
-              <DialogHeader><DialogTitle>Edit Reservation</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Edit Reservasi</DialogTitle></DialogHeader>
               <ReservationForm defaultValues={editingRes} onSubmit={handleEdit} isPending={updateRes.isPending} />
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditingRes(null)}>Cancel</Button>
-                <Button type="submit" disabled={updateRes.isPending}>Save Changes</Button>
+                <Button type="button" variant="outline" onClick={() => setEditingRes(null)}>Batal</Button>
+                <Button type="submit" disabled={updateRes.isPending}>Simpan Perubahan</Button>
               </DialogFooter>
             </form>
           )}

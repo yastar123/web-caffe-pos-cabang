@@ -28,35 +28,35 @@ import { useDarkMode } from "@/hooks/use-dark-mode";
 
 const NAV_GROUPS = [
   {
-    label: "Overview",
+    label: "Ikhtisar",
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["owner", "manager"] },
+      { href: "/dashboard", label: "Dasbor", icon: LayoutDashboard, roles: ["owner", "manager"] },
     ],
   },
   {
-    label: "Operations",
+    label: "Operasional",
     items: [
       { href: "/pos", label: "POS", icon: ListOrdered, roles: ["owner", "manager", "cashier", "waiter"] },
-      { href: "/tables", label: "Tables", icon: Grid2X2, roles: ["owner", "manager", "cashier", "waiter"] },
-      { href: "/kitchen", label: "Kitchen", icon: ChefHat, roles: ["owner", "manager", "waiter", "chef"] },
-      { href: "/reservations", label: "Reservations", icon: CalendarDays, roles: ["owner", "manager", "cashier", "waiter"] },
+      { href: "/tables", label: "Meja", icon: Grid2X2, roles: ["owner", "manager", "cashier", "waiter"] },
+      { href: "/kitchen", label: "Dapur", icon: ChefHat, roles: ["owner", "manager", "waiter", "chef"] },
+      { href: "/reservations", label: "Reservasi", icon: CalendarDays, roles: ["owner", "manager", "cashier", "waiter"] },
     ],
   },
   {
-    label: "Management",
+    label: "Manajemen",
     items: [
       { href: "/menu", label: "Menu", icon: MenuSquare, roles: ["owner", "manager"] },
-      { href: "/stock", label: "Stock", icon: PackageSearch, roles: ["owner", "manager", "warehouse"] },
-      { href: "/reports", label: "Reports", icon: LineChart, roles: ["owner", "manager"] },
-      { href: "/customers", label: "Customers", icon: Users, roles: ["owner", "manager", "cashier"] },
+      { href: "/stock", label: "Stok", icon: PackageSearch, roles: ["owner", "manager", "warehouse"] },
+      { href: "/reports", label: "Laporan", icon: LineChart, roles: ["owner", "manager"] },
+      { href: "/customers", label: "Pelanggan", icon: Users, roles: ["owner", "manager", "cashier"] },
     ],
   },
   {
-    label: "Administration",
+    label: "Administrasi",
     items: [
-      { href: "/branches", label: "Branches", icon: Store, roles: ["owner"] },
-      { href: "/users", label: "Staff", icon: UserCog, roles: ["owner", "manager"] },
-      { href: "/settings", label: "Settings", icon: Settings, roles: ["owner", "manager"] },
+      { href: "/branches", label: "Cabang", icon: Store, roles: ["owner"] },
+      { href: "/users", label: "Staf", icon: UserCog, roles: ["owner", "manager"] },
+      { href: "/settings", label: "Pengaturan", icon: Settings, roles: ["owner", "manager"] },
     ],
   },
 ];
@@ -65,13 +65,13 @@ const ALL_PAGES = NAV_GROUPS.flatMap(g => g.items);
 
 const BOTTOM_NAV_PRIORITY = [
   { href: "/pos", label: "POS", icon: ListOrdered, roles: ["owner", "manager", "cashier", "waiter"] },
-  { href: "/tables", label: "Tables", icon: Grid2X2, roles: ["owner", "manager", "cashier", "waiter"] },
-  { href: "/kitchen", label: "Kitchen", icon: ChefHat, roles: ["owner", "manager", "waiter", "chef"] },
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard, roles: ["owner", "manager"] },
-  { href: "/reservations", label: "Bookings", icon: CalendarDays, roles: ["owner", "manager", "cashier", "waiter"] },
-  { href: "/stock", label: "Stock", icon: PackageSearch, roles: ["owner", "manager", "warehouse"] },
-  { href: "/customers", label: "Guests", icon: Users, roles: ["owner", "manager", "cashier"] },
-  { href: "/reports", label: "Reports", icon: LineChart, roles: ["owner", "manager"] },
+  { href: "/tables", label: "Meja", icon: Grid2X2, roles: ["owner", "manager", "cashier", "waiter"] },
+  { href: "/kitchen", label: "Dapur", icon: ChefHat, roles: ["owner", "manager", "waiter", "chef"] },
+  { href: "/dashboard", label: "Beranda", icon: LayoutDashboard, roles: ["owner", "manager"] },
+  { href: "/reservations", label: "Reservasi", icon: CalendarDays, roles: ["owner", "manager", "cashier", "waiter"] },
+  { href: "/stock", label: "Stok", icon: PackageSearch, roles: ["owner", "manager", "warehouse"] },
+  { href: "/customers", label: "Tamu", icon: Users, roles: ["owner", "manager", "cashier"] },
+  { href: "/reports", label: "Laporan", icon: LineChart, roles: ["owner", "manager"] },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -103,7 +103,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div>
             <div className="font-bold text-base leading-tight text-sidebar-foreground">KopiFlow</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">POS System</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Sistem POS</div>
           </div>
         </div>
       </div>
@@ -163,7 +163,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             variant="ghost"
             size="icon"
             onClick={toggleDark}
-            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            title={isDark ? "Mode terang" : "Mode gelap"}
             className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
           >
             {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
@@ -172,7 +172,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             variant="ghost"
             size="icon"
             onClick={() => logout()}
-            title="Logout"
+            title="Keluar"
             className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -200,7 +200,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/dashboard">← Back</Link>
+              <Link href="/dashboard">← Kembali</Link>
             </Button>
           </div>
         </header>
@@ -248,7 +248,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             size="icon"
             onClick={() => setMobileOpen(true)}
             className="h-11 w-11"
-            aria-label="Open menu"
+            aria-label="Buka menu"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -261,7 +261,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={toggleDark} className="h-9 w-9" aria-label="Toggle dark mode">
+            <Button variant="ghost" size="icon" onClick={toggleDark} className="h-9 w-9" aria-label="Ganti mode gelap">
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
           </div>
@@ -313,12 +313,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <button
             onClick={() => setMobileOpen(true)}
             className="flex-1 flex flex-col items-center justify-center gap-1 relative transition-all duration-150 min-w-0 px-1 text-muted-foreground hover:text-foreground active:scale-95"
-            aria-label="More menu"
+            aria-label="Menu lainnya"
           >
             <div className="w-9 h-7 rounded-xl flex items-center justify-center">
               <MoreHorizontal className="w-[18px] h-[18px] stroke-[1.75]" />
             </div>
-            <span className="text-[10px] font-semibold leading-none tracking-wide">More</span>
+            <span className="text-[10px] font-semibold leading-none tracking-wide">Lainnya</span>
           </button>
         </div>
       </nav>

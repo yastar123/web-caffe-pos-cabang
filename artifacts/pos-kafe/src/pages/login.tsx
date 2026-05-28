@@ -9,27 +9,27 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const DEMO_ROLES = [
-  { label: "Owner", email: "owner@kopiflow.id", color: "bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/30 dark:border-purple-800 dark:text-purple-300" },
-  { label: "Manager", email: "manager@kopiflow.id", color: "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-300" },
-  { label: "Cashier", email: "cashier@kopiflow.id", color: "bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100 dark:bg-teal-950/30 dark:border-teal-800 dark:text-teal-300" },
-  { label: "Waiter", email: "waiter@kopiflow.id", color: "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300" },
-  { label: "Chef", email: "chef@kopiflow.id", color: "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 dark:bg-orange-950/30 dark:border-orange-800 dark:text-orange-300" },
-  { label: "Warehouse", email: "warehouse@kopiflow.id", color: "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-slate-950/30 dark:border-slate-700 dark:text-slate-300" },
+  { label: "Pemilik", email: "owner@kopiflow.id", color: "bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/30 dark:border-purple-800 dark:text-purple-300" },
+  { label: "Manajer", email: "manager@kopiflow.id", color: "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-300" },
+  { label: "Kasir", email: "cashier@kopiflow.id", color: "bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100 dark:bg-teal-950/30 dark:border-teal-800 dark:text-teal-300" },
+  { label: "Pelayan", email: "waiter@kopiflow.id", color: "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300" },
+  { label: "Koki", email: "chef@kopiflow.id", color: "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 dark:bg-orange-950/30 dark:border-orange-800 dark:text-orange-300" },
+  { label: "Gudang", email: "warehouse@kopiflow.id", color: "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-slate-950/30 dark:border-slate-700 dark:text-slate-300" },
 ];
 
 const FEATURES = [
-  "Table & reservation management",
-  "Real-time kitchen display system",
-  "Multi-branch analytics & reports",
-  "Inventory & stock control",
-  "Customer loyalty program",
-  "Role-based staff access",
+  "Manajemen meja & reservasi",
+  "Sistem tampilan dapur real-time",
+  "Analitik & laporan multi-cabang",
+  "Kontrol inventaris & stok",
+  "Program loyalitas pelanggan",
+  "Akses staf berbasis peran",
 ];
 
 const STATS = [
-  { value: "6", label: "Role types" },
+  { value: "6", label: "Jenis peran" },
   { value: "99%", label: "Uptime" },
-  { value: "< 1s", label: "Response" },
+  { value: "< 1d", label: "Respons" },
 ];
 
 export default function Login() {
@@ -54,10 +54,10 @@ export default function Login() {
     try {
       setIsSubmitting(true);
       await login({ email, password });
-      toast({ title: "Welcome back", description: "Successfully logged in to KopiFlow POS" });
+      toast({ title: "Selamat datang kembali", description: "Berhasil masuk ke KopiFlow POS" });
       setLocation("/dashboard");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Login Failed", description: error.message || "Invalid credentials" });
+      toast({ variant: "destructive", title: "Masuk Gagal", description: error.message || "Kredensial tidak valid" });
     } finally {
       setIsSubmitting(false);
     }
@@ -95,10 +95,10 @@ export default function Login() {
 
           <h1 className="text-4xl xl:text-[2.75rem] font-black tracking-tight mb-3 leading-[1.1]">
             KopiFlow<br />
-            <span className="font-light opacity-80">POS System</span>
+            <span className="font-light opacity-80">Sistem POS</span>
           </h1>
           <p className="text-base text-white/65 leading-relaxed mb-10 max-w-sm">
-            The precision instrument for modern cafe operations. Fast, powerful, and built for the rush.
+            Instrumen presisi untuk operasional kafe modern. Cepat, andal, dan dirancang untuk jam sibuk.
           </p>
 
           {/* Stats row */}
@@ -112,7 +112,7 @@ export default function Login() {
           </div>
 
           {/* Features list */}
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-4">What's included</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-4">Yang Tersedia</p>
           <div className="space-y-2.5 w-full">
             {FEATURES.map((feature, i) => (
               <div
@@ -129,7 +129,7 @@ export default function Login() {
           </div>
 
           <div className="mt-10 pt-6 border-t border-white/12 w-full">
-            <p className="text-xs text-white/35">Trusted by modern cafes across Indonesia</p>
+            <p className="text-xs text-white/35">Dipercaya oleh kafe modern di seluruh Indonesia</p>
           </div>
         </div>
       </div>
@@ -146,14 +146,14 @@ export default function Login() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Sign in to your shift</h2>
-            <p className="text-muted-foreground mt-2 text-sm">Enter your credentials to access the system</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Masuk ke giliran Anda</h2>
+            <p className="text-muted-foreground mt-2 text-sm">Masukkan kredensial Anda untuk mengakses sistem</p>
           </div>
 
           {/* Demo role picker */}
           <div className="mb-7">
             <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
-              Quick access — demo accounts
+              Akses cepat — akun demo
             </p>
             <div className="grid grid-cols-3 gap-2">
               {DEMO_ROLES.map((role) => (
@@ -180,11 +180,11 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-semibold">Email or Staff ID</Label>
+              <Label htmlFor="email" className="text-sm font-semibold">Email atau ID Staf</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="staff@kopiflow.id"
+                placeholder="staf@kopiflow.id"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -193,7 +193,7 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-semibold">PIN / Password</Label>
+              <Label htmlFor="password" className="text-sm font-semibold">PIN / Kata Sandi</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -209,7 +209,7 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                   tabIndex={-1}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -224,11 +224,11 @@ export default function Login() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Authenticating...
+                  Mengautentikasi...
                 </>
               ) : (
                 <>
-                  Open Register
+                  Buka Kasir
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -236,7 +236,7 @@ export default function Login() {
           </form>
 
           <p className="text-center text-xs text-muted-foreground mt-6">
-            Having trouble? Ask your manager to reset your PIN.
+            Ada masalah? Minta manajer Anda untuk mereset PIN Anda.
           </p>
         </div>
       </div>
