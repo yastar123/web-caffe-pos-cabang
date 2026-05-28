@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertTriangle, Package, ArrowDownUp, Plus, Search } from "lucide-react";
+import { AlertTriangle, Package, ArrowDownUp, Plus, Search, Trash2 } from "lucide-react";
 
 export default function Stock() {
   const { user } = useAuth();
@@ -36,6 +36,37 @@ export default function Stock() {
   const [isAddIngOpen, setIsAddIngOpen] = useState(false);
   const [movementIng, setMovementIng] = useState<any>(null);
   const [isNewPOOpen, setIsNewPOOpen] = useState(false);
+
+  // PO line items state
+  interface POLineItem { ingredientId: number; ingredientName: string; quantity: number; unit: string; unitCost: number; totalCost: number; }
+  const [poItems, setPoItems] = useState<POLineItem[]>([]);
+  const [poIngId, setPoIngId] = useState<string>("");
+  const [poQty, setPoQty] = useState<string>("");
+  const [poUnitCost, setPoUnitCost] = useState<string>("");
+
+  const addPOItem = () => {
+    const ing = ingredients?.find(i => i.id.toString() === poIngId);
+    if (!ing || !poQty || !poUnitCost) return;
+    const qty = Number(poQty);
+    const cost = Number(poUnitCost);
+    setPoItems(prev => [...prev.filter(i => i.ingredientId !== ing.id), {
+      ingredientId: ing.id,
+      ingredientName: ing.name,
+      quantity: qty,
+      unit: ing.unit,
+      unitCost: cost,
+      totalCost: qty * cost,
+    }]);
+    setPoIngId("");
+    setPoQty("");
+    setPoUnitCost("");
+  };
+
+  const removePOItem = (ingredientId: number) => setPoItems(prev => prev.filter(i => i.ingredientId !== ingredientId));
+
+  const formatIDRStock = (num: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+
+  const poTotal = poItems.reduce((sum, i) => sum + i.totalCost, 0);
 
   const { data: ingredients, isLoading: loadingIngs } = useGetIngredients(
     { branchId: branchId ?? undefined },
@@ -79,6 +110,10 @@ export default function Stock() {
 
   const handleCreatePO = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (poItems.length === 0) {
+      toast({ title: "Add at least one item to the purchase order", variant: "destructive" });
+      return;
+    }
     const fd = new FormData(e.currentTarget);
     try {
       await createPO.mutateAsync({
@@ -87,12 +122,13 @@ export default function Stock() {
           supplierName: fd.get('supplierName') as string,
           expectedDelivery: fd.get('expectedDelivery') as string || undefined,
           notes: fd.get('notes') as string || undefined,
-          items: [],
+          items: poItems,
         }
       });
       toast({ title: "Purchase order created" });
       queryClient.invalidateQueries({ queryKey: getGetPurchaseOrdersQueryKey({ branchId: branchId ?? undefined }) });
       setIsNewPOOpen(false);
+      setPoItems([]);
     } catch {
       toast({ title: "Failed to create purchase order", variant: "destructive" });
     }
@@ -302,28 +338,95 @@ export default function Stock() {
               <DialogTrigger asChild>
                 <Button data-testid="btn-new-po"><Plus className="w-4 h-4 mr-2"/> New Purchase Order</Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[480px]">
+              <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
                 <form onSubmit={handleCreatePO}>
                   <DialogHeader>
                     <DialogTitle>New Purchase Order</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="supplierName">Supplier Name *</Label>
-                      <Input id="supplierName" name="supplierName" required placeholder="e.g. PT Sumber Bahan" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="expectedDelivery">Expected Delivery</Label>
-                      <Input id="expectedDelivery" name="expectedDelivery" type="date" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="supplierName">Supplier Name *</Label>
+                        <Input id="supplierName" name="supplierName" required placeholder="e.g. PT Sumber Bahan" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="expectedDelivery">Expected Delivery</Label>
+                        <Input id="expectedDelivery" name="expectedDelivery" type="date" />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="po-notes">Notes</Label>
                       <Input id="po-notes" name="notes" placeholder="Order details or special instructions" />
                     </div>
+
+                    <div className="border rounded-xl overflow-hidden">
+                      <div className="bg-muted/30 px-3 py-2 border-b flex items-center justify-between">
+                        <span className="text-sm font-semibold">Order Items *</span>
+                        {poItems.length > 0 && <span className="text-xs text-muted-foreground">{poItems.length} item{poItems.length !== 1 ? 's' : ''} · {formatIDRStock(poTotal)}</span>}
+                      </div>
+
+                      <div className="p-3 space-y-2 bg-muted/10">
+                        <div className="grid grid-cols-[1fr_80px_90px_32px] gap-1.5 items-end">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Ingredient</Label>
+                            <Select value={poIngId} onValueChange={setPoIngId}>
+                              <SelectTrigger className="h-9 text-xs">
+                                <SelectValue placeholder="Select ingredient" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ingredients?.map(ing => (
+                                  <SelectItem key={ing.id} value={ing.id.toString()}>{ing.name} ({ing.unit})</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Qty</Label>
+                            <Input value={poQty} onChange={e => setPoQty(e.target.value)} type="number" step="0.01" min="0.01" placeholder="0" className="h-9 text-xs" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Unit Cost (IDR)</Label>
+                            <Input value={poUnitCost} onChange={e => setPoUnitCost(e.target.value)} type="number" step="1" min="1" placeholder="0" className="h-9 text-xs" />
+                          </div>
+                          <Button type="button" size="icon" className="h-9 w-8 shrink-0 mt-5" onClick={addPOItem} disabled={!poIngId || !poQty || !poUnitCost}>
+                            <Plus className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {poItems.length > 0 && (
+                        <div className="divide-y">
+                          {poItems.map(item => (
+                            <div key={item.ingredientId} className="px-3 py-2 flex items-center justify-between gap-2 text-sm hover:bg-muted/20">
+                              <div className="flex-1 min-w-0">
+                                <span className="font-medium truncate">{item.ingredientName}</span>
+                                <span className="text-muted-foreground ml-2">{item.quantity} {item.unit} × {formatIDRStock(item.unitCost)}</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="font-bold text-primary tabular-nums">{formatIDRStock(item.totalCost)}</span>
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => removePOItem(item.ingredientId)}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                          <div className="px-3 py-2 bg-muted/20 flex justify-between items-center font-bold text-sm">
+                            <span>Total</span>
+                            <span className="text-primary tabular-nums">{formatIDRStock(poTotal)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {poItems.length === 0 && (
+                        <div className="px-3 py-4 text-center text-xs text-muted-foreground border-t">
+                          Add items to the order above
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setIsNewPOOpen(false)}>Cancel</Button>
-                    <Button type="submit" disabled={createPO.isPending}>Create Order</Button>
+                    <Button type="button" variant="outline" onClick={() => { setIsNewPOOpen(false); setPoItems([]); }}>Cancel</Button>
+                    <Button type="submit" disabled={createPO.isPending || poItems.length === 0}>Create Order</Button>
                   </DialogFooter>
                 </form>
               </DialogContent>

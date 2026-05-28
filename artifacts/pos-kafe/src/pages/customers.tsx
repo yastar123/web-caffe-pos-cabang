@@ -230,14 +230,18 @@ export default function Customers() {
                 </SheetHeader>
               </div>
 
-              <div className="grid grid-cols-2 gap-px bg-border shrink-0">
+              <div className="grid grid-cols-3 gap-px bg-border shrink-0">
                 <div className="bg-card p-4 text-center">
-                  <div className="text-sm text-muted-foreground mb-1">Loyalty Points</div>
-                  <div className="text-2xl font-bold text-primary flex items-center justify-center gap-1"><Award className="w-5 h-5"/> {selectedCustomer.loyaltyPoints}</div>
+                  <div className="text-xs text-muted-foreground mb-1">Loyalty Points</div>
+                  <div className="text-xl font-bold text-primary flex items-center justify-center gap-1"><Award className="w-4 h-4"/> {selectedCustomer.loyaltyPoints}</div>
                 </div>
                 <div className="bg-card p-4 text-center">
-                  <div className="text-sm text-muted-foreground mb-1">Total Spend</div>
-                  <div className="text-xl font-bold">{formatIDR(Number(selectedCustomer.totalSpend))}</div>
+                  <div className="text-xs text-muted-foreground mb-1">Total Spend</div>
+                  <div className="text-lg font-bold tabular-nums">{formatIDR(Number(selectedCustomer.totalSpend))}</div>
+                </div>
+                <div className="bg-card p-4 text-center">
+                  <div className="text-xs text-muted-foreground mb-1">Visits</div>
+                  <div className="text-xl font-bold tabular-nums">{selectedCustomer.visitCount ?? 0}</div>
                 </div>
               </div>
 

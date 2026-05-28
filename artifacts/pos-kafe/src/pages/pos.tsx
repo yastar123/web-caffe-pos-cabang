@@ -142,7 +142,7 @@ export default function POS() {
     setCart(prev => prev.filter(item => item.menuItemId !== id));
   };
 
-  const TAX_RATE = branch?.taxRate ?? 0.1;
+  const TAX_RATE = branch?.taxRate != null ? Number(branch.taxRate) / 100 : 0.1;
   const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = (subtotal - discountAmount) * TAX_RATE;

@@ -1,10 +1,15 @@
 ---
 name: POS Tax Rate
-description: POS page tax rate was hardcoded 0.1; now reads from branch.taxRate via useGetBranch
+description: POS page tax rate reads from branch.taxRate (stored as percentage, e.g. 10 = 10%) — must divide by 100 before using as a multiplier
 ---
 ## Rule
-Never hardcode tax rate in pos.tsx. Always derive from `branch?.taxRate ?? 0.1`.
+The DB column `tax_rate` stores the value as a percentage integer/decimal (e.g. `10` means 10%).
+Always convert to a decimal multiplier when doing calculations in pos.tsx:
 
-**Why:** The Settings page lets managers configure per-branch tax rates. Hardcoding 0.1 ignores those settings entirely.
+```ts
+const TAX_RATE = branch?.taxRate != null ? Number(branch.taxRate) / 100 : 0.1;
+```
 
-**How to apply:** Import `useGetBranch` + `getGetBranchQueryKey`, query branch by `branchId`, use `const TAX_RATE = branch?.taxRate ?? 0.1`. The percentage display in the UI is `Math.round(TAX_RATE * 100)%`.
+**Why:** The API returns `parseFloat(b.taxRate)` which is a percentage (10), not a decimal (0.1). Using it directly as a multiplier in `subtotal * TAX_RATE` would produce 1000% tax. The display `Math.round(TAX_RATE * 100)%` is correct only after the division.
+
+**How to apply:** Import `useGetBranch` + `getGetBranchQueryKey`, query branch by `branchId`, use the divided value as above. Never hardcode `0.1` directly.

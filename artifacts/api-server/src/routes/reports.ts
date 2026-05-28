@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
-import { db, ordersTable, orderItemsTable, menuItemsTable, paymentsTable, branchesTable, ingredientsTable } from "@workspace/db";
+import { db, ordersTable, orderItemsTable, menuItemsTable, paymentsTable, branchesTable, ingredientsTable, tablesTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
@@ -180,16 +180,44 @@ router.get("/dashboard/overview", requireAuth, async (req, res): Promise<void> =
 
   const pendingReservations = await db.execute(sql`SELECT count(*) as count FROM reservations WHERE status = 'pending'`);
 
+  // Table occupancy
+  const tableConditions = branchId ? [eq(tablesTable.branchId, branchId)] : [];
+  const [totalTablesRow] = await db.select({ count: sql<number>`count(*)::int` }).from(tablesTable)
+    .where(tableConditions.length ? and(...tableConditions) : undefined);
+  const [activeTablesRow] = await db.select({ count: sql<number>`count(*)::int` }).from(tablesTable)
+    .where(tableConditions.length
+      ? and(...tableConditions, eq(tablesTable.status, "occupied"))
+      : eq(tablesTable.status, "occupied"));
+
+  // Yesterday comparison for change %
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayConditions = [
+    eq(ordersTable.status, "completed"),
+    gte(ordersTable.createdAt, yesterday),
+    lte(ordersTable.createdAt, today),
+  ];
+  if (branchId) yesterdayConditions.push(eq(ordersTable.branchId, branchId));
+  const [yesterdaySales] = await db.select({
+    revenue: sql<number>`coalesce(sum(${ordersTable.total}), 0)::float`,
+    orders: sql<number>`count(*)::int`,
+  }).from(ordersTable).where(and(...yesterdayConditions));
+
+  const todayRev = Number(todaySales?.revenue ?? 0);
+  const todayOrd = Number(todaySales?.orders ?? 0);
+  const yestRev = Number(yesterdaySales?.revenue ?? 0);
+  const yestOrd = Number(yesterdaySales?.orders ?? 0);
+
   res.json({
-    todayRevenue: Number(todaySales?.revenue ?? 0),
-    todayOrders: Number(todaySales?.orders ?? 0),
+    todayRevenue: todayRev,
+    todayOrders: todayOrd,
     activeOrders: Number(activeOrders?.count ?? 0),
-    activeTables: 0,
-    totalTables: 0,
+    activeTables: Number(activeTablesRow?.count ?? 0),
+    totalTables: Number(totalTablesRow?.count ?? 0),
     pendingReservations: Number((pendingReservations.rows[0] as { count: string })?.count ?? 0),
     lowStockCount: lowStock.length,
-    revenueChange: 0,
-    ordersChange: 0,
+    revenueChange: yestRev > 0 ? Math.round(((todayRev - yestRev) / yestRev) * 100) : 0,
+    ordersChange: yestOrd > 0 ? Math.round(((todayOrd - yestOrd) / yestOrd) * 100) : 0,
   });
 });
 

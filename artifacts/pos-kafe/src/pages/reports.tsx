@@ -121,7 +121,7 @@ export default function Reports() {
           <CardContent className="h-[200px] sm:h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={paymentStats || []} dataKey="revenue" nameKey="method" cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={3}>
+                <Pie data={paymentStats || []} dataKey="amount" nameKey="method" cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={3}>
                   {paymentStats?.map((_, index) => <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />)}
                 </Pie>
                 <Tooltip formatter={(v: number) => formatIDR(v)} contentStyle={{ fontSize: '12px', borderRadius: '8px' }} />
@@ -152,7 +152,7 @@ export default function Reports() {
                 <XAxis type="number" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis dataKey="menuItemName" type="category" width={110} fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', fontSize: '12px' }} />
-                <Bar dataKey="quantity" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} barSize={16} />
+                <Bar dataKey="quantitySold" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
