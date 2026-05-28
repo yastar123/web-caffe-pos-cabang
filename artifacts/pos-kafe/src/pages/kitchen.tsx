@@ -124,6 +124,11 @@ export default function Kitchen() {
   const processingCount = queue?.filter((o: any) => o.items.some((i: any) => i.kitchenStatus === "processing")).length ?? 0;
   const readyCount = queue?.reduce((acc: number, o: any) => acc + o.items.filter((i: any) => i.kitchenStatus === "ready").length, 0) ?? 0;
 
+  // Sort: critical (>20m) first, then warn (>10m), then normal — so overdue orders surface immediately
+  const sortedQueue = queue
+    ? [...queue].sort((a: any, b: any) => getElapsedMinutes(b.createdAt) - getElapsedMinutes(a.createdAt))
+    : [];
+
   if (isLoading) {
     return (
       <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
@@ -192,7 +197,7 @@ export default function Kitchen() {
       </div>
 
       {/* Urgency legend */}
-      {queue && queue.length > 0 && (
+      {sortedQueue.length > 0 && (
         <div className="flex items-center gap-3 mb-4 shrink-0 flex-wrap">
           <span className="text-xs text-muted-foreground font-medium">Timer:</span>
           <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
@@ -208,7 +213,7 @@ export default function Kitchen() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 overflow-y-auto pb-4 stagger-children">
-        {queue?.map((order: any) => {
+        {sortedQueue.map((order: any) => {
           const topStatus = order.items[0]?.kitchenStatus ?? "new";
           const elapsedMinutes = getElapsedMinutes(order.createdAt);
           const urgency = getUrgencyLevel(elapsedMinutes);
@@ -327,7 +332,7 @@ export default function Kitchen() {
           );
         })}
 
-        {(!queue || queue.length === 0) && (
+        {sortedQueue.length === 0 && (
           <div className="col-span-full py-24 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/5 gap-4">
             <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center">
               <ChefHat className="w-8 h-8 opacity-30" />

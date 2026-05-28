@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Plus, Edit2, ShieldAlert, Users, UserCheck, UserX } from "lucide-react";
+import { Search, Plus, Edit2, ShieldAlert, Users as UsersIcon, UserCheck, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -183,7 +183,7 @@ export default function Users() {
         <Card className="shadow-sm card-hover">
           <CardContent className="p-3 sm:p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Users className="w-4 h-4 text-primary" />
+              <UsersIcon className="w-4 h-4 text-primary" />
             </div>
             <div>
               <div className="text-xl sm:text-2xl font-bold tabular-nums">{users?.length ?? 0}</div>

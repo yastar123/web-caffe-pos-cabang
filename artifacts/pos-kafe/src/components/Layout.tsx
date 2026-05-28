@@ -20,6 +20,7 @@ import {
   X,
   Sun,
   Moon,
+  MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -62,6 +63,17 @@ const NAV_GROUPS = [
 
 const ALL_PAGES = NAV_GROUPS.flatMap(g => g.items);
 
+const BOTTOM_NAV_PRIORITY = [
+  { href: "/pos", label: "POS", icon: ListOrdered, roles: ["owner", "manager", "cashier", "waiter"] },
+  { href: "/tables", label: "Tables", icon: Grid2X2, roles: ["owner", "manager", "cashier", "waiter"] },
+  { href: "/kitchen", label: "Kitchen", icon: ChefHat, roles: ["owner", "manager", "waiter", "chef"] },
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard, roles: ["owner", "manager"] },
+  { href: "/reservations", label: "Bookings", icon: CalendarDays, roles: ["owner", "manager", "cashier", "waiter"] },
+  { href: "/stock", label: "Stock", icon: PackageSearch, roles: ["owner", "manager", "warehouse"] },
+  { href: "/customers", label: "Guests", icon: Users, roles: ["owner", "manager", "cashier"] },
+  { href: "/reports", label: "Reports", icon: LineChart, roles: ["owner", "manager"] },
+];
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
@@ -77,6 +89,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   const currentPage = ALL_PAGES.find(p => location.startsWith(p.href));
+
+  const bottomNavItems = BOTTOM_NAV_PRIORITY
+    .filter(item => item.roles.includes(user.role))
+    .slice(0, 4);
 
   const NavContent = () => (
     <>
@@ -232,6 +248,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             size="icon"
             onClick={() => setMobileOpen(true)}
             className="h-11 w-11"
+            aria-label="Open menu"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -244,16 +261,67 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={toggleDark} className="h-9 w-9">
+            <Button variant="ghost" size="icon" onClick={toggleDark} className="h-9 w-9" aria-label="Toggle dark mode">
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto page-enter">
+        <div className="flex-1 overflow-y-auto page-enter pb-20 lg:pb-0">
           {children}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-card border-t border-border shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.3)]">
+        <div className="flex items-stretch h-16 max-w-screen-sm mx-auto">
+          {bottomNavItems.map((item) => {
+            const isActive = location.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex-1 flex flex-col items-center justify-center gap-1 relative transition-all duration-150 min-w-0 px-1 active:scale-95",
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label={item.label}
+              >
+                {isActive && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-b-full" />
+                )}
+                <div className={cn(
+                  "w-9 h-7 rounded-xl flex items-center justify-center transition-all duration-150",
+                  isActive ? "bg-primary/12 dark:bg-primary/20" : ""
+                )}>
+                  <item.icon className={cn(
+                    "w-[18px] h-[18px] transition-all",
+                    isActive ? "stroke-[2.5]" : "stroke-[1.75]"
+                  )} />
+                </div>
+                <span className={cn(
+                  "text-[10px] font-semibold leading-none tracking-wide",
+                  isActive ? "text-primary" : "text-muted-foreground"
+                )}>
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+
+          {/* More button — opens full sidebar */}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex-1 flex flex-col items-center justify-center gap-1 relative transition-all duration-150 min-w-0 px-1 text-muted-foreground hover:text-foreground active:scale-95"
+            aria-label="More menu"
+          >
+            <div className="w-9 h-7 rounded-xl flex items-center justify-center">
+              <MoreHorizontal className="w-[18px] h-[18px] stroke-[1.75]" />
+            </div>
+            <span className="text-[10px] font-semibold leading-none tracking-wide">More</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }
