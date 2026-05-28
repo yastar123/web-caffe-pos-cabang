@@ -1,2 +1,4 @@
-- [KopiFlow POS stack & structure](kopiflow-stack.md) — PNPM monorepo: Express API (port 8080) + React/Vite frontend (port 5000, base path /pos-kafe/). JWT custom auth, PostgreSQL via Drizzle ORM.
-- [KopiFlow auth & roles](kopiflow-auth.md) — Custom JWT auth (not Replit Auth). SESSION_SECRET env var signs JWTs. Roles: owner, manager, cashier, waiter, chef, warehouse. Demo accounts use password123.
+- [POS tax rate](pos-tax-rate.md) — now live from branch.taxRate; hardcoded 0.1 was removed in round 3
+- [Stock PO bug](stock-po-bug.md) — PurchaseOrderInput requires `items[]`; totalAmount not in API spec; fixed with items:[]
+- [Switch isActive bug](switch-isactive-bug.md) — HTML checkbox omits value when unchecked; must check `fd.get('isActive') === 'on'`
+- [Stagger children CSS](stagger-children.md) — applied to 13+ grids across all pages; fill-mode:both prevents flicker

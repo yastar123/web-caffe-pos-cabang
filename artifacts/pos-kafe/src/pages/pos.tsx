@@ -4,11 +4,13 @@ import {
   useGetMenuCategories,
   useGetMenuItems,
   useGetTables,
+  useGetBranch,
   useCreateOrder,
   useProcessPayment,
   getGetMenuCategoriesQueryKey,
   getGetMenuItemsQueryKey,
-  getGetTablesQueryKey
+  getGetTablesQueryKey,
+  getGetBranchQueryKey
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,6 +90,11 @@ export default function POS() {
     { query: { enabled: !!branchId, queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) } }
   );
 
+  const { data: branch } = useGetBranch(
+    branchId || 0,
+    { query: { enabled: !!branchId, queryKey: getGetBranchQueryKey(branchId || 0) } }
+  );
+
   const createOrder = useCreateOrder();
   const processPayment = useProcessPayment();
 
@@ -135,9 +142,10 @@ export default function POS() {
     setCart(prev => prev.filter(item => item.menuItemId !== id));
   };
 
+  const TAX_RATE = branch?.taxRate ?? 0.1;
   const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = (subtotal - discountAmount) * 0.1;
+  const tax = (subtotal - discountAmount) * TAX_RATE;
   const grandTotal = Math.max(0, subtotal - discountAmount + tax);
 
   const formatIDR = (num: number) =>
@@ -249,7 +257,7 @@ export default function POS() {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between text-muted-foreground">
           <span>Subtotal</span>
-          <span className="font-medium text-foreground">{formatIDR(subtotal)}</span>
+          <span className="font-medium text-foreground tabular-nums">{formatIDR(subtotal)}</span>
         </div>
         <div className="flex justify-between items-center text-muted-foreground">
           <span>Discount</span>
@@ -264,12 +272,12 @@ export default function POS() {
           </div>
         </div>
         <div className="flex justify-between text-muted-foreground">
-          <span>Tax (10%)</span>
-          <span className="font-medium text-foreground">{formatIDR(tax)}</span>
+          <span>Tax ({Math.round(TAX_RATE * 100)}%)</span>
+          <span className="font-medium text-foreground tabular-nums">{formatIDR(tax)}</span>
         </div>
         <div className="flex justify-between items-center font-bold text-base pt-2 border-t">
           <span>Total</span>
-          <span className="text-primary text-lg">{formatIDR(grandTotal)}</span>
+          <span className="text-primary text-lg tabular-nums">{formatIDR(grandTotal)}</span>
         </div>
       </div>
 

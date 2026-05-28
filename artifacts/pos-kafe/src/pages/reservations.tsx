@@ -182,12 +182,12 @@ export default function Reservations() {
       </div>
 
       <Tabs value={status} onValueChange={setStatus} className="w-full">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="confirmed">Confirmed</TabsTrigger>
-          <TabsTrigger value="seated">Seated</TabsTrigger>
-          <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+        <TabsList className="w-full sm:w-auto overflow-x-auto justify-start flex-nowrap h-auto p-1 bg-muted/40 rounded-xl gap-0.5">
+          <TabsTrigger value="all" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">All</TabsTrigger>
+          <TabsTrigger value="pending" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Pending</TabsTrigger>
+          <TabsTrigger value="confirmed" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Confirmed</TabsTrigger>
+          <TabsTrigger value="seated" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Seated</TabsTrigger>
+          <TabsTrigger value="cancelled" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Cancelled</TabsTrigger>
         </TabsList>
       </Tabs>
 

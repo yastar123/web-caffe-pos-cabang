@@ -177,8 +177,8 @@ export default function Reports() {
                   {branchStats?.map(b => (
                     <TableRow key={b.branchId} className="hover:bg-muted/40 transition-colors">
                       <TableCell className="font-medium pl-4 sm:pl-6">{b.branchName}</TableCell>
-                      <TableCell className="text-right">{b.orders}</TableCell>
-                      <TableCell className="text-right font-bold text-primary pr-4 sm:pr-6">{formatIDR(b.revenue)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{b.orders}</TableCell>
+                      <TableCell className="text-right font-bold text-primary tabular-nums pr-4 sm:pr-6">{formatIDR(b.revenue)}</TableCell>
                     </TableRow>
                   ))}
                   {!branchStats?.length && (

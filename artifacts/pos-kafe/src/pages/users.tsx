@@ -79,12 +79,12 @@ export default function Users() {
 
   const getRoleColor = (role: string) => {
     switch(role) {
-      case 'owner': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'manager': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'cashier': return 'bg-teal-100 text-teal-800 border-teal-200';
-      case 'waiter': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'chef': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'warehouse': return 'bg-slate-100 text-slate-800 border-slate-200';
+      case 'owner': return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800';
+      case 'manager': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800';
+      case 'cashier': return 'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800';
+      case 'waiter': return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800';
+      case 'chef': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800';
+      case 'warehouse': return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-700';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -210,7 +210,15 @@ export default function Users() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading...</TableCell></TableRow>
+                Array.from({length: 6}).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-muted animate-pulse shrink-0" /><div className="space-y-1.5"><div className="h-3.5 w-28 bg-muted rounded animate-pulse"/><div className="h-3 w-36 bg-muted rounded animate-pulse"/></div></div></TableCell>
+                    <TableCell><div className="h-5 w-16 bg-muted rounded-full animate-pulse"/></TableCell>
+                    <TableCell><div className="h-4 w-24 bg-muted rounded animate-pulse"/></TableCell>
+                    <TableCell><div className="h-4 w-14 bg-muted rounded animate-pulse"/></TableCell>
+                    <TableCell className="text-right"><div className="h-7 w-7 bg-muted rounded ml-auto animate-pulse"/></TableCell>
+                  </TableRow>
+                ))
               ) : filteredUsers?.map(u => (
                 <TableRow key={u.id} className={!u.isActive ? "opacity-60 bg-muted/10" : ""}>
                   <TableCell>
