@@ -58,7 +58,7 @@ export default function Reservations() {
           date: fd.get('date') as string,
           time: fd.get('time') as string,
           guestCount: Number(fd.get('guests')),
-          tableId: fd.get('tableId') ? Number(fd.get('tableId')) : undefined,
+          tableId: fd.get('tableId') && fd.get('tableId') !== 'none' ? Number(fd.get('tableId')) : undefined,
           depositAmount: fd.get('deposit') ? Number(fd.get('deposit')) : 0,
           notes: fd.get('notes') as string || undefined,
         }
@@ -202,9 +202,9 @@ export default function Reservations() {
           <p className="text-sm text-muted-foreground/80 mt-1">Try changing the date or status filter</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
           {reservations?.map(res => (
-            <Card key={res.id} className="flex flex-col">
+            <Card key={res.id} className="flex flex-col card-hover shadow-sm">
               <CardHeader className="pb-3 border-b">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">

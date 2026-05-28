@@ -53,7 +53,7 @@ export default function Login() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/70" />
         <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-primary to-transparent" />
 
-        <div className="relative z-10 flex flex-col items-start text-primary-foreground max-w-lg">
+        <div className="relative z-10 flex flex-col items-start text-primary-foreground max-w-lg animate-fade-in">
           <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8 border border-white/20 shadow-2xl">
             <Coffee className="w-8 h-8 text-white" />
           </div>

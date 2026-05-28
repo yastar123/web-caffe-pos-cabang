@@ -191,6 +191,10 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }
@@ -198,6 +202,14 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     font-size: clamp(13px, 1.5vw, 16px);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
   }
 
   h1 {

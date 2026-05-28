@@ -84,7 +84,7 @@ export default function Reports() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 stagger-children">
         <Card className="lg:col-span-2 shadow-sm">
           <CardHeader className="px-4 sm:px-6 pt-5 pb-2">
             <CardTitle className="text-base sm:text-lg">Revenue Trend</CardTitle>
@@ -139,7 +139,7 @@ export default function Reports() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 stagger-children">
         <Card className="shadow-sm">
           <CardHeader className="px-4 sm:px-6 pt-5 pb-2">
             <CardTitle className="text-base sm:text-lg">Top Menu Items</CardTitle>

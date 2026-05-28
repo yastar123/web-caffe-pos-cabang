@@ -132,7 +132,7 @@ export default function Branches() {
         {isLoading ? (
           [1,2,3].map(i => <Skeleton key={i} className="h-48 w-full rounded-xl" />)
         ) : branches?.map(b => (
-          <Card key={b.id} className={`flex flex-col relative overflow-hidden ${!b.isActive ? 'opacity-70 grayscale-[30%]' : ''}`}>
+          <Card key={b.id} className={`flex flex-col relative overflow-hidden card-hover shadow-sm ${!b.isActive ? 'opacity-70 grayscale-[30%]' : ''}`}>
             <CardHeader className="pb-3 bg-muted/20 border-b">
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">

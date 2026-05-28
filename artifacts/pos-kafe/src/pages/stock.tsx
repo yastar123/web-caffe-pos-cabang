@@ -137,7 +137,7 @@ export default function Stock() {
       </div>
 
       <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-5 stagger-children">
-        <Card className="shadow-sm">
+        <Card className="shadow-sm card-hover">
           <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
             <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground leading-tight">Total Ingredients</CardTitle>
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
