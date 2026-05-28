@@ -85,9 +85,9 @@ export default function Stock() {
         data: {
           branchId: branchId!,
           supplierName: fd.get('supplierName') as string,
-          totalAmount: Number(fd.get('totalAmount')),
           expectedDelivery: fd.get('expectedDelivery') as string || undefined,
           notes: fd.get('notes') as string || undefined,
+          items: [],
         }
       });
       toast({ title: "Purchase order created" });
@@ -240,6 +240,13 @@ export default function Stock() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {filteredIngs.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground text-sm">
+                    No ingredients found
+                  </TableCell>
+                </TableRow>
+              )}
               {filteredIngs.map((item) => {
                 const current = Number(item.currentStock);
                 const min = Number(item.minStock);
@@ -290,15 +297,9 @@ export default function Stock() {
                       <Label htmlFor="supplierName">Supplier Name *</Label>
                       <Input id="supplierName" name="supplierName" required placeholder="e.g. PT Sumber Bahan" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="totalAmount">Total Amount (IDR) *</Label>
-                        <Input id="totalAmount" name="totalAmount" type="number" required min="0" placeholder="0" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="expectedDelivery">Expected Delivery</Label>
-                        <Input id="expectedDelivery" name="expectedDelivery" type="date" />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="expectedDelivery">Expected Delivery</Label>
+                      <Input id="expectedDelivery" name="expectedDelivery" type="date" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="po-notes">Notes</Label>

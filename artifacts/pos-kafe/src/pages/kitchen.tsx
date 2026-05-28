@@ -167,7 +167,7 @@ export default function Kitchen() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 overflow-auto pb-4 stagger-children">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 overflow-y-auto pb-4 stagger-children">
         {queue?.map((order) => {
           const topStatus = order.items[0]?.kitchenStatus ?? "new";
           const elapsedMinutes = getElapsedMinutes(order.createdAt);

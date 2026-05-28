@@ -167,7 +167,13 @@ export default function Customers() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading...</TableCell></TableRow>
+                Array.from({length: 5}).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({length: 6}).map((_, j) => (
+                      <TableCell key={j}><div className="h-4 bg-muted rounded animate-pulse" style={{width: j === 0 ? '120px' : j === 4 ? '80px' : '60px'}} /></TableCell>
+                    ))}
+                  </TableRow>
+                ))
               ) : customers?.length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No customers found</TableCell></TableRow>
               ) : (
@@ -188,9 +194,9 @@ export default function Customers() {
                     <TableCell>
                       <Badge variant="outline" className={`capitalize font-semibold ${getTierColor(c.membershipTier ?? '')}`}>{c.membershipTier ?? 'standard'}</Badge>
                     </TableCell>
-                    <TableCell className="text-right font-medium">{c.loyaltyPoints}</TableCell>
-                    <TableCell className="text-right">{formatIDR(Number(c.totalSpend))}</TableCell>
-                    <TableCell className="text-right">{c.visitCount}</TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">{c.loyaltyPoints}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatIDR(Number(c.totalSpend))}</TableCell>
+                    <TableCell className="text-right tabular-nums">{c.visitCount}</TableCell>
                   </TableRow>
                 ))
               )}

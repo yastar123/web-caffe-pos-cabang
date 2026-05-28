@@ -73,7 +73,7 @@ export default function Settings() {
         <p className="text-muted-foreground mt-1 text-sm">Manage personal and store preferences</p>
       </div>
 
-      <div className="grid gap-8">
+      <div className="grid gap-8 stagger-children">
         <Card>
           <CardHeader className="bg-muted/20 border-b">
             <div className="flex items-center gap-2">

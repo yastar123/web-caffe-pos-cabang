@@ -314,6 +314,8 @@ export default function Menu() {
                   <img
                     src={item.imageUrl}
                     alt={item.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
@@ -352,7 +354,7 @@ export default function Menu() {
                     variant="outline"
                     className={cn(
                       "text-[10px] font-semibold capitalize px-2 py-0 h-5",
-                      STATION_COLORS[item.station] ?? "bg-muted text-muted-foreground"
+                      (item.station ? STATION_COLORS[item.station] : null) ?? "bg-muted text-muted-foreground"
                     )}
                   >
                     <ChefHat className="w-2.5 h-2.5 mr-1" />

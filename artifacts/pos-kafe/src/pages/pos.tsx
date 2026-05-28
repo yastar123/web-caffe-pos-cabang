@@ -368,7 +368,7 @@ export default function POS() {
                     >
                       <div className="h-28 sm:h-32 bg-muted relative flex items-center justify-center border-b overflow-hidden">
                         {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                          <img src={item.imageUrl} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-primary/5 to-secondary/10 flex items-center justify-center">
                             <UtensilsCrossed className="h-9 w-9 text-muted-foreground/25" />

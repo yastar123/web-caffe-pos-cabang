@@ -121,14 +121,14 @@ export default function Tables() {
       </div>
 
       {/* Status summary bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
         {(["available", "occupied", "reserved", "cleaning"] as const).map(status => {
           const cfg = STATUS_CONFIG[status];
           const Icon = cfg.icon;
           const count = statusCounts[status];
           return (
             <div key={status} className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-xl border bg-card shadow-sm",
+              "flex items-center gap-3 px-4 py-3 rounded-xl border bg-card shadow-sm card-hover",
               count > 0 && status === "occupied" ? "border-rose-200 dark:border-rose-900" : ""
             )}>
               <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", cfg.badge)}>

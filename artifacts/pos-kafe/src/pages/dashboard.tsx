@@ -261,7 +261,7 @@ export default function Dashboard() {
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}
               </div>
             ) : lowStock && lowStock.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-2 stagger-children">
                 {lowStock.map((item) => {
                   const pct = Math.min(100, Math.round((item.currentStock / item.minStock) * 100));
                   return (
