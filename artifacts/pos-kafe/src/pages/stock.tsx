@@ -45,7 +45,7 @@ export default function Stock() {
   const [poUnitCost, setPoUnitCost] = useState<string>("");
 
   const addPOItem = () => {
-    const ing = ingredients?.find(i => i.id.toString() === poIngId);
+    const ing = ingredients?.find((i: any) => i.id.toString() === poIngId);
     if (!ing || !poQty || !poUnitCost) return;
     const qty = Number(poQty);
     const cost = Number(poUnitCost);
@@ -156,7 +156,7 @@ export default function Stock() {
     }
   };
 
-  const filteredIngs = ingredients?.filter(i => i.name.toLowerCase().includes(search.toLowerCase())) || [];
+  const filteredIngs = ingredients?.filter((i: any) => i.name.toLowerCase().includes(search.toLowerCase())) || [];
   
   const getStockStatus = (current: number, min: number) => {
     if (current <= 0) return { color: "text-rose-600 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-400", text: "Out of Stock" };
@@ -203,7 +203,7 @@ export default function Stock() {
             </div>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">{ingredients?.filter(i => Number(i.currentStock) <= 0).length || 0}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">{ingredients?.filter((i: any) => Number(i.currentStock) <= 0).length || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -265,13 +265,14 @@ export default function Stock() {
             </Dialog>
           </div>
           
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Ingredient</TableHead>
-                <TableHead>Stock Level</TableHead>
+                <TableHead className="min-w-[200px]">Stock Level</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Supplier</TableHead>
+                <TableHead className="hidden sm:table-cell">Supplier</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -298,7 +299,7 @@ export default function Stock() {
                   </TableCell>
                 </TableRow>
               ) : null}
-              {!loadingIngs && filteredIngs.map((item) => {
+              {!loadingIngs && filteredIngs.map((item: any) => {
                 const current = Number(item.currentStock);
                 const min = Number(item.minStock);
                 const status = getStockStatus(current, min);
@@ -319,7 +320,7 @@ export default function Stock() {
                         {status.text}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{item.supplierName || '-'}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-muted-foreground">{item.supplierName || '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" onClick={() => setMovementIng(item)} data-testid={`btn-move-${item.id}`}>
                         <ArrowDownUp className="w-3 h-3 mr-2" /> Record
@@ -330,6 +331,7 @@ export default function Stock() {
               })}
             </TableBody>
           </Table>
+          </div>
         </TabsContent>
 
         <TabsContent value="po" className="p-0 m-0 border-none outline-none">
@@ -374,7 +376,7 @@ export default function Stock() {
                                 <SelectValue placeholder="Select ingredient" />
                               </SelectTrigger>
                               <SelectContent>
-                                {ingredients?.map(ing => (
+                                {ingredients?.map((ing: any) => (
                                   <SelectItem key={ing.id} value={ing.id.toString()}>{ing.name} ({ing.unit})</SelectItem>
                                 ))}
                               </SelectContent>
@@ -396,7 +398,7 @@ export default function Stock() {
 
                       {poItems.length > 0 && (
                         <div className="divide-y">
-                          {poItems.map(item => (
+                          {poItems.map((item: any) => (
                             <div key={item.ingredientId} className="px-3 py-2 flex items-center justify-between gap-2 text-sm hover:bg-muted/20">
                               <div className="flex-1 min-w-0">
                                 <span className="font-medium truncate">{item.ingredientName}</span>
@@ -432,13 +434,14 @@ export default function Stock() {
               </DialogContent>
             </Dialog>
           </div>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Supplier</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead>Expected</TableHead>
+                <TableHead className="hidden sm:table-cell">Expected</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -448,12 +451,12 @@ export default function Stock() {
                   <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">No purchase orders found</TableCell>
                 </TableRow>
               ) : (
-                purchaseOrders?.map(po => (
+                purchaseOrders?.map((po: any) => (
                   <TableRow key={po.id}>
                     <TableCell>{format(new Date(po.createdAt), 'MMM dd, yyyy')}</TableCell>
                     <TableCell className="font-medium">{po.supplierName}</TableCell>
                     <TableCell className="tabular-nums">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(po.totalAmount))}</TableCell>
-                    <TableCell>{po.expectedDelivery ? format(new Date(po.expectedDelivery), 'MMM dd') : '-'}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{po.expectedDelivery ? format(new Date(po.expectedDelivery), 'MMM dd') : '-'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">{po.status}</Badge>
                     </TableCell>
@@ -462,6 +465,7 @@ export default function Stock() {
               )}
             </TableBody>
           </Table>
+          </div>
         </TabsContent>
       </Tabs>
 

@@ -273,7 +273,7 @@ export default function Menu() {
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories?.map(c => (
+                          {categories?.map((c: any) => (
                             <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -332,7 +332,7 @@ export default function Menu() {
               All
               {items && <span className="ml-1.5 text-[10px] opacity-60">({items.length})</span>}
             </TabsTrigger>
-            {categories?.map(cat => (
+            {categories?.map((cat: any) => (
               <TabsTrigger key={cat.id} value={cat.id.toString()} className="rounded-lg font-semibold text-xs sm:text-sm whitespace-nowrap">
                 {cat.name}
               </TabsTrigger>
@@ -357,7 +357,7 @@ export default function Menu() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 stagger-children">
-          {items?.map(item => (
+          {items?.map((item: any) => (
             <Card
               key={item.id}
               className="overflow-hidden group flex flex-col relative card-hover shadow-sm hover:shadow-md"

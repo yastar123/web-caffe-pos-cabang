@@ -17,10 +17,26 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, Users, Phone, Mail, Clock, Check, X, LogIn, Edit2 } from "lucide-react";
+import { CalendarDays, Users, Phone, Clock, Check, X, LogIn, Edit2, ChevronLeft, ChevronRight, Mail, StickyNote } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, addDays, subDays, isToday, isTomorrow, isYesterday } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
+  pending:   { label: "Pending",   color: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",   dot: "bg-amber-500"   },
+  confirmed: { label: "Confirmed", color: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",     dot: "bg-blue-500"    },
+  seated:    { label: "Seated",    color: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800", dot: "bg-emerald-500" },
+  cancelled: { label: "Cancelled", color: "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",     dot: "bg-rose-500"    },
+};
+
+function formatDateLabel(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  if (isToday(d)) return "Today";
+  if (isTomorrow(d)) return "Tomorrow";
+  if (isYesterday(d)) return "Yesterday";
+  return format(d, "EEE, MMM d");
+}
 
 export default function Reservations() {
   const { user } = useAuth();
@@ -28,19 +44,19 @@ export default function Reservations() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [status, setStatus] = useState<string>("all");
   const [isNewOpen, setIsNewOpen] = useState(false);
   const [editingRes, setEditingRes] = useState<any>(null);
 
   const { data: reservations, isLoading } = useGetReservations(
-    { branchId: branchId ?? undefined, date, status: status !== 'all' ? status as any : undefined },
-    { query: { enabled: !!branchId, queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date, status: status !== 'all' ? status as any : undefined }) } }
+    { branchId: branchId ?? undefined, date, status: status !== "all" ? status as any : undefined },
+    { query: { enabled: !!branchId, queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date, status: status !== "all" ? status as any : undefined }) } }
   );
 
   const { data: tables } = useGetTables(
     { branchId: branchId ?? undefined },
-    { query: { enabled: !!branchId, queryKey: ['tables', branchId] } }
+    { query: { enabled: !!branchId, queryKey: ["tables", branchId] } }
   );
 
   const createRes = useCreateReservation();
@@ -53,15 +69,15 @@ export default function Reservations() {
       await createRes.mutateAsync({
         data: {
           branchId: branchId!,
-          customerName: fd.get('name') as string,
-          customerPhone: fd.get('phone') as string,
-          customerEmail: fd.get('email') as string || undefined,
-          date: fd.get('date') as string,
-          time: fd.get('time') as string,
-          guestCount: Number(fd.get('guests')),
-          tableId: fd.get('tableId') && fd.get('tableId') !== 'none' ? Number(fd.get('tableId')) : undefined,
-          depositAmount: fd.get('deposit') ? Number(fd.get('deposit')) : 0,
-          notes: fd.get('notes') as string || undefined,
+          customerName: fd.get("name") as string,
+          customerPhone: fd.get("phone") as string,
+          customerEmail: fd.get("email") as string || undefined,
+          date: fd.get("date") as string,
+          time: fd.get("time") as string,
+          guestCount: Number(fd.get("guests")),
+          tableId: fd.get("tableId") && fd.get("tableId") !== "none" ? Number(fd.get("tableId")) : undefined,
+          depositAmount: fd.get("deposit") ? Number(fd.get("deposit")) : 0,
+          notes: fd.get("notes") as string || undefined,
         }
       });
       toast({ title: "Reservation created successfully" });
@@ -74,10 +90,7 @@ export default function Reservations() {
 
   const handleStatus = async (id: number, newStatus: string) => {
     try {
-      await updateRes.mutateAsync({
-        id,
-        data: { status: newStatus as any }
-      });
+      await updateRes.mutateAsync({ id, data: { status: newStatus as any } });
       toast({ title: "Status updated" });
       queryClient.invalidateQueries({ queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date }) });
     } catch {
@@ -93,15 +106,15 @@ export default function Reservations() {
       await updateRes.mutateAsync({
         id: editingRes.id,
         data: {
-          customerName: fd.get('name') as string,
-          customerPhone: fd.get('phone') as string,
-          customerEmail: fd.get('email') as string || undefined,
-          date: fd.get('date') as string,
-          time: fd.get('time') as string,
-          guestCount: Number(fd.get('guests')),
-          tableId: fd.get('tableId') && fd.get('tableId') !== 'none' ? Number(fd.get('tableId')) : undefined,
-          depositAmount: fd.get('deposit') ? Number(fd.get('deposit')) : 0,
-          notes: fd.get('notes') as string || undefined,
+          customerName: fd.get("name") as string,
+          customerPhone: fd.get("phone") as string,
+          customerEmail: fd.get("email") as string || undefined,
+          date: fd.get("date") as string,
+          time: fd.get("time") as string,
+          guestCount: Number(fd.get("guests")),
+          tableId: fd.get("tableId") && fd.get("tableId") !== "none" ? Number(fd.get("tableId")) : undefined,
+          depositAmount: fd.get("deposit") ? Number(fd.get("deposit")) : 0,
+          notes: fd.get("notes") as string || undefined,
         }
       });
       toast({ title: "Reservation updated" });
@@ -112,259 +125,267 @@ export default function Reservations() {
     }
   };
 
-  const getStatusColor = (s: string) => {
-    switch(s) {
-      case 'pending': return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800';
-      case 'confirmed': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800';
-      case 'seated': return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800';
-      case 'cancelled': return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800';
-      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-300';
-    }
+  const navigateDate = (dir: 1 | -1) => {
+    const d = new Date(date + "T00:00:00");
+    const next = dir === 1 ? addDays(d, 1) : subDays(d, 1);
+    setDate(format(next, "yyyy-MM-dd"));
   };
 
+  const allRes = reservations ?? [];
+  const pending = allRes.filter((r: any) => r.status === "pending").length;
+  const confirmed = allRes.filter((r: any) => r.status === "confirmed").length;
+  const seated = allRes.filter((r: any) => r.status === "seated").length;
+  const totalGuests = allRes.reduce((s: number, r: any) => s + (r.guestCount || 0), 0);
+
+  const ReservationForm = ({ defaultValues, onSubmit, isPending }: { defaultValues?: any; onSubmit: (e: React.FormEvent<HTMLFormElement>) => void; isPending: boolean }) => (
+    <div className="grid gap-4 py-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Guest Name *</Label>
+          <Input id="name" name="name" required defaultValue={defaultValues?.customerName} autoFocus data-testid="input-name" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phone">Phone *</Label>
+          <Input id="phone" name="phone" required defaultValue={defaultValues?.customerPhone} data-testid="input-phone" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" defaultValue={defaultValues?.customerEmail || ""} data-testid="input-email" />
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="date">Date *</Label>
+          <Input id="date" name="date" type="date" required defaultValue={defaultValues?.date || date} data-testid="input-res-date" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="time">Time *</Label>
+          <Input id="time" name="time" type="time" required defaultValue={defaultValues?.time} data-testid="input-res-time" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="guests">Guests *</Label>
+          <Input id="guests" name="guests" type="number" min="1" required defaultValue={defaultValues?.guestCount} data-testid="input-guests" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="tableId">Table</Label>
+          <Select name="tableId" defaultValue={defaultValues?.tableId ? defaultValues.tableId.toString() : "none"}>
+            <SelectTrigger data-testid="select-res-table"><SelectValue placeholder="Unassigned" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Unassigned</SelectItem>
+              {tables?.map((t: any) => <SelectItem key={t.id} value={t.id.toString()}>Table {t.number}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="deposit">Deposit (IDR)</Label>
+          <Input id="deposit" name="deposit" type="number" defaultValue={defaultValues?.depositAmount || 0} data-testid="input-deposit" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="notes">Special Requests</Label>
+        <Textarea id="notes" name="notes" placeholder="Allergy info, seating preference..." defaultValue={defaultValues?.notes || ""} data-testid="input-notes" />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-6">
+
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Reservations</h1>
           <p className="text-muted-foreground mt-1 text-sm">Manage bookings and table assignments</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Input 
-            type="date" 
-            value={date} 
-            onChange={e => setDate(e.target.value)}
-            className="w-auto h-10"
-            data-testid="input-date"
-          />
-          <Dialog open={isNewOpen} onOpenChange={setIsNewOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="btn-new-reservation">New Reservation</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <form onSubmit={handleCreate}>
-                <DialogHeader>
-                  <DialogTitle>New Reservation</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
-                      <Input id="name" name="name" required data-testid="input-name"/>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone *</Label>
-                      <Input id="phone" name="phone" required data-testid="input-phone"/>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" data-testid="input-email"/>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="date">Date *</Label>
-                      <Input id="date" name="date" type="date" required defaultValue={date} data-testid="input-res-date"/>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="time">Time *</Label>
-                      <Input id="time" name="time" type="time" required data-testid="input-res-time"/>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="guests">Guests *</Label>
-                      <Input id="guests" name="guests" type="number" min="1" required data-testid="input-guests"/>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="tableId">Table</Label>
-                      <Select name="tableId">
-                        <SelectTrigger data-testid="select-res-table">
-                          <SelectValue placeholder="Unassigned" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Unassigned</SelectItem>
-                          {tables?.map(t => (
-                            <SelectItem key={t.id} value={t.id.toString()}>Table {t.number}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="deposit">Deposit (IDR)</Label>
-                      <Input id="deposit" name="deposit" type="number" defaultValue="0" data-testid="input-deposit"/>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">Notes</Label>
-                    <Textarea id="notes" name="notes" placeholder="Special requests..." data-testid="input-notes"/>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={createRes.isPending} data-testid="btn-submit-res">Save Reservation</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Dialog open={isNewOpen} onOpenChange={setIsNewOpen}>
+          <DialogTrigger asChild>
+            <Button data-testid="btn-new-reservation">+ New Reservation</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <form onSubmit={handleCreate}>
+              <DialogHeader><DialogTitle>New Reservation</DialogTitle></DialogHeader>
+              <ReservationForm onSubmit={handleCreate} isPending={createRes.isPending} />
+              <DialogFooter>
+                <Button type="submit" disabled={createRes.isPending} data-testid="btn-submit-res">Save Reservation</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Tabs value={status} onValueChange={setStatus} className="w-full">
-        <TabsList className="w-full sm:w-auto overflow-x-auto justify-start flex-nowrap h-auto p-1 bg-muted/40 rounded-xl gap-0.5">
-          <TabsTrigger value="all" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">All</TabsTrigger>
-          <TabsTrigger value="pending" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Pending</TabsTrigger>
-          <TabsTrigger value="confirmed" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Confirmed</TabsTrigger>
-          <TabsTrigger value="seated" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Seated</TabsTrigger>
-          <TabsTrigger value="cancelled" className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">Cancelled</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* Summary stat bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
+        {[
+          { label: "Total Reservations", value: allRes.length, sub: `${totalGuests} guests`, color: "text-foreground", icon: CalendarDays },
+          { label: "Pending", value: pending, sub: "awaiting confirm", color: "text-amber-600 dark:text-amber-400", icon: Clock },
+          { label: "Confirmed", value: confirmed, sub: "ready to seat", color: "text-blue-600 dark:text-blue-400", icon: Check },
+          { label: "Seated", value: seated, sub: "currently dining", color: "text-emerald-600 dark:text-emerald-400", icon: Users },
+        ].map((s) => (
+          <Card key={s.label} className="shadow-sm card-hover">
+            <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
+                <s.icon className="w-4 h-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <div className={`text-xl sm:text-2xl font-bold tabular-nums ${s.color}`}>{isLoading ? "—" : s.value}</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.label}</div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
+      {/* Date navigation + status filter */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigateDate(-1)}>
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="relative flex-1 sm:flex-none">
+            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="pl-9 h-9 w-full sm:w-auto font-medium"
+              data-testid="input-date"
+            />
+          </div>
+          <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigateDate(1)}>
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+          {date !== format(new Date(), "yyyy-MM-dd") && (
+            <Button variant="ghost" size="sm" className="text-xs h-9" onClick={() => setDate(format(new Date(), "yyyy-MM-dd"))}>
+              Today
+            </Button>
+          )}
+          <span className="hidden sm:inline text-sm font-semibold text-muted-foreground">{formatDateLabel(date)}</span>
+        </div>
+
+        <Tabs value={status} onValueChange={setStatus}>
+          <TabsList className="overflow-x-auto justify-start flex-nowrap h-auto p-1 bg-muted/40 rounded-xl gap-0.5">
+            {["all", "pending", "confirmed", "seated", "cancelled"].map((s) => (
+              <TabsTrigger key={s} value={s} className="rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap capitalize">
+                {s === "all" ? "All" : s}
+                {s !== "all" && s !== "cancelled" && (
+                  <span className="ml-1 text-[10px] opacity-60">
+                    ({allRes.filter((r: any) => r.status === s).length})
+                  </span>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {/* Reservation cards */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1,2,3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-52 w-full rounded-xl" />)}
         </div>
       ) : reservations?.length === 0 ? (
-        <div className="py-24 text-center border-2 border-dashed rounded-xl bg-muted/10">
-          <CalendarDays className="w-12 h-12 text-muted-foreground opacity-20 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-muted-foreground">No reservations found</h3>
-          <p className="text-sm text-muted-foreground/80 mt-1">Try changing the date or status filter</p>
+        <div className="py-24 text-center border-2 border-dashed rounded-2xl bg-muted/5 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center">
+            <CalendarDays className="w-8 h-8 opacity-25" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">No reservations for {formatDateLabel(date)}</h3>
+            <p className="text-sm text-muted-foreground mt-1">Try another date or create a new reservation</p>
+          </div>
+          <Button variant="outline" onClick={() => setIsNewOpen(true)}>+ New Reservation</Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
-          {reservations?.map(res => (
-            <Card key={res.id} className="flex flex-col card-hover shadow-sm">
-              <CardHeader className="pb-3 border-b">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      {res.customerName}
-                    </CardTitle>
-                    <div className="flex items-center text-sm text-muted-foreground gap-1">
-                      <Phone className="w-3 h-3" /> {res.customerPhone}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
+          {reservations?.map((res: any) => {
+            const cfg = STATUS_CONFIG[res.status] ?? STATUS_CONFIG.pending;
+            return (
+              <Card key={res.id} className={cn("flex flex-col card-hover shadow-sm transition-all", res.status === "cancelled" && "opacity-60")}>
+                <CardHeader className="pb-3 border-b">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <CardTitle className="text-base sm:text-lg truncate">{res.customerName}</CardTitle>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{res.customerPhone}</span>
+                        {res.customerEmail && <span className="flex items-center gap-1 truncate"><Mail className="w-3 h-3" />{res.customerEmail}</span>}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={cn("capitalize shrink-0 text-xs font-semibold flex items-center gap-1.5", cfg.color)}>
+                      <span className={cn("w-1.5 h-1.5 rounded-full", cfg.dot)} />
+                      {cfg.label}
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-4 flex-1 space-y-3">
+                  <div className="grid grid-cols-2 gap-y-3 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span className="font-semibold text-foreground">{res.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Users className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span className="font-semibold text-foreground">{res.guestCount} pax</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                      <div className="w-3.5 h-3.5 rounded bg-primary/10 flex items-center justify-center text-[9px] font-bold text-primary border border-primary/20 shrink-0">T</div>
+                      <span className="font-semibold text-foreground">
+                        {res.tableNumber ? `Table ${res.tableNumber}` : <span className="text-muted-foreground font-normal">Unassigned</span>}
+                      </span>
                     </div>
                   </div>
-                  <Badge variant="outline" className={`capitalize ${getStatusColor(res.status)}`}>
-                    {res.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-4 flex-1 space-y-3">
-                <div className="grid grid-cols-2 gap-y-3 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-medium text-foreground">{res.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="w-4 h-4 text-primary" />
-                    <span className="font-medium text-foreground">{res.guestCount} pax</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground col-span-2">
-                    <div className="w-4 h-4 rounded bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20 shrink-0">T</div>
-                    <span className="font-medium text-foreground">
-                      {res.tableNumber ? `Table ${res.tableNumber}` : 'Unassigned'}
-                    </span>
-                  </div>
-                </div>
-                {res.notes && (
-                  <div className="text-xs bg-muted p-2 rounded-md italic">
-                    "{res.notes}"
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="pt-0 gap-2 border-t p-4 bg-muted/5">
-                {res.status === 'pending' && (
-                  <>
-                    <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={() => handleStatus(res.id, 'confirmed')} data-testid={`btn-confirm-${res.id}`}>
-                      <Check className="w-4 h-4 mr-1" /> Confirm
+                  {res.notes && (
+                    <div className="flex gap-2 text-xs bg-muted/50 p-2.5 rounded-lg">
+                      <StickyNote className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                      <span className="italic text-muted-foreground">{res.notes}</span>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="pt-0 gap-2 border-t p-3 bg-muted/5">
+                  {res.status === "pending" && (
+                    <>
+                      <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => handleStatus(res.id, "confirmed")} data-testid={`btn-confirm-${res.id}`}>
+                        <Check className="w-3.5 h-3.5 mr-1" /> Confirm
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 h-8" onClick={() => handleStatus(res.id, "cancelled")} data-testid={`btn-cancel-${res.id}`}>
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </>
+                  )}
+                  {res.status === "confirmed" && (
+                    <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700 h-8" onClick={() => handleStatus(res.id, "seated")} data-testid={`btn-seat-${res.id}`}>
+                      <LogIn className="w-3.5 h-3.5 mr-1" /> Seat Guests
                     </Button>
-                    <Button size="sm" variant="outline" className="text-rose-600" onClick={() => handleStatus(res.id, 'cancelled')} data-testid={`btn-cancel-${res.id}`}>
-                      <X className="w-4 h-4" />
+                  )}
+                  {res.status === "seated" && (
+                    <div className="text-sm font-medium text-emerald-600 flex w-full justify-center items-center py-1 gap-1">
+                      <Check className="w-4 h-4" /> Currently Dining
+                    </div>
+                  )}
+                  {res.status === "cancelled" && (
+                    <div className="text-xs text-muted-foreground flex w-full justify-center items-center py-1">Cancelled</div>
+                  )}
+                  {res.status !== "cancelled" && res.status !== "seated" && (
+                    <Button size="sm" variant="ghost" className="shrink-0 h-8 w-8 p-0" onClick={() => setEditingRes(res)} title="Edit">
+                      <Edit2 className="w-3.5 h-3.5" />
                     </Button>
-                  </>
-                )}
-                {res.status === 'confirmed' && (
-                  <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={() => handleStatus(res.id, 'seated')} data-testid={`btn-seat-${res.id}`}>
-                    <LogIn className="w-4 h-4 mr-1" /> Seat Guests
-                  </Button>
-                )}
-                {res.status === 'seated' && (
-                  <div className="text-sm font-medium text-emerald-600 flex w-full justify-center items-center py-1">
-                    <Check className="w-4 h-4 mr-1" /> Currently Seated
-                  </div>
-                )}
-                {res.status !== 'cancelled' && res.status !== 'seated' && (
-                  <Button size="sm" variant="ghost" className="shrink-0" onClick={() => setEditingRes(res)} title="Edit reservation">
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-          ))}
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
 
-      {/* Edit Reservation Dialog */}
+      {/* Edit Dialog */}
       <Dialog open={!!editingRes} onOpenChange={(open) => { if (!open) setEditingRes(null); }}>
         <DialogContent className="sm:max-w-[500px]">
           {editingRes && (
             <form onSubmit={handleEdit}>
-              <DialogHeader>
-                <DialogTitle>Edit Reservation</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-name">Name *</Label>
-                    <Input id="edit-name" name="name" required defaultValue={editingRes.customerName} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-phone">Phone *</Label>
-                    <Input id="edit-phone" name="phone" required defaultValue={editingRes.customerPhone} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-email">Email</Label>
-                  <Input id="edit-email" name="email" type="email" defaultValue={editingRes.customerEmail || ''} />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-date">Date *</Label>
-                    <Input id="edit-date" name="date" type="date" required defaultValue={editingRes.date} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-time">Time *</Label>
-                    <Input id="edit-time" name="time" type="time" required defaultValue={editingRes.time} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-guests">Guests *</Label>
-                    <Input id="edit-guests" name="guests" type="number" min="1" required defaultValue={editingRes.guestCount} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-tableId">Table</Label>
-                    <Select name="tableId" defaultValue={editingRes.tableId ? editingRes.tableId.toString() : 'none'}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Unassigned" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Unassigned</SelectItem>
-                        {tables?.map((t: any) => (
-                          <SelectItem key={t.id} value={t.id.toString()}>Table {t.number}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-deposit">Deposit (IDR)</Label>
-                    <Input id="edit-deposit" name="deposit" type="number" defaultValue={editingRes.depositAmount || 0} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-notes">Notes</Label>
-                  <Textarea id="edit-notes" name="notes" placeholder="Special requests..." defaultValue={editingRes.notes || ''} />
-                </div>
-              </div>
+              <DialogHeader><DialogTitle>Edit Reservation</DialogTitle></DialogHeader>
+              <ReservationForm defaultValues={editingRes} onSubmit={handleEdit} isPending={updateRes.isPending} />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setEditingRes(null)}>Cancel</Button>
                 <Button type="submit" disabled={updateRes.isPending}>Save Changes</Button>
