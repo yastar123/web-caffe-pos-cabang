@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-20", "web", "bash"]
 
 [deployment]
 router = "application"
@@ -28,13 +28,13 @@ args = "Frontend"
 name = "API Server"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "console"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
 waitForPort = 8080
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [[workflows.workflow]]
 name = "Frontend"
@@ -42,14 +42,14 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=18775 BASE_PATH=/pos-kafe/ pnpm --filter @workspace/pos-kafe run dev"
-waitForPort = 18775
+args = "PORT=5000 BASE_PATH=/pos-kafe/ pnpm --filter @workspace/pos-kafe run dev"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
 
 [agent]
-stack = "PNPM_WORKSPACE"
+stack = "BEST_EFFORT_FALLBACK"
 expertMode = true
 
 [postMerge]
@@ -61,19 +61,18 @@ localPort = 8080
 externalPort = 8080
 
 [[ports]]
-localPort = 8081
-externalPort = 80
-
-[[ports]]
 localPort = 18775
 externalPort = 3000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
 
 [userenv]
 
 [userenv.shared]
-SUPABASE_URL = "https://pssaivyyhtkckbvdahjo.supabase.co"
-SUPABASE_PUBLISHABLE_KEY = "sb_publishable_AJ7YGcLIoUZRFArb1rxgdA_Oc0zCa7k"
 CLOUDINARY_CLOUD_NAME = "dhlocgatj"
 CLOUDINARY_API_KEY = "433829665281736"
-NEXT_PUBLIC_SUPABASE_URL = "https://pssaivyyhtkckbvdahjo.supabase.co"
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_AJ7YGcLIoUZRFArb1rxgdA_Oc0zCa7k"
+
+[nix]
+channel = "stable-25_05"
