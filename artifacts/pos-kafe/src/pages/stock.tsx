@@ -37,7 +37,7 @@ export default function Stock() {
   const [movementIng, setMovementIng] = useState<any>(null);
   const [isNewPOOpen, setIsNewPOOpen] = useState(false);
 
-  const { data: ingredients } = useGetIngredients(
+  const { data: ingredients, isLoading: loadingIngs } = useGetIngredients(
     { branchId: branchId ?? undefined },
     { query: { enabled: !!branchId, queryKey: getGetIngredientsQueryKey({ branchId: branchId ?? undefined }) } }
   );
@@ -145,7 +145,7 @@ export default function Stock() {
             </div>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold">{ingredients?.length || 0}</div>
+            <div className="text-2xl sm:text-3xl font-bold tabular-nums">{ingredients?.length || 0}</div>
           </CardContent>
         </Card>
         <Card className="border-amber-200 bg-amber-50/50 shadow-sm">
@@ -156,7 +156,7 @@ export default function Stock() {
             </div>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-amber-600">{lowStock?.length || 0}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-amber-600 tabular-nums">{lowStock?.length || 0}</div>
           </CardContent>
         </Card>
         <Card className="border-rose-200 bg-rose-50/50 shadow-sm">
@@ -167,7 +167,7 @@ export default function Stock() {
             </div>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-rose-600">{ingredients?.filter(i => Number(i.currentStock) <= 0).length || 0}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-rose-600 tabular-nums">{ingredients?.filter(i => Number(i.currentStock) <= 0).length || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -240,14 +240,29 @@ export default function Stock() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredIngs.length === 0 && (
+              {loadingIngs ? (
+                Array.from({length: 6}).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><div className="h-4 w-32 bg-muted rounded animate-pulse"/></TableCell>
+                    <TableCell>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between"><div className="h-3 w-16 bg-muted rounded animate-pulse"/><div className="h-3 w-12 bg-muted rounded animate-pulse"/></div>
+                        <div className="h-2 w-full bg-muted rounded-full animate-pulse"/>
+                      </div>
+                    </TableCell>
+                    <TableCell><div className="h-5 w-20 bg-muted rounded-full animate-pulse"/></TableCell>
+                    <TableCell><div className="h-4 w-24 bg-muted rounded animate-pulse"/></TableCell>
+                    <TableCell className="text-right"><div className="h-8 w-20 bg-muted rounded ml-auto animate-pulse"/></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredIngs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center text-muted-foreground text-sm">
                     No ingredients found
                   </TableCell>
                 </TableRow>
-              )}
-              {filteredIngs.map((item) => {
+              ) : null}
+              {!loadingIngs && filteredIngs.map((item) => {
                 const current = Number(item.currentStock);
                 const min = Number(item.minStock);
                 const status = getStockStatus(current, min);
@@ -258,8 +273,8 @@ export default function Stock() {
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell className="w-[300px]">
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="font-bold">{current} {item.unit}</span>
-                        <span className="text-muted-foreground">Min: {min}</span>
+                        <span className="font-bold tabular-nums">{current} {item.unit}</span>
+                        <span className="text-muted-foreground tabular-nums">Min: {min}</span>
                       </div>
                       <Progress value={percent} className={`h-2 ${current <= min ? '[&>div]:bg-destructive' : current <= min * 1.5 ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`} />
                     </TableCell>
@@ -334,7 +349,7 @@ export default function Stock() {
                   <TableRow key={po.id}>
                     <TableCell>{format(new Date(po.createdAt), 'MMM dd, yyyy')}</TableCell>
                     <TableCell className="font-medium">{po.supplierName}</TableCell>
-                    <TableCell>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(po.totalAmount))}</TableCell>
+                    <TableCell className="tabular-nums">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(po.totalAmount))}</TableCell>
                     <TableCell>{po.expectedDelivery ? format(new Date(po.expectedDelivery), 'MMM dd') : '-'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">{po.status}</Badge>

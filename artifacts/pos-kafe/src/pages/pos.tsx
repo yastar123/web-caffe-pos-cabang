@@ -205,7 +205,7 @@ export default function POS() {
             >
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm leading-tight truncate">{item.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{formatIDR(item.price)}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">{formatIDR(item.price)}</p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <Button
@@ -226,7 +226,7 @@ export default function POS() {
                   <Plus className="h-3 w-3" />
                 </Button>
               </div>
-              <div className="w-20 text-right font-bold text-sm text-primary shrink-0">
+              <div className="w-20 text-right font-bold text-sm text-primary shrink-0 tabular-nums">
                 {formatIDR(item.price * item.quantity)}
               </div>
               <Button

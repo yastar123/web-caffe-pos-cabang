@@ -78,7 +78,7 @@ export default function Reports() {
               </div>
             </CardHeader>
             <CardContent className="px-4 pb-4">
-              <div className={`text-lg sm:text-2xl font-bold ${truncate ? 'truncate' : ''}`} title={truncate ? value : undefined}>{value}</div>
+              <div className={`text-lg sm:text-2xl font-bold tabular-nums ${truncate ? 'truncate' : ''}`} title={truncate ? value : undefined}>{value}</div>
             </CardContent>
           </Card>
         ))}
