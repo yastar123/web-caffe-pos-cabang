@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, Users, Phone, Mail, Clock, Check, X, LogIn } from "lucide-react";
+import { CalendarDays, Users, Phone, Mail, Clock, Check, X, LogIn, Edit2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +31,7 @@ export default function Reservations() {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [status, setStatus] = useState<string>("all");
   const [isNewOpen, setIsNewOpen] = useState(false);
+  const [editingRes, setEditingRes] = useState<any>(null);
 
   const { data: reservations, isLoading } = useGetReservations(
     { branchId: branchId ?? undefined, date, status: status !== 'all' ? status as any : undefined },
@@ -81,6 +82,33 @@ export default function Reservations() {
       queryClient.invalidateQueries({ queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date }) });
     } catch {
       toast({ title: "Failed to update status", variant: "destructive" });
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingRes) return;
+    const fd = new FormData(e.currentTarget);
+    try {
+      await updateRes.mutateAsync({
+        id: editingRes.id,
+        data: {
+          customerName: fd.get('name') as string,
+          customerPhone: fd.get('phone') as string,
+          customerEmail: fd.get('email') as string || undefined,
+          date: fd.get('date') as string,
+          time: fd.get('time') as string,
+          guestCount: Number(fd.get('guests')),
+          tableId: fd.get('tableId') && fd.get('tableId') !== 'none' ? Number(fd.get('tableId')) : undefined,
+          depositAmount: fd.get('deposit') ? Number(fd.get('deposit')) : 0,
+          notes: fd.get('notes') as string || undefined,
+        }
+      });
+      toast({ title: "Reservation updated" });
+      queryClient.invalidateQueries({ queryKey: getGetReservationsQueryKey({ branchId: branchId ?? undefined, date }) });
+      setEditingRes(null);
+    } catch {
+      toast({ title: "Failed to update reservation", variant: "destructive" });
     }
   };
 
@@ -264,11 +292,87 @@ export default function Reservations() {
                     <Check className="w-4 h-4 mr-1" /> Currently Seated
                   </div>
                 )}
+                {res.status !== 'cancelled' && res.status !== 'seated' && (
+                  <Button size="sm" variant="ghost" className="shrink-0" onClick={() => setEditingRes(res)} title="Edit reservation">
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Edit Reservation Dialog */}
+      <Dialog open={!!editingRes} onOpenChange={(open) => { if (!open) setEditingRes(null); }}>
+        <DialogContent className="sm:max-w-[500px]">
+          {editingRes && (
+            <form onSubmit={handleEdit}>
+              <DialogHeader>
+                <DialogTitle>Edit Reservation</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Name *</Label>
+                    <Input id="edit-name" name="name" required defaultValue={editingRes.customerName} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-phone">Phone *</Label>
+                    <Input id="edit-phone" name="phone" required defaultValue={editingRes.customerPhone} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input id="edit-email" name="email" type="email" defaultValue={editingRes.customerEmail || ''} />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-date">Date *</Label>
+                    <Input id="edit-date" name="date" type="date" required defaultValue={editingRes.date} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-time">Time *</Label>
+                    <Input id="edit-time" name="time" type="time" required defaultValue={editingRes.time} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guests">Guests *</Label>
+                    <Input id="edit-guests" name="guests" type="number" min="1" required defaultValue={editingRes.guestCount} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-tableId">Table</Label>
+                    <Select name="tableId" defaultValue={editingRes.tableId ? editingRes.tableId.toString() : 'none'}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Unassigned</SelectItem>
+                        {tables?.map((t: any) => (
+                          <SelectItem key={t.id} value={t.id.toString()}>Table {t.number}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-deposit">Deposit (IDR)</Label>
+                    <Input id="edit-deposit" name="deposit" type="number" defaultValue={editingRes.depositAmount || 0} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-notes">Notes</Label>
+                  <Textarea id="edit-notes" name="notes" placeholder="Special requests..." defaultValue={editingRes.notes || ''} />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditingRes(null)}>Cancel</Button>
+                <Button type="submit" disabled={updateRes.isPending}>Save Changes</Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

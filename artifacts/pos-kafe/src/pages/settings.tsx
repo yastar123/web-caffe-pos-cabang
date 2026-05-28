@@ -60,7 +60,8 @@ export default function Settings() {
           name: fd.get('name') as string,
         }
       });
-      toast({ title: "Profile updated. Refresh to see changes globally." });
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      toast({ title: "Profile updated" });
     } catch {
       toast({ title: "Failed to update profile", variant: "destructive" });
     }

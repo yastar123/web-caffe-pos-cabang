@@ -216,7 +216,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
       )}>
         <div className="absolute top-3 right-3 z-10">
-          <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} className="min-h-[40px] min-w-[40px] h-9 w-9">
+          <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} className="h-11 w-11">
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -231,7 +231,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(true)}
-            className="min-h-[40px] min-w-[40px] h-9 w-9"
+            className="h-11 w-11"
           >
             <Menu className="w-5 h-5" />
           </Button>

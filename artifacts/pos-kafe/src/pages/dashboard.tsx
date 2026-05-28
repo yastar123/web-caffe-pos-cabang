@@ -32,14 +32,16 @@ export default function Dashboard() {
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount);
 
   const revenueChange = overview?.revenueChange ?? 0;
-  const isPositive = revenueChange >= 0;
+  const isPositive = revenueChange > 0;
   const lowStockCount = overview?.lowStockCount ?? 0;
 
   const kpiCards = [
     {
       label: "Today's Revenue",
       value: isOverviewLoading ? null : formatCurrency(overview?.todayRevenue || 0),
-      sub: isPositive
+      sub: revenueChange === 0
+        ? <span className="text-muted-foreground flex items-center gap-1">Same as yesterday</span>
+        : isPositive
         ? <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1"><TrendingUp className="w-3 h-3" />+{revenueChange}% from yesterday</span>
         : <span className="text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1"><TrendingDown className="w-3 h-3" />{revenueChange}% from yesterday</span>,
       icon: DollarSign,
