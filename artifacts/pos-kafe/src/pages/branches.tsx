@@ -77,11 +77,11 @@ export default function Branches() {
   };
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Branches</h1>
-          <p className="text-muted-foreground mt-1">Manage multiple store locations</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Branches</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Manage multiple store locations</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if(!open) setEditingBranch(null); }}>
           <DialogTrigger asChild>
@@ -128,7 +128,7 @@ export default function Branches() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         {isLoading ? (
           [1,2,3].map(i => <Skeleton key={i} className="h-48 w-full rounded-xl" />)
         ) : branches?.map(b => (

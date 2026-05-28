@@ -8,7 +8,8 @@ import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckSquare } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Clock, CheckSquare, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -57,30 +58,51 @@ export default function Kitchen() {
   };
 
   if (isLoading) {
-    return <div className="p-8">Loading kitchen queue...</div>;
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => (
+            <Skeleton key={i} className="h-72 w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto h-full flex flex-col">
-      <div className="flex justify-between items-center mb-6 shrink-0">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto h-full flex flex-col">
+      <div className="flex flex-wrap justify-between items-center mb-5 sm:mb-6 shrink-0 gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Kitchen Display System</h1>
-          <p className="text-muted-foreground">Active orders to be prepared</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Kitchen Display</h1>
+          <p className="text-muted-foreground text-sm">Active orders to be prepared</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md">
-          <Clock className="w-4 h-4" />
-          Auto-refreshing every 30s
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md">
+            <RefreshCw className="w-3.5 h-3.5" />
+            Auto-refresh every 30s
+          </div>
+          {queue && queue.length > 0 && (
+            <Badge className="bg-primary text-primary-foreground px-3 py-1">
+              {queue.length} active order{queue.length !== 1 ? 's' : ''}
+            </Badge>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 overflow-auto pb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 overflow-auto pb-4">
         {queue?.map((order) => (
           <Card key={order.orderId} className={`flex flex-col border-t-4 shadow-md ${getBorderColor(order.items[0]?.kitchenStatus ?? 'new')}`}>
-            <CardHeader className="p-4 bg-muted/10 border-b pb-3">
+            <CardHeader className="p-3 sm:p-4 bg-muted/10 border-b pb-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-xl font-bold">Order #{order.orderNumber}</CardTitle>
-                  <div className="text-sm text-muted-foreground mt-1">Table {order.tableNumber || "Takeaway"}</div>
+                  <CardTitle className="text-lg sm:text-xl font-bold">Order #{order.orderNumber}</CardTitle>
+                  <div className="text-sm text-muted-foreground mt-0.5">Table {order.tableNumber || "Takeaway"}</div>
                 </div>
                 <Badge variant="outline" className="font-mono text-sm px-2 py-1">
                   {Math.floor((new Date().getTime() - new Date(order.createdAt).getTime()) / 60000)}m

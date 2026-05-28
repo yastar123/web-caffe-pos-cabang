@@ -95,20 +95,20 @@ export default function Customers() {
   const formatIDR = (num: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-          <p className="text-muted-foreground mt-1">Loyalty program and customer database</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Customers</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Loyalty program and customer database</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-72 sm:flex-none">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search by name, phone..." 
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-9 bg-card"
+              className="pl-9 bg-card h-10"
               data-testid="input-search-cust"
             />
           </div>
@@ -211,7 +211,7 @@ export default function Customers() {
                     </div>
                     <div>
                       <SheetTitle className="text-2xl">{selectedCustomer.name}</SheetTitle>
-                      <Badge variant="outline" className={`capitalize mt-1 ${getTierColor(selectedCustomer.tier)}`}>{selectedCustomer.tier} Member</Badge>
+                      <Badge variant="outline" className={`capitalize mt-1 ${getTierColor(selectedCustomer.membershipTier ?? '')}`}>{selectedCustomer.membershipTier ?? 'standard'} Member</Badge>
                     </div>
                   </div>
                   <SheetDescription>

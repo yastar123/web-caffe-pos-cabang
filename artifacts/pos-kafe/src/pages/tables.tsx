@@ -89,15 +89,36 @@ export default function Tables() {
     return acc;
   }, {} as Record<string, typeof tables>);
 
+  const statusCounts = {
+    available: tables?.filter(t => t.status === 'available').length ?? 0,
+    occupied: tables?.filter(t => t.status === 'occupied').length ?? 0,
+    reserved: tables?.filter(t => t.status === 'reserved').length ?? 0,
+    cleaning: tables?.filter(t => t.status === 'cleaning').length ?? 0,
+  };
+
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Table Floor Plan</h1>
-        <p className="text-muted-foreground mt-1">Manage tables and current occupancy</p>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-5 sm:space-y-7">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Table Floor Plan</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Manage tables and current occupancy</p>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          {[
+            { key: 'available', color: 'bg-emerald-500', label: `${statusCounts.available} Available` },
+            { key: 'occupied', color: 'bg-rose-500', label: `${statusCounts.occupied} Occupied` },
+            { key: 'reserved', color: 'bg-amber-500', label: `${statusCounts.reserved} Reserved` },
+          ].map(s => (
+            <div key={s.key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className={`w-2 h-2 rounded-full ${s.color}`} />
+              {s.label}
+            </div>
+          ))}
+        </div>
       </div>
 
       <Tabs value={activeArea} onValueChange={setActiveArea} className="w-full">
-        <TabsList className="mb-6">
+        <TabsList className="mb-5">
           <TabsTrigger value="indoor" data-testid="tab-indoor">Indoor</TabsTrigger>
           <TabsTrigger value="outdoor" data-testid="tab-outdoor">Outdoor</TabsTrigger>
           <TabsTrigger value="vip" data-testid="tab-vip">VIP Lounge</TabsTrigger>
@@ -105,66 +126,47 @@ export default function Tables() {
 
         {areas.map((area) => (
           <TabsContent key={area} value={area} className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
               {tablesByArea[area]?.map((table) => (
-                <Card key={table.id} className="overflow-hidden flex flex-col">
-                  <div className={`h-2 w-full ${
+                <Card key={table.id} className={`overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-200 ${table.status === 'available' ? 'hover:border-emerald-400' : ''}`}>
+                  <div className={`h-1.5 w-full ${
                     table.status === 'available' ? 'bg-emerald-500' :
                     table.status === 'occupied' ? 'bg-rose-500' :
                     table.status === 'reserved' ? 'bg-amber-500' :
-                    'bg-slate-500'
+                    'bg-slate-400'
                   }`} />
-                  <CardHeader className="pb-2 pt-4">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl font-bold">Table {table.number}</CardTitle>
-                      <Badge variant="outline" className={getStatusColor(table.status)}>
+                  <CardHeader className="pb-2 pt-3 px-3 sm:px-4">
+                    <div className="flex justify-between items-start gap-1">
+                      <CardTitle className="text-base sm:text-lg font-bold">T{table.number}</CardTitle>
+                      <Badge variant="outline" className={`text-[10px] sm:text-xs flex items-center ${getStatusColor(table.status)}`}>
                         {getStatusIcon(table.status)}
-                        <span className="capitalize">{table.status}</span>
+                        <span className="capitalize hidden sm:inline">{table.status}</span>
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="flex-1 flex flex-col justify-between pt-2">
-                    <div className="flex items-center text-sm text-muted-foreground mb-4">
-                      <Users className="w-4 h-4 mr-2" />
-                      Capacity: {table.capacity} pax
+                  <CardContent className="flex-1 flex flex-col justify-between pt-1 px-3 sm:px-4 pb-3 sm:pb-4">
+                    <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-3">
+                      <Users className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      {table.capacity} pax
                     </div>
-                    <div className="flex gap-2 mt-auto">
+                    <div className="mt-auto">
                       {table.status === "available" && (
-                        <Button 
-                          className="w-full" 
-                          onClick={() => handleStartOrder(table.id)}
-                          data-testid={`btn-start-order-${table.id}`}
-                        >
+                        <Button size="sm" className="w-full text-xs sm:text-sm h-8 sm:h-9" onClick={() => handleStartOrder(table.id)} data-testid={`btn-start-order-${table.id}`}>
                           Start Order
                         </Button>
                       )}
                       {table.status === "occupied" && (
-                        <Button 
-                          className="w-full" 
-                          variant="secondary"
-                          onClick={() => handleStartOrder(table.id)} // Could go to POS to edit order
-                          data-testid={`btn-view-order-${table.id}`}
-                        >
+                        <Button size="sm" className="w-full text-xs sm:text-sm h-8 sm:h-9" variant="secondary" onClick={() => handleStartOrder(table.id)} data-testid={`btn-view-order-${table.id}`}>
                           View Order
                         </Button>
                       )}
                       {table.status === "cleaning" && (
-                        <Button 
-                          className="w-full" 
-                          variant="outline"
-                          onClick={() => handleUpdateStatus(table.id, "available")}
-                          data-testid={`btn-mark-clean-${table.id}`}
-                        >
+                        <Button size="sm" className="w-full text-xs sm:text-sm h-8 sm:h-9" variant="outline" onClick={() => handleUpdateStatus(table.id, "available")} data-testid={`btn-mark-clean-${table.id}`}>
                           Mark Clean
                         </Button>
                       )}
                       {table.status === "reserved" && (
-                        <Button 
-                          className="w-full" 
-                          variant="outline"
-                          onClick={() => handleUpdateStatus(table.id, "occupied")}
-                          data-testid={`btn-seat-reserved-${table.id}`}
-                        >
+                        <Button size="sm" className="w-full text-xs sm:text-sm h-8 sm:h-9" variant="outline" onClick={() => handleUpdateStatus(table.id, "occupied")} data-testid={`btn-seat-reserved-${table.id}`}>
                           Seat Guests
                         </Button>
                       )}
@@ -173,7 +175,7 @@ export default function Tables() {
                 </Card>
               ))}
               {(!tablesByArea[area] || tablesByArea[area].length === 0) && (
-                <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+                <div className="col-span-full py-16 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
                   No tables found in this area.
                 </div>
               )}

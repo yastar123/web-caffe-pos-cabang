@@ -117,11 +117,11 @@ export default function Menu() {
   const formatIDR = (num: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Menu Management</h1>
-          <p className="text-muted-foreground mt-1">Manage items, prices, and availability</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Menu Management</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Manage items, prices, and availability</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={isCatOpen} onOpenChange={setIsCatOpen}>

@@ -49,67 +49,50 @@ export default function Reports() {
   const topItem = topItems?.[0]?.menuItemName || "N/A";
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics & Reports</h1>
-          <p className="text-muted-foreground mt-1">Business performance overview</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Analytics & Reports</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Business performance overview</p>
         </div>
-        <div className="flex items-center gap-2 bg-card p-1 rounded-lg border shadow-sm">
-          <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="border-0 focus-visible:ring-0 w-auto" />
-          <span className="text-muted-foreground">-</span>
-          <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border-0 focus-visible:ring-0 w-auto" />
-          <Button onClick={handleApply} className="shrink-0" data-testid="btn-apply-date">Apply</Button>
+        <div className="flex items-center gap-1.5 bg-card p-1 rounded-lg border shadow-sm flex-wrap sm:flex-nowrap">
+          <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="border-0 focus-visible:ring-0 w-auto text-sm h-8" />
+          <span className="text-muted-foreground text-sm px-1">–</span>
+          <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border-0 focus-visible:ring-0 w-auto text-sm h-8" />
+          <Button onClick={handleApply} size="sm" className="shrink-0 h-8" data-testid="btn-apply-date">Apply</Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-            <DollarSign className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatIDR(totalRev)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
-            <ShoppingCart className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalOrd}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Order Value</CardTitle>
-            <TrendingUp className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatIDR(avgOrd)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Top Item</CardTitle>
-            <Award className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold truncate" title={topItem}>{topItem}</div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+        {[
+          { label: "Total Revenue", value: formatIDR(totalRev), Icon: DollarSign },
+          { label: "Total Orders", value: String(totalOrd), Icon: ShoppingCart },
+          { label: "Avg Order Value", value: formatIDR(avgOrd), Icon: TrendingUp },
+          { label: "Top Item", value: topItem, Icon: Award, truncate: true },
+        ].map(({ label, value, Icon, truncate }) => (
+          <Card key={label} className="shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">{label}</CardTitle>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="w-3.5 h-3.5 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <div className={`text-lg sm:text-2xl font-bold ${truncate ? 'truncate' : ''}`} title={truncate ? value : undefined}>{value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Revenue Trend</CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+        <Card className="lg:col-span-2 shadow-sm">
+          <CardHeader className="px-4 sm:px-6 pt-5 pb-2">
+            <CardTitle className="text-base sm:text-lg">Revenue Trend</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Daily revenue for the selected period</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[220px] sm:h-[280px] px-1 sm:px-3 pb-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesSummary?.periods || []} margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
+              <AreaChart data={salesSummary?.periods || []} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -117,37 +100,38 @@ export default function Reports() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tickFormatter={v => format(new Date(v), 'MMM dd')} fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} dx={-10} tickFormatter={v => `Rp ${v/1000}k`} />
-                <Tooltip 
+                <XAxis dataKey="date" tickFormatter={v => format(new Date(v), 'MMM d')} fontSize={11} tickLine={false} axisLine={false} dy={8} />
+                <YAxis fontSize={11} tickLine={false} axisLine={false} dx={-5} tickFormatter={v => `${v/1000}k`} />
+                <Tooltip
                   formatter={(v: number) => [formatIDR(v), "Revenue"]}
                   labelFormatter={v => format(new Date(v), 'MMM dd, yyyy')}
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))', fontSize: '12px' }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRev)" dot={false} activeDot={{ r: 5 }} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Methods</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="px-4 sm:px-6 pt-5 pb-2">
+            <CardTitle className="text-base sm:text-lg">Payment Methods</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Revenue by payment type</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[200px] sm:h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={paymentStats || []} dataKey="revenue" nameKey="method" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2}>
+                <Pie data={paymentStats || []} dataKey="revenue" nameKey="method" cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={3}>
                   {paymentStats?.map((_, index) => <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />)}
                 </Pie>
-                <Tooltip formatter={(v: number) => formatIDR(v)} />
+                <Tooltip formatter={(v: number) => formatIDR(v)} contentStyle={{ fontSize: '12px', borderRadius: '8px' }} />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-4 mt-4">
+            <div className="flex flex-wrap justify-center gap-3 mt-1">
               {paymentStats?.map((s, i) => (
-                <div key={s.method} className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: pieColors[i % pieColors.length] }} />
-                  <span className="capitalize">{s.method}</span>
+                <div key={s.method} className="flex items-center gap-1.5 text-xs">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: pieColors[i % pieColors.length] }} />
+                  <span className="capitalize text-muted-foreground">{s.method}</span>
                 </div>
               ))}
             </div>
@@ -155,50 +139,51 @@ export default function Reports() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Menu Items</CardTitle>
-            <CardDescription>By quantity sold</CardDescription>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+        <Card className="shadow-sm">
+          <CardHeader className="px-4 sm:px-6 pt-5 pb-2">
+            <CardTitle className="text-base sm:text-lg">Top Menu Items</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">By quantity sold</CardDescription>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="h-[280px] sm:h-[340px] px-1 sm:px-3 pb-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topItems || []} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
+              <BarChart data={topItems || []} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-                <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis dataKey="name" type="category" width={100} fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px' }} />
-                <Bar dataKey="quantity" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} barSize={20} />
+                <XAxis type="number" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis dataKey="menuItemName" type="category" width={110} fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', fontSize: '12px' }} />
+                <Bar dataKey="quantity" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         {isOwner && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Branch Comparison</CardTitle>
+          <Card className="shadow-sm">
+            <CardHeader className="px-4 sm:px-6 pt-5 pb-2">
+              <CardTitle className="text-base sm:text-lg">Branch Comparison</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Performance by branch</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0 pb-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Branch</TableHead>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="pl-4 sm:pl-6">Branch</TableHead>
                     <TableHead className="text-right">Orders</TableHead>
-                    <TableHead className="text-right">Revenue</TableHead>
+                    <TableHead className="text-right pr-4 sm:pr-6">Revenue</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {branchStats?.map(b => (
-                    <TableRow key={b.branchId}>
-                      <TableCell className="font-medium">{b.branchName}</TableCell>
+                    <TableRow key={b.branchId} className="hover:bg-muted/40 transition-colors">
+                      <TableCell className="font-medium pl-4 sm:pl-6">{b.branchName}</TableCell>
                       <TableCell className="text-right">{b.orders}</TableCell>
-                      <TableCell className="text-right font-bold text-primary">{formatIDR(b.revenue)}</TableCell>
+                      <TableCell className="text-right font-bold text-primary pr-4 sm:pr-6">{formatIDR(b.revenue)}</TableCell>
                     </TableRow>
                   ))}
                   {!branchStats?.length && (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground py-8">No data available</TableCell>
+                      <TableCell colSpan={3} className="text-center text-muted-foreground py-10">No data available</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

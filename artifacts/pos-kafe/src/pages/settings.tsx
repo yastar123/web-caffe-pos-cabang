@@ -67,10 +67,10 @@ export default function Settings() {
   };
 
   return (
-    <div className="p-8 max-w-[1000px] mx-auto space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1000px] mx-auto space-y-5 sm:space-y-7">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage personal and store preferences</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm">Manage personal and store preferences</p>
       </div>
 
       <div className="grid gap-8">

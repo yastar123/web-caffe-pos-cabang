@@ -1,6 +1,6 @@
 kind = "web"
-previewPath = "/"
-title = "POS Kafe Multi-Cabang"
+previewPath = "/pos-kafe/"
+title = "KopiFlow POS"
 version = "1.0.0"
 id = "artifacts/pos-kafe"
 router = "path"
@@ -11,11 +11,11 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/" ]
+paths = [ "/pos-kafe/" ]
 localPort = 18775
 
 [services.development]
-run = "pnpm --filter @workspace/pos-kafe run dev"
+run = "PORT=18775 BASE_PATH=/pos-kafe/ pnpm --filter @workspace/pos-kafe run dev"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/pos-kafe", "run", "build" ]
@@ -28,4 +28,4 @@ to = "/index.html"
 
 [services.env]
 PORT = "18775"
-BASE_PATH = "/"
+BASE_PATH = "/pos-kafe/"

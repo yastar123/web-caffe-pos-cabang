@@ -32,6 +32,14 @@ const queryClient = new QueryClient({
   },
 });
 
+function PageWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="animate-fade-in">
+      {children}
+    </div>
+  );
+}
+
 function ProtectedRoute({ component: Component, roles }: { component: React.ComponentType; roles?: string[] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
 
@@ -50,7 +58,9 @@ function ProtectedRoute({ component: Component, roles }: { component: React.Comp
   return (
     <Layout>
       <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Spinner className="size-8" /></div>}>
-        <Component />
+        <PageWrapper>
+          <Component />
+        </PageWrapper>
       </Suspense>
     </Layout>
   );

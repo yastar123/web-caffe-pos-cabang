@@ -95,11 +95,11 @@ export default function Users() {
   });
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Staff Directory</h1>
-          <p className="text-muted-foreground mt-1">Manage system access and roles</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Staff Directory</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Manage system access and roles</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if(!open) setEditingUser(null); }}>
           <DialogTrigger asChild>
@@ -169,18 +169,18 @@ export default function Users() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-4 bg-muted/20 p-2 rounded-xl border">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-muted/20 p-3 rounded-xl border">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search name or email..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-background"
+            className="pl-9 bg-background h-10"
           />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-[180px] bg-background">
+          <SelectTrigger className="w-full sm:w-[180px] bg-background h-10">
             <SelectValue placeholder="Filter by Role" />
           </SelectTrigger>
           <SelectContent>

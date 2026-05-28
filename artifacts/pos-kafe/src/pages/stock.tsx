@@ -4,7 +4,6 @@ import {
   useGetIngredients, 
   useGetLowStockAlerts, 
   useCreateIngredient, 
-  useUpdateIngredient, 
   useCreateStockMovement,
   useGetPurchaseOrders,
   useCreatePurchaseOrder,
@@ -36,6 +35,7 @@ export default function Stock() {
   const [search, setSearch] = useState("");
   const [isAddIngOpen, setIsAddIngOpen] = useState(false);
   const [movementIng, setMovementIng] = useState<any>(null);
+  const [isNewPOOpen, setIsNewPOOpen] = useState(false);
 
   const { data: ingredients } = useGetIngredients(
     { branchId: branchId ?? undefined },
@@ -54,6 +54,7 @@ export default function Stock() {
 
   const createIng = useCreateIngredient();
   const moveStock = useCreateStockMovement();
+  const createPO = useCreatePurchaseOrder();
 
   const handleAddIngredient = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -73,6 +74,27 @@ export default function Stock() {
       setIsAddIngOpen(false);
     } catch {
       toast({ title: "Failed to add ingredient", variant: "destructive" });
+    }
+  };
+
+  const handleCreatePO = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    try {
+      await createPO.mutateAsync({
+        data: {
+          branchId: branchId!,
+          supplierName: fd.get('supplierName') as string,
+          totalAmount: Number(fd.get('totalAmount')),
+          expectedDelivery: fd.get('expectedDelivery') as string || undefined,
+          notes: fd.get('notes') as string || undefined,
+        }
+      });
+      toast({ title: "Purchase order created" });
+      queryClient.invalidateQueries({ queryKey: getGetPurchaseOrdersQueryKey({ branchId: branchId ?? undefined }) });
+      setIsNewPOOpen(false);
+    } catch {
+      toast({ title: "Failed to create purchase order", variant: "destructive" });
     }
   };
 
@@ -108,61 +130,65 @@ export default function Stock() {
   };
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Stock & Inventory</h1>
-          <p className="text-muted-foreground mt-1">Manage ingredients and purchase orders</p>
-        </div>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-7">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Stock & Inventory</h1>
+        <p className="text-muted-foreground mt-1 text-sm">Manage ingredients and purchase orders</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Ingredients</CardTitle>
-            <Package className="w-4 h-4 text-primary" />
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
+            <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground leading-tight">Total Ingredients</CardTitle>
+            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Package className="w-3.5 h-3.5 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{ingredients?.length || 0}</div>
+          <CardContent className="px-3 sm:px-4 pb-4">
+            <div className="text-2xl sm:text-3xl font-bold">{ingredients?.length || 0}</div>
           </CardContent>
         </Card>
-        <Card className="border-amber-200 bg-amber-50/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-amber-800">Low Stock Items</CardTitle>
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
+        <Card className="border-amber-200 bg-amber-50/50 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
+            <CardTitle className="text-[10px] sm:text-sm font-medium text-amber-800 leading-tight">Low Stock</CardTitle>
+            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-amber-600">{lowStock?.length || 0}</div>
+          <CardContent className="px-3 sm:px-4 pb-4">
+            <div className="text-2xl sm:text-3xl font-bold text-amber-600">{lowStock?.length || 0}</div>
           </CardContent>
         </Card>
-        <Card className="border-rose-200 bg-rose-50/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-rose-800">Out of Stock</CardTitle>
-            <AlertTriangle className="w-4 h-4 text-rose-600" />
+        <Card className="border-rose-200 bg-rose-50/50 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
+            <CardTitle className="text-[10px] sm:text-sm font-medium text-rose-800 leading-tight">Out of Stock</CardTitle>
+            <div className="w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-rose-600">{ingredients?.filter(i => Number(i.currentStock) <= 0).length || 0}</div>
+          <CardContent className="px-3 sm:px-4 pb-4">
+            <div className="text-2xl sm:text-3xl font-bold text-rose-600">{ingredients?.filter(i => Number(i.currentStock) <= 0).length || 0}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="ingredients" className="w-full border rounded-xl bg-card">
-        <div className="border-b p-4 pb-0">
+      <Tabs defaultValue="ingredients" className="w-full border rounded-xl bg-card shadow-sm">
+        <div className="border-b px-4 pt-1 pb-0">
           <TabsList className="bg-transparent space-x-4 p-0">
-            <TabsTrigger value="ingredients" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none px-4 pb-3">Ingredients</TabsTrigger>
-            <TabsTrigger value="po" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none px-4 pb-3">Purchase Orders</TabsTrigger>
+            <TabsTrigger value="ingredients" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none px-3 sm:px-4 pb-3 text-sm">Ingredients</TabsTrigger>
+            <TabsTrigger value="po" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none px-3 sm:px-4 pb-3 text-sm">Purchase Orders</TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="ingredients" className="p-0 m-0 border-none outline-none">
-          <div className="p-4 border-b flex justify-between items-center bg-muted/20">
-            <div className="relative w-72">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <div className="p-3 sm:p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/20">
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search ingredients..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-background"
+                className="pl-9 bg-background h-10"
                 data-testid="input-search-ing"
               />
             </div>
@@ -250,7 +276,42 @@ export default function Stock() {
 
         <TabsContent value="po" className="p-0 m-0 border-none outline-none">
           <div className="p-4 border-b flex justify-end bg-muted/20">
-             <Button variant="outline" data-testid="btn-new-po"><Plus className="w-4 h-4 mr-2"/> New Purchase Order</Button>
+            <Dialog open={isNewPOOpen} onOpenChange={setIsNewPOOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="btn-new-po"><Plus className="w-4 h-4 mr-2"/> New Purchase Order</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[480px]">
+                <form onSubmit={handleCreatePO}>
+                  <DialogHeader>
+                    <DialogTitle>New Purchase Order</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="supplierName">Supplier Name *</Label>
+                      <Input id="supplierName" name="supplierName" required placeholder="e.g. PT Sumber Bahan" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="totalAmount">Total Amount (IDR) *</Label>
+                        <Input id="totalAmount" name="totalAmount" type="number" required min="0" placeholder="0" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="expectedDelivery">Expected Delivery</Label>
+                        <Input id="expectedDelivery" name="expectedDelivery" type="date" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="po-notes">Notes</Label>
+                      <Input id="po-notes" name="notes" placeholder="Order details or special instructions" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setIsNewPOOpen(false)}>Cancel</Button>
+                    <Button type="submit" disabled={createPO.isPending}>Create Order</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
           <Table>
             <TableHeader>
