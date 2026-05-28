@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, CheckSquare, RefreshCw, ChefHat, Flame, AlertTriangle, CheckCheck } from "lucide-react";
+import { Clock, CheckSquare, RefreshCw, ChefHat, Flame, AlertTriangle, CheckCheck, Zap } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ function TimerBadge({ createdAt }: { createdAt: string }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setMinutes(getElapsedMinutes(createdAt));
-    }, 60000);
+    }, 30000);
     return () => clearInterval(interval);
   }, [createdAt]);
 
@@ -51,17 +51,162 @@ function TimerBadge({ createdAt }: { createdAt: string }) {
   );
 }
 
-function getCardBorderClass(status: string, createdAt: string): string {
-  const minutes = getElapsedMinutes(createdAt);
-  const urgency = getUrgencyLevel(minutes);
-  if (urgency === "critical") return "border-t-rose-500";
-  if (urgency === "warn") return "border-t-amber-500";
-  switch (status) {
-    case "processing": return "border-t-orange-500";
-    case "ready": return "border-t-emerald-500";
-    default: return "border-t-blue-500";
-  }
+function OrderCard({ order, onUpdateStatus, isUpdating }: {
+  order: any;
+  onUpdateStatus: (orderId: number, itemId: number, status: "new" | "processing" | "ready" | "served") => void;
+  isUpdating: boolean;
+}) {
+  const elapsedMinutes = getElapsedMinutes(order.createdAt);
+  const urgency = getUrgencyLevel(elapsedMinutes);
+  const allReady = order.items.every((i: any) => i.kitchenStatus === "ready" || i.kitchenStatus === "served");
+
+  return (
+    <Card className={cn(
+      "flex flex-col border-l-4 shadow-sm hover:shadow-md transition-all duration-200 animate-slide-up",
+      urgency === "critical" ? "border-l-rose-500" : urgency === "warn" ? "border-l-amber-500" : "border-l-primary",
+      allReady && "ring-1 ring-emerald-500/30 opacity-80"
+    )}>
+      <CardHeader className={cn(
+        "p-3 border-b pb-2.5",
+        urgency === "critical" ? "bg-rose-50/60 dark:bg-rose-950/10" :
+        urgency === "warn" ? "bg-amber-50/60 dark:bg-amber-950/10" :
+        "bg-muted/20"
+      )}>
+        <div className="flex justify-between items-center gap-2">
+          <div>
+            <CardTitle className="text-sm font-black tracking-tight">
+              #{order.orderNumber}
+            </CardTitle>
+            <div className="text-xs text-muted-foreground font-medium mt-0.5">
+              Table {order.tableNumber || "Takeaway"}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <TimerBadge createdAt={order.createdAt} />
+            {allReady && (
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                ✓ Done
+              </span>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-0 flex-1">
+        <div className="divide-y">
+          {order.items.map((item: any) => (
+            <div
+              key={item.id}
+              className={cn(
+                "p-3 transition-colors",
+                item.kitchenStatus === "ready" ? "bg-emerald-50/60 dark:bg-emerald-950/15" :
+                item.kitchenStatus === "served" ? "bg-muted/30 opacity-60" : ""
+              )}
+            >
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm leading-tight flex items-center gap-1.5">
+                    <span className={cn(
+                      "w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black shrink-0",
+                      item.kitchenStatus === "ready" || item.kitchenStatus === "served"
+                        ? "bg-emerald-500 text-white"
+                        : item.kitchenStatus === "processing"
+                        ? "bg-orange-500 text-white"
+                        : "bg-primary text-primary-foreground"
+                    )}>
+                      {item.quantity}
+                    </span>
+                    <span className={cn(
+                      "truncate",
+                      (item.kitchenStatus === "ready" || item.kitchenStatus === "served") && "line-through opacity-60"
+                    )}>
+                      {item.menuItemName}
+                    </span>
+                  </div>
+                  {item.notes && (
+                    <div className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 px-2 py-0.5 rounded inline-block">
+                      ⚠ {item.notes}
+                    </div>
+                  )}
+                </div>
+
+                <div className="shrink-0">
+                  {item.kitchenStatus === "new" && (
+                    <Button
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white h-7 text-[11px] font-bold rounded-lg px-2.5"
+                      onClick={() => onUpdateStatus(order.orderId, item.id, "processing")}
+                      disabled={isUpdating}
+                    >
+                      Start
+                    </Button>
+                  )}
+                  {item.kitchenStatus === "processing" && (
+                    <Button
+                      size="sm"
+                      className="bg-orange-500 hover:bg-orange-600 text-white h-7 text-[11px] font-bold rounded-lg px-2.5"
+                      onClick={() => onUpdateStatus(order.orderId, item.id, "ready")}
+                      disabled={isUpdating}
+                    >
+                      Ready
+                    </Button>
+                  )}
+                  {item.kitchenStatus === "ready" && (
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-semibold text-[10px] h-5 px-1.5">
+                        <CheckSquare className="w-2.5 h-2.5 mr-1" />
+                        Ready
+                      </Badge>
+                      <button
+                        className="text-[10px] text-muted-foreground hover:text-foreground underline underline-offset-2"
+                        onClick={() => onUpdateStatus(order.orderId, item.id, "served")}
+                      >
+                        Served
+                      </button>
+                    </div>
+                  )}
+                  {item.kitchenStatus === "served" && (
+                    <span className="text-[10px] text-muted-foreground font-medium">Served</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
+
+const COLUMNS = [
+  {
+    key: "new",
+    label: "New Orders",
+    color: "text-blue-600 dark:text-blue-400",
+    dot: "bg-blue-500",
+    headerBg: "bg-blue-50/80 dark:bg-blue-950/20 border-b border-blue-100 dark:border-blue-900",
+    emptyText: "No new orders",
+    icon: Zap,
+  },
+  {
+    key: "processing",
+    label: "Cooking",
+    color: "text-orange-600 dark:text-orange-400",
+    dot: "bg-orange-500",
+    headerBg: "bg-orange-50/80 dark:bg-orange-950/20 border-b border-orange-100 dark:border-orange-900",
+    emptyText: "Nothing cooking",
+    icon: Flame,
+  },
+  {
+    key: "ready",
+    label: "Ready to Serve",
+    color: "text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
+    headerBg: "bg-emerald-50/80 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900",
+    emptyText: "No items ready yet",
+    icon: CheckSquare,
+  },
+] as const;
 
 export default function Kitchen() {
   const { user } = useAuth();
@@ -75,7 +220,7 @@ export default function Kitchen() {
     {
       query: {
         enabled: !!branchId,
-        refetchInterval: 30000,
+        refetchInterval: 20000,
         queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined })
       }
     }
@@ -120,14 +265,29 @@ export default function Kitchen() {
     }
   };
 
-  const newCount = queue?.filter((o: any) => o.items.some((i: any) => i.kitchenStatus === "new")).length ?? 0;
-  const processingCount = queue?.filter((o: any) => o.items.some((i: any) => i.kitchenStatus === "processing")).length ?? 0;
-  const readyCount = queue?.reduce((acc: number, o: any) => acc + o.items.filter((i: any) => i.kitchenStatus === "ready").length, 0) ?? 0;
+  // Build columns: an order appears in a column based on the "dominant" item status
+  // (earliest stage wins — if any item is "new", it shows in New column, etc.)
+  const getOrderColumn = (order: any): "new" | "processing" | "ready" | null => {
+    const statuses = order.items.map((i: any) => i.kitchenStatus);
+    if (statuses.includes("new")) return "new";
+    if (statuses.includes("processing")) return "processing";
+    if (statuses.every((s: string) => s === "ready")) return "ready";
+    if (statuses.every((s: string) => s === "served")) return null;
+    return "ready";
+  };
 
-  // Sort: critical (>20m) first, then warn (>10m), then normal — so overdue orders surface immediately
   const sortedQueue = queue
     ? [...queue].sort((a: any, b: any) => getElapsedMinutes(b.createdAt) - getElapsedMinutes(a.createdAt))
     : [];
+
+  const columns = {
+    new: sortedQueue.filter((o: any) => getOrderColumn(o) === "new"),
+    processing: sortedQueue.filter((o: any) => getOrderColumn(o) === "processing"),
+    ready: sortedQueue.filter((o: any) => getOrderColumn(o) === "ready"),
+  };
+
+  const totalActive = sortedQueue.length;
+  const readyCount = columns.ready.flatMap((o: any) => o.items.filter((i: any) => i.kitchenStatus === "ready")).length;
 
   if (isLoading) {
     return (
@@ -138,9 +298,12 @@ export default function Kitchen() {
             <Skeleton className="h-4 w-48" />
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <Skeleton key={i} className="h-72 w-full rounded-xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-10 w-full rounded-xl" />
+              {[1, 2].map(j => <Skeleton key={j} className="h-44 w-full rounded-xl" />)}
+            </div>
           ))}
         </div>
       </div>
@@ -148,199 +311,97 @@ export default function Kitchen() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto h-full flex flex-col">
-      <div className="flex flex-wrap justify-between items-start mb-5 sm:mb-6 shrink-0 gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2.5">
-            <ChefHat className="w-7 h-7 text-primary" />
-            Kitchen Display
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">Live order queue — auto-refreshes every 30s</p>
-        </div>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 py-4 border-b bg-card shrink-0">
+        <div className="flex flex-wrap justify-between items-center gap-3 max-w-[1600px] mx-auto">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+              <ChefHat className="w-6 h-6 text-primary" />
+              Kitchen Display
+            </h1>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              {totalActive > 0 ? `${totalActive} active order${totalActive !== 1 ? "s" : ""}` : "No active orders"} · auto-refreshes every 20s
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {newCount > 0 && (
-            <Badge className="bg-blue-500 text-white border-0 font-semibold px-3 py-1 text-xs">
-              {newCount} new
-            </Badge>
-          )}
-          {processingCount > 0 && (
-            <Badge className="bg-orange-500 text-white border-0 font-semibold px-3 py-1 text-xs">
-              {processingCount} cooking
-            </Badge>
-          )}
-          {readyCount > 0 && (
-            <Badge className="bg-emerald-500 text-white border-0 font-semibold px-3 py-1 text-xs">
-              {readyCount} ready
-            </Badge>
-          )}
-          {readyCount > 0 && (
-            <Button
-              size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs font-semibold gap-1.5"
-              onClick={handleServeAllReady}
-              disabled={isServingAll}
+          <div className="flex items-center gap-2 flex-wrap">
+            {readyCount > 0 && (
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs font-semibold gap-1.5"
+                onClick={handleServeAllReady}
+                disabled={isServingAll}
+              >
+                <CheckCheck className="w-3.5 h-3.5" />
+                {isServingAll ? "Serving..." : `Serve All Ready (${readyCount})`}
+              </Button>
+            )}
+            <button
+              onClick={handleManualRefresh}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 hover:bg-muted/70 hover:text-foreground px-3 py-1.5 rounded-full border transition-colors"
             >
-              <CheckCheck className="w-3.5 h-3.5" />
-              {isServingAll ? "Serving..." : `Serve All Ready (${readyCount})`}
-            </Button>
-          )}
-          <button
-            onClick={handleManualRefresh}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 hover:bg-muted/70 hover:text-foreground px-3 py-1.5 rounded-full border transition-colors cursor-pointer"
-            title="Refresh now"
-          >
-            <RefreshCw className="w-3 h-3" />
-            Refresh
-          </button>
+              <RefreshCw className="w-3 h-3" />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Urgency legend */}
-      {sortedQueue.length > 0 && (
-        <div className="flex items-center gap-3 mb-4 shrink-0 flex-wrap">
-          <span className="text-xs text-muted-foreground font-medium">Timer:</span>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" /> &lt;10m — OK
+      {/* Kanban Board */}
+      <div className="flex-1 overflow-hidden">
+        {totalActive === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-4 p-8">
+            <div className="w-20 h-20 rounded-3xl bg-muted/40 flex items-center justify-center">
+              <ChefHat className="w-10 h-10 opacity-25" />
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold">Kitchen is clear!</p>
+              <p className="text-sm opacity-60 mt-1">No active orders at the moment</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold">
-            <div className="w-2 h-2 rounded-full bg-amber-500" /> 10–20m — Slow
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-rose-700 dark:text-rose-400 font-semibold">
-            <div className="w-2 h-2 rounded-full bg-rose-500" /> &gt;20m — Overdue
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 overflow-y-auto pb-4 stagger-children">
-        {sortedQueue.map((order: any) => {
-          const topStatus = order.items[0]?.kitchenStatus ?? "new";
-          const elapsedMinutes = getElapsedMinutes(order.createdAt);
-          const urgency = getUrgencyLevel(elapsedMinutes);
-          const allReady = order.items.every((i: any) => i.kitchenStatus === "ready");
-          return (
-            <Card
-              key={order.orderId}
-              className={cn(
-                "flex flex-col border-t-4 shadow-sm hover:shadow-md transition-shadow",
-                getCardBorderClass(topStatus, order.createdAt),
-                allReady && "ring-1 ring-emerald-500/30"
-              )}
-            >
-              <CardHeader className={cn(
-                "p-3 sm:p-4 border-b pb-3",
-                urgency === "critical" ? "bg-rose-50/50 dark:bg-rose-950/10" :
-                urgency === "warn" ? "bg-amber-50/50 dark:bg-amber-950/10" :
-                "bg-muted/10"
-              )}>
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <CardTitle className="text-base sm:text-lg font-bold">
-                      #{order.orderNumber}
-                    </CardTitle>
-                    <div className="text-xs text-muted-foreground mt-0.5 font-medium">
-                      Table {order.tableNumber || "Takeaway"}
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 h-full divide-x divide-border">
+            {COLUMNS.map((col) => {
+              const orders = columns[col.key];
+              const ColIcon = col.icon;
+              return (
+                <div key={col.key} className="flex flex-col h-full min-h-0 overflow-hidden">
+                  {/* Column header */}
+                  <div className={cn("px-4 py-3 shrink-0 flex items-center justify-between", col.headerBg)}>
+                    <div className={cn("flex items-center gap-2 font-bold text-sm", col.color)}>
+                      <ColIcon className="w-4 h-4" />
+                      {col.label}
+                    </div>
+                    <div className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-black text-white",
+                      col.dot
+                    )}>
+                      {orders.length}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <TimerBadge createdAt={order.createdAt} />
-                    {allReady && (
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
-                        All Ready
-                      </span>
+
+                  {/* Cards scroll area */}
+                  <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-muted/10">
+                    {orders.length === 0 ? (
+                      <div className="py-12 flex flex-col items-center justify-center text-muted-foreground/40 gap-2 border-2 border-dashed rounded-xl mt-2">
+                        <ColIcon className="w-7 h-7" />
+                        <span className="text-xs font-medium">{col.emptyText}</span>
+                      </div>
+                    ) : (
+                      orders.map((order: any) => (
+                        <OrderCard
+                          key={order.orderId}
+                          order={order}
+                          onUpdateStatus={handleUpdateStatus}
+                          isUpdating={updateItemStatus.isPending}
+                        />
+                      ))
                     )}
                   </div>
                 </div>
-              </CardHeader>
-
-              <CardContent className="p-0 flex-1 flex flex-col">
-                <div className="divide-y flex-1">
-                  {order.items.map((item: any) => (
-                    <div
-                      key={item.id}
-                      className={cn(
-                        "p-3 sm:p-4 transition-colors",
-                        item.kitchenStatus === "ready" ? "bg-emerald-50/80 dark:bg-emerald-950/20" : ""
-                      )}
-                    >
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-sm sm:text-base leading-tight flex items-start gap-2">
-                            <span className={cn(
-                              "w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0 mt-0.5",
-                              item.kitchenStatus === "ready"
-                                ? "bg-emerald-500 text-white"
-                                : item.kitchenStatus === "processing"
-                                ? "bg-orange-500 text-white"
-                                : "bg-primary text-primary-foreground"
-                            )}>
-                              {item.quantity}
-                            </span>
-                            <span className={item.kitchenStatus === "ready" ? "line-through opacity-60" : ""}>
-                              {item.menuItemName}
-                            </span>
-                          </div>
-                          {item.notes && (
-                            <div className="text-xs text-rose-600 dark:text-rose-400 font-medium mt-1.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 px-2 py-1 rounded-lg inline-block max-w-full">
-                              ⚠ {item.notes}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="shrink-0">
-                          {item.kitchenStatus === "new" && (
-                            <Button
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs font-bold rounded-lg"
-                              onClick={() => handleUpdateStatus(order.orderId, item.id, "processing")}
-                              data-testid={`btn-process-${item.id}`}
-                            >
-                              Start
-                            </Button>
-                          )}
-                          {item.kitchenStatus === "processing" && (
-                            <Button
-                              size="sm"
-                              className="bg-orange-500 hover:bg-orange-600 text-white h-8 text-xs font-bold rounded-lg"
-                              onClick={() => handleUpdateStatus(order.orderId, item.id, "ready")}
-                              data-testid={`btn-ready-${item.id}`}
-                            >
-                              Done
-                            </Button>
-                          )}
-                          {item.kitchenStatus === "ready" && (
-                            <div className="flex flex-col items-end gap-1">
-                              <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-semibold">
-                                <CheckSquare className="w-3 h-3 mr-1" />
-                                Ready
-                              </Badge>
-                              <button
-                                className="text-[10px] text-muted-foreground hover:text-foreground underline"
-                                onClick={() => handleUpdateStatus(order.orderId, item.id, "served")}
-                              >
-                                Served
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-
-        {sortedQueue.length === 0 && (
-          <div className="col-span-full py-24 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/5 gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center">
-              <ChefHat className="w-8 h-8 opacity-30" />
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-semibold">Kitchen is clear!</p>
-              <p className="text-sm opacity-60 mt-1">No active orders at the moment</p>
-            </div>
+              );
+            })}
           </div>
         )}
       </div>
