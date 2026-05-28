@@ -159,10 +159,10 @@ export default function Stock() {
   const filteredIngs = ingredients?.filter(i => i.name.toLowerCase().includes(search.toLowerCase())) || [];
   
   const getStockStatus = (current: number, min: number) => {
-    if (current <= 0) return { color: "text-rose-600 bg-rose-50", text: "Out of Stock" };
+    if (current <= 0) return { color: "text-rose-600 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-400", text: "Out of Stock" };
     if (current <= min) return { color: "text-destructive bg-destructive/10", text: "Low Stock" };
-    if (current <= min * 1.5) return { color: "text-amber-600 bg-amber-50", text: "Running Low" };
-    return { color: "text-emerald-600 bg-emerald-50", text: "Healthy" };
+    if (current <= min * 1.5) return { color: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400", text: "Running Low" };
+    return { color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-400", text: "Healthy" };
   };
 
   return (
@@ -184,26 +184,26 @@ export default function Stock() {
             <div className="text-2xl sm:text-3xl font-bold tabular-nums">{ingredients?.length || 0}</div>
           </CardContent>
         </Card>
-        <Card className="border-amber-200 bg-amber-50/50 shadow-sm">
+        <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
-            <CardTitle className="text-[10px] sm:text-sm font-medium text-amber-800 leading-tight">Low Stock</CardTitle>
-            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            <CardTitle className="text-[10px] sm:text-sm font-medium text-amber-800 dark:text-amber-300 leading-tight">Low Stock</CardTitle>
+            <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             </div>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-amber-600 tabular-nums">{lowStock?.length || 0}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">{lowStock?.length || 0}</div>
           </CardContent>
         </Card>
-        <Card className="border-rose-200 bg-rose-50/50 shadow-sm">
+        <Card className="border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-3 sm:px-4">
-            <CardTitle className="text-[10px] sm:text-sm font-medium text-rose-800 leading-tight">Out of Stock</CardTitle>
-            <div className="w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+            <CardTitle className="text-[10px] sm:text-sm font-medium text-rose-800 dark:text-rose-300 leading-tight">Out of Stock</CardTitle>
+            <div className="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             </div>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-rose-600 tabular-nums">{ingredients?.filter(i => Number(i.currentStock) <= 0).length || 0}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">{ingredients?.filter(i => Number(i.currentStock) <= 0).length || 0}</div>
           </CardContent>
         </Card>
       </div>

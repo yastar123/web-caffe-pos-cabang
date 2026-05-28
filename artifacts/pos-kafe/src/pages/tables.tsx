@@ -209,7 +209,7 @@ export default function Tables() {
                         </div>
                         <Badge variant="outline" className={cn("text-[10px] flex items-center gap-1 shrink-0 font-semibold", cfg.badge)}>
                           <Icon className="w-3 h-3" />
-                          <span className="hidden sm:inline capitalize">{table.status}</span>
+                          <span className="capitalize">{cfg.label}</span>
                         </Badge>
                       </div>
                     </CardHeader>

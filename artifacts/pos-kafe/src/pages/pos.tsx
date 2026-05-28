@@ -232,7 +232,7 @@ export default function POS() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
                 onClick={() => removeFromCart(item.menuItemId)}
               >
                 <Trash2 className="h-3.5 w-3.5" />

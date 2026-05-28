@@ -5,6 +5,7 @@ import {
   useGetMenuItems,
   useCreateMenuCategory,
   useUpdateMenuCategory,
+  useDeleteMenuCategory,
   useCreateMenuItem,
   useUpdateMenuItem,
   useDeleteMenuItem,
@@ -24,7 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Edit2, Trash2, UtensilsCrossed, Clock, ChefHat } from "lucide-react";
+import { Plus, Edit2, Trash2, UtensilsCrossed, Clock, ChefHat, Settings2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +44,9 @@ export default function Menu() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [isItemOpen, setIsItemOpen] = useState(false);
   const [isCatOpen, setIsCatOpen] = useState(false);
+  const [isCatManageOpen, setIsCatManageOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingCat, setEditingCat] = useState<any>(null);
 
   const { data: categories, isLoading: loadingCat } = useGetMenuCategories(
     { branchId: branchId ?? undefined },
@@ -56,9 +59,13 @@ export default function Menu() {
   );
 
   const createCat = useCreateMenuCategory();
+  const updateCat = useUpdateMenuCategory();
+  const deleteCat = useDeleteMenuCategory();
   const createItem = useCreateMenuItem();
   const updateItem = useUpdateMenuItem();
   const deleteItem = useDeleteMenuItem();
+
+  const invalidateCats = () => queryClient.invalidateQueries({ queryKey: getGetMenuCategoriesQueryKey({ branchId: branchId ?? undefined }) });
 
   const handleCategorySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,10 +75,35 @@ export default function Menu() {
         data: { name: fd.get("name") as string, branchId: branchId! }
       });
       toast({ title: "Category added" });
-      queryClient.invalidateQueries({ queryKey: getGetMenuCategoriesQueryKey({ branchId: branchId ?? undefined }) });
+      invalidateCats();
       setIsCatOpen(false);
     } catch {
       toast({ title: "Failed to add category", variant: "destructive" });
+    }
+  };
+
+  const handleCategoryUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingCat) return;
+    const fd = new FormData(e.currentTarget);
+    try {
+      await updateCat.mutateAsync({ id: editingCat.id, data: { name: fd.get("name") as string } });
+      toast({ title: "Category renamed" });
+      invalidateCats();
+      setEditingCat(null);
+    } catch {
+      toast({ title: "Failed to rename category", variant: "destructive" });
+    }
+  };
+
+  const handleCategoryDelete = async (id: number) => {
+    try {
+      await deleteCat.mutateAsync({ id });
+      toast({ title: "Category deleted" });
+      invalidateCats();
+      if (activeCategory === id.toString()) setActiveCategory("all");
+    } catch {
+      toast({ title: "Failed to delete category — remove all items first", variant: "destructive" });
     }
   };
 
@@ -131,27 +163,83 @@ export default function Menu() {
           <p className="text-muted-foreground mt-1 text-sm">Manage items, prices, and availability</p>
         </div>
         <div className="flex gap-2">
-          <Dialog open={isCatOpen} onOpenChange={setIsCatOpen}>
+          {/* Manage Categories dialog */}
+          <Dialog open={isCatManageOpen} onOpenChange={setIsCatManageOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" data-testid="btn-add-cat">
-                <Plus className="w-4 h-4 mr-1.5" /> Category
+              <Button variant="outline" size="icon" title="Manage categories">
+                <Settings2 className="w-4 h-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[400px]">
-              <form onSubmit={handleCategorySubmit}>
-                <DialogHeader>
-                  <DialogTitle>New Category</DialogTitle>
-                </DialogHeader>
-                <div className="py-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cat-name">Name</Label>
-                    <Input id="cat-name" name="name" required autoFocus data-testid="input-cat-name" />
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <DialogTitle>Manage Categories</DialogTitle>
+              </DialogHeader>
+              <div className="py-2 space-y-2 max-h-[55vh] overflow-y-auto pr-1">
+                {editingCat ? (
+                  <form onSubmit={handleCategoryUpdate} className="flex gap-2 items-center bg-muted/50 rounded-lg p-3">
+                    <Input name="name" defaultValue={editingCat.name} required autoFocus className="flex-1" />
+                    <Button type="submit" size="sm" disabled={updateCat.isPending}>Save</Button>
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setEditingCat(null)}>Cancel</Button>
+                  </form>
+                ) : null}
+                {categories?.map((cat: any) => (
+                  <div key={cat.id} className={cn("flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border bg-card", editingCat?.id === cat.id && "ring-2 ring-primary")}>
+                    <span className="font-medium text-sm flex-1 truncate">{cat.name}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingCat(cat)} title="Rename">
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" title="Delete">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete "{cat.name}"?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete the category. All menu items in this category must be removed first.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleCategoryDelete(cat.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={createCat.isPending} data-testid="btn-save-cat">Save</Button>
-                </DialogFooter>
-              </form>
+                ))}
+                {(!categories || categories.length === 0) && (
+                  <p className="text-center text-muted-foreground text-sm py-6">No categories yet</p>
+                )}
+              </div>
+              <DialogFooter>
+                <Dialog open={isCatOpen} onOpenChange={setIsCatOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm"><Plus className="w-3.5 h-3.5 mr-1.5" />New Category</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <form onSubmit={handleCategorySubmit}>
+                      <DialogHeader>
+                        <DialogTitle>New Category</DialogTitle>
+                      </DialogHeader>
+                      <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="cat-name">Name</Label>
+                          <Input id="cat-name" name="name" required autoFocus data-testid="input-cat-name" />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={createCat.isPending} data-testid="btn-save-cat">Save</Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
 

@@ -13,6 +13,7 @@ const DEMO_ROLES = [
   { label: "Cashier", email: "cashier@kopiflow.id" },
   { label: "Waiter", email: "waiter@kopiflow.id" },
   { label: "Chef", email: "chef@kopiflow.id" },
+  { label: "Warehouse", email: "warehouse@kopiflow.id" },
 ];
 
 export default function Login() {

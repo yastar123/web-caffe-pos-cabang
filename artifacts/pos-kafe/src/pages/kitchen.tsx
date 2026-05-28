@@ -95,6 +95,10 @@ export default function Kitchen() {
     updateItemStatus.mutate({ itemId, data: { status } });
   };
 
+  const handleManualRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined }) });
+  };
+
   const newCount = queue?.filter(o => o.items.some(i => i.kitchenStatus === "new")).length ?? 0;
   const processingCount = queue?.filter(o => o.items.some(i => i.kitchenStatus === "processing")).length ?? 0;
   const readyCount = queue?.filter(o => o.items.every(i => i.kitchenStatus === "ready")).length ?? 0;
@@ -144,10 +148,14 @@ export default function Kitchen() {
               {readyCount} ready
             </Badge>
           )}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-full border">
+          <button
+            onClick={handleManualRefresh}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 hover:bg-muted/70 hover:text-foreground px-3 py-1.5 rounded-full border transition-colors cursor-pointer"
+            title="Refresh now"
+          >
             <RefreshCw className="w-3 h-3" />
-            Auto-refresh
-          </div>
+            Refresh
+          </button>
         </div>
       </div>
 
