@@ -233,27 +233,34 @@
 
 @layer utilities {
   .animate-fade-in {
-    animation: fadeIn 0.25s ease-out;
+    animation: fadeIn 0.25s ease-out both;
   }
   .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
+    animation: slideUp 0.3s ease-out both;
   }
   .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
+    animation: scaleIn 0.2s ease-out both;
   }
   .animate-slide-in-right {
-    animation: slideInRight 0.3s ease-out;
+    animation: slideInRight 0.3s ease-out both;
   }
   .animate-bounce-in {
-    animation: bounceIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: bounceIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
-  /* Stagger children animations */
-  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-  .stagger-children > *:nth-child(2) { animation-delay: 60ms; }
-  .stagger-children > *:nth-child(3) { animation-delay: 120ms; }
-  .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
-  .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
-  .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+  /* Stagger children animations — applies slide-up to each child */
+  .stagger-children > * {
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .stagger-children > *:nth-child(1)  { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2)  { animation-delay: 55ms; }
+  .stagger-children > *:nth-child(3)  { animation-delay: 110ms; }
+  .stagger-children > *:nth-child(4)  { animation-delay: 165ms; }
+  .stagger-children > *:nth-child(5)  { animation-delay: 220ms; }
+  .stagger-children > *:nth-child(6)  { animation-delay: 275ms; }
+  .stagger-children > *:nth-child(7)  { animation-delay: 330ms; }
+  .stagger-children > *:nth-child(8)  { animation-delay: 385ms; }
+  .stagger-children > *:nth-child(9)  { animation-delay: 440ms; }
+  .stagger-children > *:nth-child(10) { animation-delay: 495ms; }
   /* Card hover lift */
   .card-hover {
     transition: transform 150ms ease, box-shadow 150ms ease;
@@ -264,11 +271,21 @@
   }
   /* Page entry animation */
   .page-enter {
-    animation: pageEnter 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: pageEnter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   /* Urgency pulse for overdue kitchen items */
   .urgency-pulse {
     animation: urgencyPulse 2s ease-in-out infinite;
+  }
+  /* Premium focus ring */
+  .focus-ring {
+    @apply focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:outline-none;
+  }
+  /* Shimmer for loading states */
+  .shimmer {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground)/0.05) 50%, hsl(var(--muted)) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
   }
 }
 
@@ -305,4 +322,14 @@
 @keyframes urgencyPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.65; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }

@@ -63,7 +63,7 @@ export default function Reports() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 stagger-children">
         {[
           { label: "Total Revenue", value: formatIDR(totalRev), Icon: DollarSign },
           { label: "Total Orders", value: String(totalOrd), Icon: ShoppingCart },

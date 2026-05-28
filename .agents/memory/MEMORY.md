@@ -1,0 +1,2 @@
+- [KopiFlow POS stack & structure](kopiflow-stack.md) — PNPM monorepo: Express API (port 8080) + React/Vite frontend (port 5000, base path /pos-kafe/). JWT custom auth, PostgreSQL via Drizzle ORM.
+- [KopiFlow auth & roles](kopiflow-auth.md) — Custom JWT auth (not Replit Auth). SESSION_SECRET env var signs JWTs. Roles: owner, manager, cashier, waiter, chef, warehouse. Demo accounts use password123.

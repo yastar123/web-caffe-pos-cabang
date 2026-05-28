@@ -188,7 +188,7 @@ export default function Tables() {
 
         {areas.map((area) => (
           <TabsContent key={area} value={area} className="mt-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 stagger-children">
               {tablesByArea[area]?.map((table) => {
                 const cfg = STATUS_CONFIG[table.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.available;
                 const Icon = cfg.icon;

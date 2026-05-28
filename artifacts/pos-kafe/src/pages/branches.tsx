@@ -128,7 +128,7 @@ export default function Branches() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 stagger-children">
         {isLoading ? (
           [1,2,3].map(i => <Skeleton key={i} className="h-48 w-full rounded-xl" />)
         ) : branches?.map(b => (

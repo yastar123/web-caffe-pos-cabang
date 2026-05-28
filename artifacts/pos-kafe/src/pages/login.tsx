@@ -82,7 +82,7 @@ export default function Login() {
 
       {/* Right login panel */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-[400px] space-y-8">
+        <div className="w-full max-w-[400px] space-y-8 animate-slide-up">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">

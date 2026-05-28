@@ -53,6 +53,7 @@ export default function Users() {
             email: fd.get('email') as string,
             role: fd.get('role') as any,
             branchId: fd.get('branchId') ? Number(fd.get('branchId')) : undefined,
+            isActive: fd.get('isActive') === 'on',
           } 
         });
         toast({ title: "Staff updated" });

@@ -104,26 +104,26 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {quickActions.map(action => (
           <Button
             key={action.href}
             variant="outline"
-            className="flex flex-col h-auto py-3 px-2 gap-2 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+            className="flex flex-row sm:flex-col h-auto py-3 px-4 sm:px-2 gap-3 sm:gap-2 hover:border-primary/40 hover:bg-primary/5 transition-all group justify-start sm:justify-center"
             asChild
           >
             <Link href={action.href}>
               <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform", action.color)}>
                 <action.icon className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground">{action.label}</span>
+              <span className="text-sm sm:text-xs font-semibold text-muted-foreground group-hover:text-foreground">{action.label}</span>
             </Link>
           </Button>
         ))}
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 stagger-children">
         {kpiCards.map((card) => (
           <Card
             key={card.label}
@@ -163,7 +163,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 stagger-children">
         {/* Peak Hours Chart */}
         <Card className="lg:col-span-2 shadow-sm">
           <CardHeader className="px-4 sm:px-6 pt-5 pb-2 border-b">
