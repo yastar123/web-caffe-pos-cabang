@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { useGetTables, useUpdateTableStatus, getGetTablesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Users, AlertCircle, CheckCircle2, Clock, Sparkles } from "lucide-react";
+import { Users, AlertCircle, CheckCircle2, Clock, Sparkles, RefreshCw } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -50,12 +50,14 @@ export default function Tables() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: tables, isLoading } = useGetTables(
     { branchId: branchId ?? undefined },
     {
       query: {
         enabled: !!branchId,
+        refetchInterval: 30000,
         queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }),
       },
     }
@@ -72,6 +74,12 @@ export default function Tables() {
       },
     },
   });
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
+    setTimeout(() => setIsRefreshing(false), 600);
+  }, [queryClient, branchId]);
 
   const handleStartOrder = (tableId: number) => {
     setLocation(`/pos?table=${tableId}`);
@@ -96,16 +104,16 @@ export default function Tables() {
   }
 
   const areas = ["indoor", "outdoor", "vip"];
-  const tablesByArea = areas.reduce((acc, area) => {
-    acc[area] = tables?.filter((t) => t.area === area) || [];
+  const tablesByArea = areas.reduce((acc: Record<string, any[]>, area) => {
+    acc[area] = tables?.filter((t: any) => t.area === area) || [];
     return acc;
-  }, {} as Record<string, typeof tables>);
+  }, {} as Record<string, any[]>);
 
   const statusCounts = {
-    available: tables?.filter(t => t.status === "available").length ?? 0,
-    occupied: tables?.filter(t => t.status === "occupied").length ?? 0,
-    reserved: tables?.filter(t => t.status === "reserved").length ?? 0,
-    cleaning: tables?.filter(t => t.status === "cleaning").length ?? 0,
+    available: tables?.filter((t: any) => t.status === "available").length ?? 0,
+    occupied: tables?.filter((t: any) => t.status === "occupied").length ?? 0,
+    reserved: tables?.filter((t: any) => t.status === "reserved").length ?? 0,
+    cleaning: tables?.filter((t: any) => t.status === "cleaning").length ?? 0,
   };
 
   const totalTables = (tables?.length ?? 0);
@@ -118,6 +126,16 @@ export default function Tables() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Table Floor Plan</h1>
           <p className="text-muted-foreground mt-1 text-sm">Manage tables and current occupancy</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 text-xs text-muted-foreground self-start"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin")} />
+          Refresh
+        </Button>
       </div>
 
       {/* Status summary bar */}
@@ -149,11 +167,14 @@ export default function Tables() {
           <div className="flex-1">
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-sm font-semibold">Overall Occupancy</span>
-              <span className="text-sm font-bold">{occupancyPct}%</span>
+              <span className="text-sm font-bold tabular-nums">{occupancyPct}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-rose-500 rounded-full transition-all duration-500"
+                className={cn(
+                  "h-full rounded-full transition-all duration-500",
+                  occupancyPct >= 80 ? "bg-rose-500" : occupancyPct >= 50 ? "bg-amber-500" : "bg-emerald-500"
+                )}
                 style={{ width: `${occupancyPct}%` }}
               />
             </div>

@@ -3,17 +3,39 @@ import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, ShoppingBag, Users, AlertTriangle, Activity, TrendingUp, TrendingDown, ListOrdered, Grid2X2, ChefHat, BarChart3 } from "lucide-react";
+import { DollarSign, ShoppingBag, Users, AlertTriangle, Activity, TrendingUp, TrendingDown, ListOrdered, Grid2X2, ChefHat, BarChart3, CalendarDays, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function getCurrentDate() {
+  return new Intl.DateTimeFormat("en-GB", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  }).format(new Date());
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
   const branchId = user?.branchId ?? undefined;
+  const queryClient = useQueryClient();
+  const [now, setNow] = useState(new Date());
 
-  const { data: overview, isLoading: isOverviewLoading } = useGetDashboardOverview(
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  const { data: overview, isLoading: isOverviewLoading, refetch: refetchOverview } = useGetDashboardOverview(
     { branchId },
     { query: { queryKey: ["dashboard-overview", branchId] } }
   );
@@ -27,6 +49,12 @@ export default function Dashboard() {
     { branchId },
     { query: { queryKey: ["dashboard-low-stock", branchId] } }
   );
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["dashboard-overview", branchId] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard-peak-hours", branchId] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard-low-stock", branchId] });
+  };
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount);
@@ -78,20 +106,32 @@ export default function Dashboard() {
   ];
 
   const quickActions = [
-    { label: "Open POS", href: "/pos", icon: ListOrdered, color: "bg-primary" },
-    { label: "Tables", href: "/tables", icon: Grid2X2, color: "bg-blue-500" },
-    { label: "Kitchen", href: "/kitchen", icon: ChefHat, color: "bg-orange-500" },
-    { label: "Reports", href: "/reports", icon: BarChart3, color: "bg-secondary" },
+    { label: "Open POS", href: "/pos", icon: ListOrdered, color: "bg-primary", desc: "Take orders" },
+    { label: "Tables", href: "/tables", icon: Grid2X2, color: "bg-blue-500", desc: "Floor plan" },
+    { label: "Kitchen", href: "/kitchen", icon: ChefHat, color: "bg-orange-500", desc: "Live queue" },
+    { label: "Reports", href: "/reports", icon: BarChart3, color: "bg-secondary", desc: "Analytics" },
   ];
+
+  const hour = now.getHours();
+  const clockDisplay = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div>
+        <div className="animate-slide-up">
+          <div className="flex items-center gap-2.5 mb-1">
+            <p className="text-sm text-muted-foreground font-medium">{getGreeting()},</p>
+            <span className="text-sm font-bold text-foreground">{user?.name}</span>
+            <span className="hidden sm:inline text-xs text-muted-foreground/60">·</span>
+            <span className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+              <CalendarDays className="w-3 h-3" />
+              {getCurrentDate()}
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Welcome back, <span className="font-semibold text-foreground">{user?.name}</span>
+          <p className="text-muted-foreground mt-0.5 text-sm sm:hidden">
+            <CalendarDays className="w-3 h-3 inline mr-1" />{getCurrentDate()}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -100,25 +140,37 @@ export default function Dashboard() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            Live Updates
+            Live · {clockDisplay}
           </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 text-muted-foreground"
+            onClick={handleRefresh}
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </Button>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
         {quickActions.map(action => (
           <Button
             key={action.href}
             variant="outline"
-            className="flex flex-row sm:flex-col h-auto py-3 px-4 sm:px-2 gap-3 sm:gap-2 hover:border-primary/40 hover:bg-primary/5 transition-all group justify-start sm:justify-center"
+            className="flex flex-col h-auto py-4 px-3 gap-2.5 hover:border-primary/40 hover:bg-primary/5 transition-all group justify-start"
             asChild
           >
             <Link href={action.href}>
-              <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform", action.color)}>
-                <action.icon className="w-4 h-4" />
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-sm", action.color)}>
+                <action.icon className="w-5 h-5" />
               </div>
-              <span className="text-sm sm:text-xs font-semibold text-muted-foreground group-hover:text-foreground">{action.label}</span>
+              <div className="text-left">
+                <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{action.label}</div>
+                <div className="text-[11px] text-muted-foreground">{action.desc}</div>
+              </div>
             </Link>
           </Button>
         ))}
@@ -264,7 +316,7 @@ export default function Dashboard() {
               </div>
             ) : lowStock && lowStock.length > 0 ? (
               <div className="space-y-2 stagger-children">
-                {lowStock.map((item) => {
+                {lowStock.map((item: any) => {
                   const pct = Math.min(100, Math.round((item.currentStock / item.minStock) * 100));
                   return (
                     <div key={item.ingredientId} className="p-3 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 transition-colors">

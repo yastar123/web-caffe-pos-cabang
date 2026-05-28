@@ -26,7 +26,6 @@ import {
   Plus,
   Minus,
   Trash2,
-  Image as ImageIcon,
   ShoppingCart,
   CreditCard,
   Banknote,
@@ -34,6 +33,7 @@ import {
   Wallet,
   X as XIcon,
   UtensilsCrossed,
+  AlertCircle,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocation } from "wouter";
@@ -48,12 +48,12 @@ interface CartItem {
   notes?: string;
 }
 
-const PAYMENT_ICONS = {
-  cash: Banknote,
-  card: CreditCard,
-  qris: QrCode,
-  ewallet: Wallet,
-};
+const PAYMENT_METHODS = [
+  { key: "cash" as const, label: "Cash", Icon: Banknote },
+  { key: "card" as const, label: "Card", Icon: CreditCard },
+  { key: "qris" as const, label: "QRIS", Icon: QrCode },
+  { key: "ewallet" as const, label: "E-Wallet", Icon: Wallet },
+];
 
 export default function POS() {
   const { user } = useAuth();
@@ -73,6 +73,7 @@ export default function POS() {
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "qris" | "ewallet" | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [showPaymentHint, setShowPaymentHint] = useState(false);
   const tableInitialized = useRef(false);
 
   const { data: categories, isLoading: loadingCategories } = useGetMenuCategories(
@@ -102,7 +103,7 @@ export default function POS() {
     if (tables && !tableInitialized.current) {
       const params = new URLSearchParams(window.location.search);
       const tableParam = params.get("table");
-      if (tableParam && tables.some(t => t.id.toString() === tableParam)) {
+      if (tableParam && tables.some((t: any) => t.id.toString() === tableParam)) {
         setSelectedTable(tableParam);
       }
       tableInitialized.current = true;
@@ -111,12 +112,12 @@ export default function POS() {
 
   const filteredItems = useMemo(() => {
     if (!menuItems) return [];
-    return menuItems.filter(item =>
+    return menuItems.filter((item: any) =>
       item.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [menuItems, search]);
 
-  const addToCart = (item: any) => {
+  const addToCart = (item: any): void => {
     setCart(prev => {
       const existing = prev.find(i => i.menuItemId === item.id);
       if (existing) {
@@ -153,6 +154,12 @@ export default function POS() {
 
   const handleProcessOrder = async () => {
     if (!selectedTable || cart.length === 0) return;
+    if (!paymentMethod) {
+      setShowPaymentHint(true);
+      toast({ title: "Select a payment method", description: "Please choose how the customer will pay.", variant: "destructive" });
+      return;
+    }
+    setShowPaymentHint(false);
     try {
       const order = await createOrder.mutateAsync({
         data: {
@@ -163,16 +170,14 @@ export default function POS() {
           discountAmount
         }
       });
-      if (paymentMethod) {
-        await processPayment.mutateAsync({
-          data: {
-            orderId: order.id,
-            branchId: branchId!,
-            amount: grandTotal,
-            method: paymentMethod as any,
-          }
-        });
-      }
+      await processPayment.mutateAsync({
+        data: {
+          orderId: order.id,
+          branchId: branchId!,
+          amount: grandTotal,
+          method: paymentMethod as any,
+        }
+      });
       toast({ title: "Order processed successfully" });
       setCart([]);
       setNotes("");
@@ -180,13 +185,12 @@ export default function POS() {
       setPaymentMethod(null);
       setSelectedTable("");
       setCartOpen(false);
+      queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
       setLocation("/tables");
     } catch {
       toast({ title: "Failed to process order", variant: "destructive" });
     }
   };
-
-  const selectedTableName = tables?.find(t => t.id.toString() === selectedTable);
 
   const renderCartItems = () => (
     <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
@@ -281,25 +285,36 @@ export default function POS() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
-        {(["cash", "card", "qris", "ewallet"] as const).map(method => {
-          const Icon = PAYMENT_ICONS[method];
-          return (
+      {/* Payment methods */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Payment Method</span>
+          {showPaymentHint && !paymentMethod && (
+            <div className="flex items-center gap-1 text-destructive text-xs font-medium">
+              <AlertCircle className="w-3 h-3" />
+              Required
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-4 gap-1.5">
+          {PAYMENT_METHODS.map(({ key, label, Icon }) => (
             <button
-              key={method}
-              onClick={() => setPaymentMethod(method === paymentMethod ? null : method)}
+              key={key}
+              onClick={() => { setPaymentMethod(key === paymentMethod ? null : key); setShowPaymentHint(false); }}
               className={cn(
                 "flex flex-col items-center gap-1 py-2 px-1 rounded-xl border text-xs font-semibold capitalize transition-all",
-                paymentMethod === method
+                paymentMethod === key
                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : showPaymentHint && !paymentMethod
+                  ? "border-destructive/50 bg-destructive/5 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
                   : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
               )}
             >
               <Icon className="w-4 h-4" />
-              {method}
+              {label}
             </button>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
       <Button
@@ -311,6 +326,12 @@ export default function POS() {
       >
         {createOrder.isPending || processPayment.isPending ? "Processing..." : "Process Order"}
       </Button>
+
+      {!paymentMethod && cart.length > 0 && selectedTable && (
+        <p className="text-center text-xs text-muted-foreground">
+          Select a payment method to complete the order
+        </p>
+      )}
     </div>
   );
 
@@ -337,7 +358,7 @@ export default function POS() {
               <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
                 <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/40 rounded-xl gap-0.5">
                   <TabsTrigger value="all" className="rounded-lg text-xs font-semibold">All</TabsTrigger>
-                  {categories?.map(cat => (
+                  {categories?.map((cat: any) => (
                     <TabsTrigger key={cat.id} value={cat.id.toString()} className="rounded-lg text-xs font-semibold whitespace-nowrap">
                       {cat.name}
                     </TabsTrigger>
@@ -359,7 +380,7 @@ export default function POS() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {filteredItems.map(item => {
+                {filteredItems.map((item: any) => {
                   const inCart = cart.find(c => c.menuItemId === item.id);
                   return (
                     <Card
@@ -397,7 +418,7 @@ export default function POS() {
                       </div>
                       <CardContent className="p-3 flex flex-col flex-1 justify-between">
                         <p className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2">{item.name}</p>
-                        <p className="text-primary font-bold text-xs sm:text-sm mt-2">{formatIDR(Number(item.price))}</p>
+                        <p className="text-primary font-bold text-xs sm:text-sm mt-2 tabular-nums">{formatIDR(Number(item.price))}</p>
                       </CardContent>
                     </Card>
                   );
@@ -418,7 +439,7 @@ export default function POS() {
                 <SelectValue placeholder="Select Table" />
               </SelectTrigger>
               <SelectContent>
-                {tables?.filter(t => t.status === "available" || t.id.toString() === selectedTable).map(t => (
+                {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
                   <SelectItem key={t.id} value={t.id.toString()}>
                     Table {t.number}
                     {t.status === "occupied" ? " (occupied)" : ""}
@@ -473,7 +494,7 @@ export default function POS() {
                     <SelectValue placeholder="Select Table" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tables?.filter(t => t.status === "available" || t.id.toString() === selectedTable).map(t => (
+                    {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
                       <SelectItem key={t.id} value={t.id.toString()}>
                         Table {t.number}
                       </SelectItem>

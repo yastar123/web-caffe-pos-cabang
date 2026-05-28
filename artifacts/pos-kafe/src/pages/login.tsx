@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Coffee, Loader2, Eye, EyeOff } from "lucide-react";
+import { Coffee, Loader2, Eye, EyeOff, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const DEMO_ROLES = [
@@ -14,6 +14,15 @@ const DEMO_ROLES = [
   { label: "Waiter", email: "waiter@kopiflow.id" },
   { label: "Chef", email: "chef@kopiflow.id" },
   { label: "Warehouse", email: "warehouse@kopiflow.id" },
+];
+
+const FEATURES = [
+  "Table & reservation management",
+  "Real-time kitchen display system",
+  "Multi-branch analytics & reports",
+  "Inventory & stock control",
+  "Customer loyalty program",
+  "Role-based staff access",
 ];
 
 export default function Login() {
@@ -50,9 +59,15 @@ export default function Login() {
     <div className="min-h-screen flex w-full bg-background">
       {/* Left branding panel */}
       <div className="hidden lg:flex w-[45%] xl:w-[55%] bg-primary items-center justify-center p-12 relative overflow-hidden shrink-0">
+        {/* Background image */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-15 mix-blend-multiply pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/70" />
         <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-primary to-transparent" />
+
+        {/* Decorative floating shapes */}
+        <div className="absolute top-12 right-12 w-48 h-48 rounded-full bg-white/5 border border-white/10" />
+        <div className="absolute bottom-24 right-24 w-28 h-28 rounded-full bg-white/5 border border-white/10" />
+        <div className="absolute top-1/2 -translate-y-1/2 right-0 w-px h-48 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
 
         <div className="relative z-10 flex flex-col items-start text-primary-foreground max-w-lg animate-fade-in">
           <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8 border border-white/20 shadow-2xl">
@@ -61,22 +76,27 @@ export default function Login() {
           <h1 className="text-4xl xl:text-5xl font-bold tracking-tight mb-4 leading-tight">
             KopiFlow POS
           </h1>
-          <p className="text-lg text-white/75 leading-relaxed mb-12">
+          <p className="text-lg text-white/75 leading-relaxed mb-10">
             The precision instrument for modern cafe operations. Fast, powerful, and built for the rush.
           </p>
-          <div className="space-y-4 w-full">
-            <p className="text-xs font-semibold uppercase tracking-widest text-white/50">What's included</p>
-            {[
-              "Table & reservation management",
-              "Real-time kitchen display",
-              "Multi-branch analytics",
-              "Inventory & stock control",
-            ].map((feature) => (
-              <div key={feature} className="flex items-center gap-3 text-sm text-white/80">
-                <div className="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0" />
+          <div className="space-y-3 w-full">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-white/40 mb-4">What's included</p>
+            {FEATURES.map((feature, i) => (
+              <div
+                key={feature}
+                className="flex items-center gap-3 text-sm text-white/80 animate-slide-up"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div className="w-5 h-5 rounded-full bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
                 {feature}
               </div>
             ))}
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-white/15 w-full">
+            <p className="text-xs text-white/40">Trusted by modern cafes across Indonesia</p>
           </div>
         </div>
       </div>
@@ -86,7 +106,7 @@ export default function Login() {
         <div className="w-full max-w-[400px] space-y-8 animate-slide-up">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
               <Coffee className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-xl text-foreground">KopiFlow POS</span>
@@ -128,6 +148,7 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                   tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -159,7 +180,7 @@ export default function Login() {
                   key={role.email}
                   type="button"
                   onClick={() => { setEmail(role.email); setPassword("password123"); }}
-                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-muted/50 hover:bg-muted text-foreground transition-colors min-h-[36px] font-medium"
+                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-muted/50 hover:bg-muted hover:border-primary/30 text-foreground transition-all min-h-[36px] font-medium"
                 >
                   {role.label}
                 </button>

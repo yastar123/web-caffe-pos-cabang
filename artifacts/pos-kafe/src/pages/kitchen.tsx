@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, CheckSquare, RefreshCw, ChefHat, Flame, AlertTriangle } from "lucide-react";
+import { Clock, CheckSquare, RefreshCw, ChefHat, Flame, AlertTriangle, CheckCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ function TimerBadge({ createdAt }: { createdAt: string }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setMinutes(getElapsedMinutes(createdAt));
-    }, 30000);
+    }, 60000);
     return () => clearInterval(interval);
   }, [createdAt]);
 
@@ -68,6 +68,7 @@ export default function Kitchen() {
   const branchId = user?.branchId;
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [isServingAll, setIsServingAll] = useState(false);
 
   const { data: queue, isLoading } = useGetKitchenQueue(
     { branchId: branchId ?? undefined },
@@ -82,9 +83,6 @@ export default function Kitchen() {
 
   const updateItemStatus = useUpdateKitchenItemStatus({
     mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined }) });
-      },
       onError: () => {
         toast({ title: "Failed to update status", variant: "destructive" });
       }
@@ -92,16 +90,39 @@ export default function Kitchen() {
   });
 
   const handleUpdateStatus = (_orderId: number, itemId: number, status: "new" | "processing" | "ready" | "served") => {
-    updateItemStatus.mutate({ itemId, data: { status } });
+    updateItemStatus.mutate({ itemId, data: { status } }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined }) });
+      }
+    });
   };
 
   const handleManualRefresh = () => {
     queryClient.invalidateQueries({ queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined }) });
   };
 
-  const newCount = queue?.filter(o => o.items.some(i => i.kitchenStatus === "new")).length ?? 0;
-  const processingCount = queue?.filter(o => o.items.some(i => i.kitchenStatus === "processing")).length ?? 0;
-  const readyCount = queue?.filter(o => o.items.every(i => i.kitchenStatus === "ready")).length ?? 0;
+  const handleServeAllReady = async () => {
+    const readyItems = queue?.flatMap((o: any) => o.items.filter((i: any) => i.kitchenStatus === "ready")) ?? [];
+    if (readyItems.length === 0) return;
+    setIsServingAll(true);
+    try {
+      await Promise.all(
+        readyItems.map((item: any) =>
+          updateItemStatus.mutateAsync({ itemId: item.id, data: { status: "served" } })
+        )
+      );
+      queryClient.invalidateQueries({ queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined }) });
+      toast({ title: `${readyItems.length} item${readyItems.length !== 1 ? "s" : ""} marked as served` });
+    } catch {
+      toast({ title: "Some items could not be served", variant: "destructive" });
+    } finally {
+      setIsServingAll(false);
+    }
+  };
+
+  const newCount = queue?.filter((o: any) => o.items.some((i: any) => i.kitchenStatus === "new")).length ?? 0;
+  const processingCount = queue?.filter((o: any) => o.items.some((i: any) => i.kitchenStatus === "processing")).length ?? 0;
+  const readyCount = queue?.reduce((acc: number, o: any) => acc + o.items.filter((i: any) => i.kitchenStatus === "ready").length, 0) ?? 0;
 
   if (isLoading) {
     return (
@@ -148,6 +169,17 @@ export default function Kitchen() {
               {readyCount} ready
             </Badge>
           )}
+          {readyCount > 0 && (
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs font-semibold gap-1.5"
+              onClick={handleServeAllReady}
+              disabled={isServingAll}
+            >
+              <CheckCheck className="w-3.5 h-3.5" />
+              {isServingAll ? "Serving..." : `Serve All Ready (${readyCount})`}
+            </Button>
+          )}
           <button
             onClick={handleManualRefresh}
             className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 hover:bg-muted/70 hover:text-foreground px-3 py-1.5 rounded-full border transition-colors cursor-pointer"
@@ -176,16 +208,18 @@ export default function Kitchen() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 overflow-y-auto pb-4 stagger-children">
-        {queue?.map((order) => {
+        {queue?.map((order: any) => {
           const topStatus = order.items[0]?.kitchenStatus ?? "new";
           const elapsedMinutes = getElapsedMinutes(order.createdAt);
           const urgency = getUrgencyLevel(elapsedMinutes);
+          const allReady = order.items.every((i: any) => i.kitchenStatus === "ready");
           return (
             <Card
               key={order.orderId}
               className={cn(
                 "flex flex-col border-t-4 shadow-sm hover:shadow-md transition-shadow",
-                getCardBorderClass(topStatus, order.createdAt)
+                getCardBorderClass(topStatus, order.createdAt),
+                allReady && "ring-1 ring-emerald-500/30"
               )}
             >
               <CardHeader className={cn(
@@ -203,13 +237,20 @@ export default function Kitchen() {
                       Table {order.tableNumber || "Takeaway"}
                     </div>
                   </div>
-                  <TimerBadge createdAt={order.createdAt} />
+                  <div className="flex flex-col items-end gap-1">
+                    <TimerBadge createdAt={order.createdAt} />
+                    {allReady && (
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                        All Ready
+                      </span>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
 
               <CardContent className="p-0 flex-1 flex flex-col">
                 <div className="divide-y flex-1">
-                  {order.items.map((item) => (
+                  {order.items.map((item: any) => (
                     <div
                       key={item.id}
                       className={cn(
@@ -263,10 +304,18 @@ export default function Kitchen() {
                             </Button>
                           )}
                           {item.kitchenStatus === "ready" && (
-                            <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-semibold">
-                              <CheckSquare className="w-3 h-3 mr-1" />
-                              Ready
-                            </Badge>
+                            <div className="flex flex-col items-end gap-1">
+                              <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-semibold">
+                                <CheckSquare className="w-3 h-3 mr-1" />
+                                Ready
+                              </Badge>
+                              <button
+                                className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                                onClick={() => handleUpdateStatus(order.orderId, item.id, "served")}
+                              >
+                                Served
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
