@@ -35,7 +35,7 @@ const queryClient = new QueryClient({
 
 function PageWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in h-full min-h-0">
       {children}
     </div>
   );

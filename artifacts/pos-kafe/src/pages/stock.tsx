@@ -98,6 +98,7 @@ export default function Stock() {
           unit: fd.get('unit') as string,
           currentStock: 0,
           minStock: Number(fd.get('minStock')),
+          costPerUnit: fd.get('costPerUnit') ? Number(fd.get('costPerUnit')) : undefined,
         }
       });
       toast({ title: "Ingredient added" });
@@ -253,8 +254,8 @@ export default function Stock() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="supplierName">Primary Supplier</Label>
-                      <Input id="supplierName" name="supplierName" data-testid="input-ing-supp"/>
+                      <Label htmlFor="costPerUnit">Cost per Unit (IDR)</Label>
+                      <Input id="costPerUnit" name="costPerUnit" type="number" step="1" min="0" placeholder="Optional" data-testid="input-ing-cost"/>
                     </div>
                   </div>
                   <DialogFooter>

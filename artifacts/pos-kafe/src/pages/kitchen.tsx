@@ -361,7 +361,7 @@ export default function Kitchen() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 h-full divide-x divide-border">
+          <div className="grid grid-cols-1 sm:grid-cols-3 h-full divide-y sm:divide-y-0 sm:divide-x divide-border">
             {COLUMNS.map((col) => {
               const orders = columns[col.key];
               const ColIcon = col.icon;
