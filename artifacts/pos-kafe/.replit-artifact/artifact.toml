@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "POS Kafe Multi-Cabang"
+version = "1.0.0"
+id = "artifacts/pos-kafe"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18775
+
+[services.development]
+run = "pnpm --filter @workspace/pos-kafe run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pos-kafe", "run", "build" ]
+publicDir = "artifacts/pos-kafe/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18775"
+BASE_PATH = "/"

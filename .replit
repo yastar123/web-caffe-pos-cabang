@@ -26,3 +26,17 @@ externalPort = 8080
 [[ports]]
 localPort = 8081
 externalPort = 80
+
+[[ports]]
+localPort = 18775
+externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_URL = "https://pssaivyyhtkckbvdahjo.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_AJ7YGcLIoUZRFArb1rxgdA_Oc0zCa7k"
+CLOUDINARY_CLOUD_NAME = "dhlocgatj"
+CLOUDINARY_API_KEY = "433829665281736"
+NEXT_PUBLIC_SUPABASE_URL = "https://pssaivyyhtkckbvdahjo.supabase.co"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_AJ7YGcLIoUZRFArb1rxgdA_Oc0zCa7k"

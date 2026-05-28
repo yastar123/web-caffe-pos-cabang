@@ -1,0 +1,71 @@
+Modul fitur sistem
+
+Table management
+Denah meja per area (indoor, outdoor, VIP)
+Status meja: tersedia / terisi / reserved / dibersihkan
+Gabung & pisah meja
+Pindah meja antar area
+Timer durasi duduk tamu
+Booking meja
+Reservasi via web / WhatsApp / in-app
+Pilih tanggal, jam, jumlah tamu
+Konfirmasi otomatis + reminder
+Waitlist jika meja penuh
+Deposit booking (opsional)
+Riwayat reservasi pelanggan
+Kitchen display (KDS)
+Tampilan order real-time di dapur
+Urutan prioritas order
+Timer estimasi masak per item
+Status: baru / diproses / siap / dikirim
+Alert order terlambat
+Pisah stasiun (bar, grill, dll)
+Kasir POS
+Input order cepat & modifikasi item
+Pembayaran tunai, kartu, QRIS, e-wallet
+Split bill & partial payment
+Diskon, voucher, promo happy hour
+Cetak struk / kirim digital
+Void & refund dengan otorisasi
+Stok bahan
+Resep per menu (BOM / bill of material)
+Stok otomatis berkurang saat order
+Alert stok menipis & habis
+Purchase order ke supplier
+Stock opname harian / periodik
+Riwayat mutasi bahan
+Laporan penjualan
+Ringkasan harian / mingguan / bulanan
+Grafik tren penjualan & peak hours
+Menu terlaris & paling tidak laku
+Laporan per metode pembayaran
+Perbandingan antar cabang
+Export PDF & Excel
+Multi cabang
+Dashboard terpusat semua cabang
+Hak akses per cabang
+Menu & harga berbeda per cabang
+Transfer stok antar cabang
+Konsolidasi laporan keuangan
+Pengumuman & update terpusat
+Fitur pendukung
+Manajemen member & loyalty poin
+QR code menu (self-order tamu)
+Notifikasi push & email
+Audit log semua aktivitas
+Mode offline (auto-sync saat online)
+Struktur halaman / menu
+
+Menu utama	Sub-menu	Role yang bisa akses
+Dashboard	Overview harian, ringkasan pendapatan, alert stok	OwnerManajer
+Meja	Denah meja, status meja, merge/split/pindah	ManajerKasirPelayan
+Reservasi	Daftar booking, tambah reservasi, waitlist	ManajerKasirPelayan
+POS / Order	Input order, modifikasi, kirim ke dapur, checkout	KasirPelayan
+Dapur (KDS)	Antrian order, update status, timer, alert	Chef / Barista
+Stok	Bahan baku, resep, purchase order, stock opname	ManajerStaf Gudang
+Menu	Kategori, item menu, harga, foto, ketersediaan	ManajerOwner
+Laporan	Penjualan, stok, keuangan, performa cabang	OwnerManajer
+Pelanggan	Database member, riwayat transaksi, poin loyalty	ManajerKasir
+Cabang	Daftar cabang, transfer stok, perbandingan kinerja	Owner
+Pengaturan	Profil kafe, pajak, printer, integrasi payment, notifikasi	OwnerManajer
+Pengguna	Tambah staf, atur role, log aktivitas, shift	OwnerManajer
