@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "foCI-aTvUFNG_j-ZEMQAi"
+uri = "file://README.md"
+type = "text"
+title = "KopiFlow POS — README Lengkap"
