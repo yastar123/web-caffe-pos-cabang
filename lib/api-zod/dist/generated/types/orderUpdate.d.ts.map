@@ -1,0 +1,1 @@
+{"version":3,"file":"orderUpdate.d.ts","sourceRoot":"","sources":["../../../src/generated/types/orderUpdate.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAC;AAE7D,MAAM,WAAW,WAAW;IAC1B,MAAM,CAAC,EAAE,iBAAiB,CAAC;IAC3B,gBAAgB;IAChB,KAAK,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IACtB,cAAc,CAAC,EAAE,MAAM,CAAC;CACzB"}

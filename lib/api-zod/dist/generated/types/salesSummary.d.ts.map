@@ -1,0 +1,1 @@
+{"version":3,"file":"salesSummary.d.ts","sourceRoot":"","sources":["../../../src/generated/types/salesSummary.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,eAAe,CAAC;AAEjD,MAAM,WAAW,YAAY;IAC3B,YAAY,EAAE,MAAM,CAAC;IACrB,WAAW,EAAE,MAAM,CAAC;IACpB,iBAAiB,EAAE,MAAM,CAAC;IAC1B,OAAO,EAAE,WAAW,EAAE,CAAC;CACxB"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"imageUploadResult.d.ts","sourceRoot":"","sources":["../../../src/generated/types/imageUploadResult.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH,MAAM,WAAW,iBAAiB;IAChC,GAAG,EAAE,MAAM,CAAC;IACZ,QAAQ,EAAE,MAAM,CAAC;IACjB,gBAAgB;IAChB,KAAK,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IACtB,gBAAgB;IAChB,MAAM,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;CACxB"}

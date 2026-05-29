@@ -1,10 +1,17 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # compiled output
-dist
-tmp
 out-tsc
 *.tsbuildinfo
+
+# build outputs (generated, not committed)
+/dist
+/api
+artifacts/*/dist
+artifacts/api-server/api
+
+# temp files
+tmp
 .expo
 .expo-shared
 
@@ -47,3 +54,8 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
