@@ -91,6 +91,9 @@ async function buildAll() {
     "puppeteer-core",
     "electron",
     "express",
+    "pino",
+    "pino-http",
+    "pg",
   ];
 
   const commonConfig = {
@@ -100,10 +103,7 @@ async function buildAll() {
     logLevel: "info",
     external: externals,
     sourcemap: "linked",
-    plugins: [
-      // pino relies on workers to handle logging, instead of externalizing it we use a plugin to handle it
-      esbuildPluginPino({ transports: ["pino-pretty"] })
-    ],
+    plugins: [],
     banner: {
       js: `import { createRequire as __bannerCrReq } from 'node:module';
 import __bannerPath from 'node:path';
