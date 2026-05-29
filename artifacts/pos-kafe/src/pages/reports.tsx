@@ -17,11 +17,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
 import { format, subDays } from "date-fns";
-import { TrendingUp, DollarSign, ShoppingBag, Star, BarChart3, Trophy, Download } from "lucide-react";
+import { TrendingUp, DollarSign, ShoppingBag, Star, BarChart3, Trophy, Download, CalendarDays } from "lucide-react";
 import * as XLSX from "xlsx";
 import { cn } from "@/lib/utils";
 
 const COLORS = ["hsl(var(--primary))", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
+
+const PRESETS = [
+  { label: "Hari ini", start: () => format(new Date(), "yyyy-MM-dd"), end: () => format(new Date(), "yyyy-MM-dd") },
+  { label: "7 hari", start: () => format(subDays(new Date(), 6), "yyyy-MM-dd"), end: () => format(new Date(), "yyyy-MM-dd") },
+  { label: "30 hari", start: () => format(subDays(new Date(), 29), "yyyy-MM-dd"), end: () => format(new Date(), "yyyy-MM-dd") },
+  { label: "90 hari", start: () => format(subDays(new Date(), 89), "yyyy-MM-dd"), end: () => format(new Date(), "yyyy-MM-dd") },
+];
 
 export default function Reports() {
   const { user } = useAuth();
@@ -32,6 +39,15 @@ export default function Reports() {
   const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [appliedStart, setAppliedStart] = useState(startDate);
   const [appliedEnd, setAppliedEnd] = useState(endDate);
+  const [activePreset, setActivePreset] = useState<string>("30 hari");
+
+  const applyRange = (start: string, end: string, presetLabel?: string) => {
+    setStartDate(start);
+    setEndDate(end);
+    setAppliedStart(start);
+    setAppliedEnd(end);
+    setActivePreset(presetLabel ?? "");
+  };
 
   const queryParams = {
     startDate: appliedStart,
@@ -140,53 +156,91 @@ export default function Reports() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-primary" />
-            Analitik & Laporan
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">Ikhtisar kinerja bisnis</p>
-        </div>
-
-        <div className="flex items-end gap-2 flex-wrap">
-          <div className="flex items-end gap-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-medium">Dari</Label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="h-9 text-sm w-36"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-medium">Hingga</Label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="h-9 text-sm w-36"
-              />
-            </div>
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-primary" />
+              Analitik & Laporan
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">Ikhtisar kinerja bisnis</p>
           </div>
           <Button
             size="sm"
-            className="h-9"
-            onClick={() => { setAppliedStart(startDate); setAppliedEnd(endDate); }}
-          >
-            Terapkan
-          </Button>
-          <Button
-            size="sm"
             variant="outline"
-            className="h-9"
+            className="h-9 shrink-0"
             onClick={handleExportExcel}
             disabled={loadingSummary || loadingTop || loadingPayment}
           >
             <Download className="w-4 h-4 mr-1.5" />
             Export Excel
           </Button>
+        </div>
+
+        {/* Date filter */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-end p-4 bg-muted/30 rounded-xl border border-border/60">
+          {/* Quick presets */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+              <CalendarDays className="w-3.5 h-3.5" />
+              Rentang Cepat
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => applyRange(p.start(), p.end(), p.label)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all",
+                    activePreset === p.label
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-background text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="hidden sm:block h-12 w-px bg-border/60 mx-1" />
+          <div className="block sm:hidden h-px w-full bg-border/60" />
+
+          {/* Custom range */}
+          <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Rentang Kustom
+            </span>
+            <div className="flex flex-wrap gap-2 items-end">
+              <div className="space-y-1 flex-1 min-w-[120px]">
+                <Label className="text-xs">Dari</Label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => { setStartDate(e.target.value); setActivePreset(""); }}
+                  className="h-9 text-sm w-full"
+                />
+              </div>
+              <div className="space-y-1 flex-1 min-w-[120px]">
+                <Label className="text-xs">Hingga</Label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => { setEndDate(e.target.value); setActivePreset(""); }}
+                  className="h-9 text-sm w-full"
+                />
+              </div>
+              <Button
+                size="sm"
+                className="h-9 shrink-0"
+                onClick={() => { setAppliedStart(startDate); setAppliedEnd(endDate); setActivePreset(""); }}
+              >
+                Terapkan
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 

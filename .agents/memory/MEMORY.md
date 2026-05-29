@@ -1,3 +1,4 @@
+- [UI/UX audit pass](ui-ux-audit.md) — full audit of all 13 pages complete; CSS animations all defined; improvements applied to dark-mode hook, reports filter, POS mobile UX
 - [POS tax rate](pos-tax-rate.md) — now live from branch.taxRate; hardcoded 0.1 was removed in round 3
 - [Stock PO bug](stock-po-bug.md) — PurchaseOrderInput requires `items[]`; totalAmount not in API spec; fixed with items:[]
 - [Switch isActive bug](switch-isactive-bug.md) — HTML checkbox omits value when unchecked; must check `fd.get('isActive') === 'on'`

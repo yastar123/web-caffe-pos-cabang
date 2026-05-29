@@ -1,19 +1,28 @@
 import { useState, useEffect } from "react";
 
+function getInitialDarkMode(): boolean {
+  try {
+    const saved = localStorage.getItem("kopiflow-theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  } catch {
+    return false;
+  }
+}
+
 export function useDarkMode() {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(getInitialDarkMode);
 
   useEffect(() => {
-    const saved = localStorage.getItem("kopiflow-theme");
-    const shouldBeDark = saved ? saved === "dark" : false;
-    document.documentElement.classList.toggle("dark", shouldBeDark);
-    setIsDark(shouldBeDark);
-  }, []);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [isDark]);
 
   const toggle = () => {
     const newDark = !isDark;
     document.documentElement.classList.toggle("dark", newDark);
-    localStorage.setItem("kopiflow-theme", newDark ? "dark" : "light");
+    try {
+      localStorage.setItem("kopiflow-theme", newDark ? "dark" : "light");
+    } catch {}
     setIsDark(newDark);
   };
 

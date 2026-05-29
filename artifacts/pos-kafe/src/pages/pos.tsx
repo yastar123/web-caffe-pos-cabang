@@ -357,6 +357,29 @@ export default function POS() {
         {/* LEFT: Menu panel */}
         <div className="flex-1 lg:w-[60%] lg:flex-none flex flex-col border-r h-full overflow-hidden">
           <div className="p-4 border-b space-y-3 shrink-0 bg-card">
+            {/* Mobile table selector banner */}
+            <div className="lg:hidden">
+              <Select value={selectedTable} onValueChange={setSelectedTable}>
+                <SelectTrigger
+                  className={cn(
+                    "w-full h-9 text-sm font-semibold",
+                    !selectedTable && "border-amber-400/60 bg-amber-50/60 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
+                  )}
+                  data-testid="select-table-top"
+                >
+                  <SelectValue placeholder="⚠ Pilih meja terlebih dahulu" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
+                    <SelectItem key={t.id} value={t.id.toString()}>
+                      Meja {t.number}
+                      {t.status === "occupied" ? " (terisi)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -478,11 +501,19 @@ export default function POS() {
       {cart.length > 0 && !cartOpen && (
         <div className="fixed bottom-4 left-4 right-4 z-20 lg:hidden animate-bounce-in">
           <Button
-            className="w-full h-14 text-base font-bold shadow-2xl rounded-2xl"
+            className="w-full h-14 text-base font-bold shadow-2xl rounded-2xl flex items-center justify-between px-5"
             onClick={() => setCartOpen(true)}
           >
-            <ShoppingCart className="w-5 h-5 mr-2.5" />
-            {totalItems} item · {formatIDR(grandTotal)}
+            <div className="flex items-center gap-2.5">
+              <ShoppingCart className="w-5 h-5" />
+              <span>{totalItems} item</span>
+              {selectedTable && tables && (
+                <span className="text-primary-foreground/70 font-normal">
+                  · {(() => { const t = tables.find((t: any) => t.id.toString() === selectedTable); return t ? `Meja ${t.number}` : ""; })()}
+                </span>
+              )}
+            </div>
+            <span className="tabular-nums font-black">{formatIDR(grandTotal)}</span>
           </Button>
         </div>
       )}
