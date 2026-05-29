@@ -8,3 +8,5 @@
 - [DB must be seeded](db-seed-required.md) — DB schema is pushed but data is NOT auto-seeded; run scripts seed on fresh env or login fails
 - [Auth token getter](auth-token-getter.md) — setAuthTokenGetter must be called in main.tsx before render; Redirect must be imported from wouter in login.tsx
 - [Ingredients no supplierName](ingredients-no-supplier.md) — ingredients schema has no supplierName; stock.tsx "Pemasok" column replaced with costPerUnit
+- [API Server restart timeout](api-server-restart.md) — restart_workflow times out during esbuild build (~280ms); server does start but tool marks FAILED; use timeout=120 and verify via logs/curl
+- [Password reset backend](password-reset-backend.md) — PATCH /users/:id now accepts optional `password` field and bcrypt-hashes it; UserUpdate spec doesn't include it so cast as `any` on frontend
