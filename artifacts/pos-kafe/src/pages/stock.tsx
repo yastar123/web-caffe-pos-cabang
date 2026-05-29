@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { ImageUploadField } from "@/components/ui/image-upload-field";
 import {
   useGetIngredients,
   useCreateIngredient,
@@ -71,6 +72,7 @@ export default function Stock() {
           minStock: Number(fd.get("minStock")),
           currentStock: 0,
           costPerUnit: fd.get("costPerUnit") ? Number(fd.get("costPerUnit")) : 0,
+          imageUrl: (fd.get("imageUrl") as string) || null,
         }
       });
       toast({ title: "Bahan ditambahkan" });
@@ -220,6 +222,11 @@ export default function Stock() {
                       <Label htmlFor="costPerUnit">Biaya per Satuan (IDR) <span className="text-muted-foreground font-normal">Opsional</span></Label>
                       <Input id="costPerUnit" name="costPerUnit" type="number" data-testid="input-ing-cost" />
                     </div>
+                    <ImageUploadField
+                      name="imageUrl"
+                      label="Gambar Bahan (Opsional)"
+                      folder="pos-kafe/stock"
+                    />
                   </div>
                   <DialogFooter>
                     <Button type="submit" disabled={createIngredient.isPending} data-testid="btn-save-ingredient">Simpan</Button>

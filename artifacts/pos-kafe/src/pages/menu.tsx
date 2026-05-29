@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { ImageUploadField } from "@/components/ui/image-upload-field";
 import {
   useGetMenuCategories,
   useGetMenuItems,
@@ -297,16 +298,17 @@ export default function Menu() {
                     <Label htmlFor="description">Deskripsi</Label>
                     <Textarea id="description" name="description" defaultValue={editingItem?.description} data-testid="input-item-desc" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="prepTime">Waktu Persiapan (menit) *</Label>
-                      <Input id="prepTime" name="preparationTime" type="number" required defaultValue={editingItem?.preparationTime || 5} data-testid="input-item-prep" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="imageUrl">URL Gambar</Label>
-                      <Input id="imageUrl" name="imageUrl" type="url" defaultValue={editingItem?.imageUrl} data-testid="input-item-img" />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="prepTime">Waktu Persiapan (menit) *</Label>
+                    <Input id="prepTime" name="preparationTime" type="number" required defaultValue={editingItem?.preparationTime || 5} data-testid="input-item-prep" />
                   </div>
+                  <ImageUploadField
+                    key={editingItem?.id ?? "new"}
+                    name="imageUrl"
+                    defaultValue={editingItem?.imageUrl}
+                    label="Gambar Menu"
+                    folder="pos-kafe/menu"
+                  />
                   <div className="flex items-center space-x-2 mt-2">
                     <Switch id="isAvailable" name="isAvailable" defaultChecked={editingItem ? editingItem.isAvailable : true} data-testid="switch-item-avail" />
                     <Label htmlFor="isAvailable">Tersedia untuk dipesan</Label>

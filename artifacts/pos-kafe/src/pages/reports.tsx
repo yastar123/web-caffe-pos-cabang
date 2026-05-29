@@ -17,7 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
 import { format, subDays } from "date-fns";
-import { TrendingUp, DollarSign, ShoppingBag, Star, BarChart3, Trophy } from "lucide-react";
+import { TrendingUp, DollarSign, ShoppingBag, Star, BarChart3, Trophy, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { cn } from "@/lib/utils";
 
 const COLORS = ["hsl(var(--primary))", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
@@ -60,6 +61,55 @@ export default function Reports() {
 
   const formatIDR = (num: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
+
+  const handleExportExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    if (summary?.dailyRevenue && summary.dailyRevenue.length > 0) {
+      const revenueData = summary.dailyRevenue.map((r: any) => ({
+        "Tanggal": r.date,
+        "Pendapatan (IDR)": Number(r.revenue),
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(revenueData), "Tren Pendapatan");
+    }
+
+    if (topItems && topItems.length > 0) {
+      const topData = topItems.map((t: any) => ({
+        "Nama Item": t.menuItemName,
+        "Jumlah Terjual": Number(t.totalQuantity),
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(topData), "Item Terlaris");
+    }
+
+    if (paymentStats && paymentStats.length > 0) {
+      const payData = paymentStats.map((p: any) => ({
+        "Metode Pembayaran": p.method,
+        "Pendapatan (IDR)": Number(p.revenue),
+        "Jumlah Transaksi": Number(p.count ?? 0),
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(payData), "Metode Pembayaran");
+    }
+
+    if (isOwner && branchComparison && branchComparison.length > 0) {
+      const branchData = branchComparison.map((b: any) => ({
+        "Cabang": b.branchName,
+        "Pesanan": Number(b.orders),
+        "Pendapatan (IDR)": Number(b.revenue),
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(branchData), "Perbandingan Cabang");
+    }
+
+    const summarySheet = XLSX.utils.json_to_sheet([{
+      "Periode": `${appliedStart} s/d ${appliedEnd}`,
+      "Total Pendapatan (IDR)": summary?.totalRevenue ?? 0,
+      "Total Pesanan": summary?.totalOrders ?? 0,
+      "Rata-rata Nilai Pesanan (IDR)": summary?.avgOrderValue ?? 0,
+      "Item Terlaris": summary?.topItem ?? "-",
+    }]);
+    XLSX.utils.book_append_sheet(wb, summarySheet, "Ringkasan");
+
+    XLSX.writeFile(wb, `laporan-kopiflow-${appliedStart}-${appliedEnd}.xlsx`);
+  };
 
   const kpiCards = [
     {
@@ -126,6 +176,16 @@ export default function Reports() {
             onClick={() => { setAppliedStart(startDate); setAppliedEnd(endDate); }}
           >
             Terapkan
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9"
+            onClick={handleExportExcel}
+            disabled={loadingSummary && loadingTop && loadingPayment}
+          >
+            <Download className="w-4 h-4 mr-1.5" />
+            Export Excel
           </Button>
         </div>
       </div>

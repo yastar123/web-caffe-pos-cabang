@@ -2021,6 +2021,8 @@ components:
           type: number
         costPerUnit:
           type: ["number", "null"]
+        imageUrl:
+          type: ["string", "null"]
         branchId:
           type: integer
         supplierId:
@@ -2046,6 +2048,8 @@ components:
           type: number
         costPerUnit:
           type: ["number", "null"]
+        imageUrl:
+          type: ["string", "null"]
         branchId:
           type: integer
         supplierId:
@@ -2064,6 +2068,8 @@ components:
           type: number
         costPerUnit:
           type: ["number", "null"]
+        imageUrl:
+          type: ["string", "null"]
         supplierId:
           type: ["integer", "null"]
 

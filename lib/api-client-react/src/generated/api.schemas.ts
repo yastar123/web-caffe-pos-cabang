@@ -594,6 +594,8 @@ export interface Ingredient {
   minStock: number;
   /** @nullable */
   costPerUnit?: number | null;
+  /** @nullable */
+  imageUrl?: string | null;
   branchId: number;
   /** @nullable */
   supplierId?: number | null;
@@ -610,6 +612,8 @@ export interface IngredientInput {
   minStock: number;
   /** @nullable */
   costPerUnit?: number | null;
+  /** @nullable */
+  imageUrl?: string | null;
   branchId: number;
   /** @nullable */
   supplierId?: number | null;
@@ -622,6 +626,8 @@ export interface IngredientUpdate {
   minStock?: number;
   /** @nullable */
   costPerUnit?: number | null;
+  /** @nullable */
+  imageUrl?: string | null;
   /** @nullable */
   supplierId?: number | null;
 }

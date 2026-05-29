@@ -14,5 +14,7 @@ export interface IngredientUpdate {
   /** @nullable */
   costPerUnit?: number | null;
   /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
   supplierId?: number | null;
 }

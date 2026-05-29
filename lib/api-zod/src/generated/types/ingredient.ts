@@ -14,6 +14,8 @@ export interface Ingredient {
   minStock: number;
   /** @nullable */
   costPerUnit?: number | null;
+  /** @nullable */
+  imageUrl?: string | null;
   branchId: number;
   /** @nullable */
   supplierId?: number | null;

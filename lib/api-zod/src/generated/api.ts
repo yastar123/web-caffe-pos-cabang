@@ -875,6 +875,7 @@ export const GetIngredientsResponseItem = zod.object({
   "currentStock": zod.number(),
   "minStock": zod.number(),
   "costPerUnit": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
   "branchId": zod.number(),
   "supplierId": zod.number().nullish(),
   "supplierName": zod.string().nullish(),
@@ -890,6 +891,7 @@ export const CreateIngredientBody = zod.object({
   "currentStock": zod.number(),
   "minStock": zod.number(),
   "costPerUnit": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
   "branchId": zod.number(),
   "supplierId": zod.number().nullish()
 })
@@ -905,6 +907,7 @@ export const UpdateIngredientBody = zod.object({
   "currentStock": zod.number().optional(),
   "minStock": zod.number().optional(),
   "costPerUnit": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
   "supplierId": zod.number().nullish()
 })
 
@@ -915,6 +918,7 @@ export const UpdateIngredientResponse = zod.object({
   "currentStock": zod.number(),
   "minStock": zod.number(),
   "costPerUnit": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
   "branchId": zod.number(),
   "supplierId": zod.number().nullish(),
   "supplierName": zod.string().nullish(),

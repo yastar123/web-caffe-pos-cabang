@@ -11,6 +11,7 @@ export const ingredientsTable = pgTable("ingredients", {
   currentStock: numeric("current_stock", { precision: 12, scale: 3 }).notNull().default("0"),
   minStock: numeric("min_stock", { precision: 12, scale: 3 }).notNull().default("0"),
   costPerUnit: numeric("cost_per_unit", { precision: 12, scale: 2 }),
+  imageUrl: text("image_url"),
   branchId: integer("branch_id").notNull().references(() => branchesTable.id),
   supplierId: integer("supplier_id"),
   supplierName: text("supplier_name"),

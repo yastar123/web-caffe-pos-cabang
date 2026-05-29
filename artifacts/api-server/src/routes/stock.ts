@@ -15,6 +15,7 @@ function mapIngredient(i: typeof ingredientsTable.$inferSelect) {
     currentStock: current,
     minStock: min,
     costPerUnit: i.costPerUnit ? parseFloat(i.costPerUnit) : null,
+    imageUrl: i.imageUrl ?? null,
     branchId: i.branchId,
     supplierId: i.supplierId,
     supplierName: i.supplierName,
@@ -33,7 +34,7 @@ router.get("/ingredients", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/ingredients", requireAuth, async (req, res): Promise<void> => {
-  const { name, unit, currentStock, minStock, costPerUnit, branchId, supplierId } = req.body;
+  const { name, unit, currentStock, minStock, costPerUnit, imageUrl, branchId, supplierId } = req.body;
   if (!name || !unit || currentStock == null || minStock == null || !branchId) {
     res.status(400).json({ error: "name, unit, currentStock, minStock, branchId required" });
     return;
@@ -43,6 +44,7 @@ router.post("/ingredients", requireAuth, async (req, res): Promise<void> => {
     currentStock: currentStock.toString(),
     minStock: minStock.toString(),
     costPerUnit: costPerUnit?.toString(),
+    imageUrl: imageUrl || null,
     branchId, supplierId,
   }).returning();
   res.status(201).json(mapIngredient(item));
@@ -51,12 +53,13 @@ router.post("/ingredients", requireAuth, async (req, res): Promise<void> => {
 router.patch("/ingredients/:id", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   const updates: Partial<typeof ingredientsTable.$inferInsert> = {};
-  const { name, unit, currentStock, minStock, costPerUnit, supplierId } = req.body;
+  const { name, unit, currentStock, minStock, costPerUnit, imageUrl, supplierId } = req.body;
   if (name != null) updates.name = name;
   if (unit != null) updates.unit = unit;
   if (currentStock != null) updates.currentStock = currentStock.toString();
   if (minStock != null) updates.minStock = minStock.toString();
   if (costPerUnit !== undefined) updates.costPerUnit = costPerUnit?.toString();
+  if (imageUrl !== undefined) updates.imageUrl = imageUrl || null;
   if (supplierId !== undefined) updates.supplierId = supplierId;
   const [item] = await db.update(ingredientsTable).set(updates).where(eq(ingredientsTable.id, id)).returning();
   if (!item) { res.status(404).json({ error: "Ingredient not found" }); return; }
