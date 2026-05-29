@@ -57,7 +57,7 @@ router.post("/users", requireAuth, async (req, res): Promise<void> => {
 
 router.patch("/users/:id", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  const { name, email, role, branchId, isActive, avatarUrl } = req.body;
+  const { name, email, role, branchId, isActive, avatarUrl, password } = req.body;
   const updates: Partial<typeof usersTable.$inferInsert> = {};
   if (name != null) updates.name = name;
   if (email != null) updates.email = email;
@@ -65,6 +65,7 @@ router.patch("/users/:id", requireAuth, async (req, res): Promise<void> => {
   if (branchId !== undefined) updates.branchId = branchId;
   if (isActive != null) updates.isActive = isActive;
   if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl;
+  if (password) updates.passwordHash = await hashPassword(password);
   const [user] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning();
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   res.json(mapUser(user));

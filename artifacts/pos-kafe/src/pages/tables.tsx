@@ -160,7 +160,7 @@ export default function Tables() {
     {
       query: {
         enabled: !!branchId,
-        refetchInterval: 30000,
+        refetchInterval: 15000,
         queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }),
       },
     }
@@ -241,7 +241,7 @@ export default function Tables() {
             Denah Lantai
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {statusCounts.occupied} dari {totalTables} meja terisi · pembaruan otomatis setiap 30 detik
+            {statusCounts.occupied} dari {totalTables} meja terisi · pembaruan otomatis setiap 15 detik
           </p>
         </div>
         <Button

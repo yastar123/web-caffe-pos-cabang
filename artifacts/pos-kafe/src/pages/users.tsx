@@ -130,10 +130,15 @@ export default function Users() {
                   <Label htmlFor="email">Email / Nama Pengguna *</Label>
                   <Input id="email" name="email" type="email" required defaultValue={editingUser?.email} data-testid="input-user-email" />
                 </div>
-                {!editingUser && (
+                {!editingUser ? (
                   <div className="space-y-2">
                     <Label htmlFor="password">Kata Sandi Sementara *</Label>
                     <Input id="password" name="password" type="password" required data-testid="input-user-pw" />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Reset Kata Sandi <span className="text-muted-foreground font-normal text-xs">(kosongkan jika tidak diubah)</span></Label>
+                    <Input id="password" name="password" type="password" placeholder="Kata sandi baru..." data-testid="input-user-pw-reset" />
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">

@@ -41,6 +41,7 @@ export default function Stock() {
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("ingredients");
   const [isIngredientOpen, setIsIngredientOpen] = useState(false);
   const [isPoOpen, setIsPoOpen] = useState(false);
   const [movementIng, setMovementIng] = useState<any>(null);
@@ -184,7 +185,7 @@ export default function Stock() {
         ))}
       </div>
 
-      <Tabs defaultValue="ingredients">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v === "purchase-orders") setSearch(""); }}>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
           <TabsList className="bg-muted/40 rounded-xl p-1 h-auto gap-0.5">
             <TabsTrigger value="ingredients" className="rounded-lg font-semibold text-sm">Bahan</TabsTrigger>
@@ -192,13 +193,15 @@ export default function Stock() {
           </TabsList>
 
           <div className="flex gap-2">
-            <Input
-              placeholder="Cari bahan..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 text-sm w-full sm:w-48"
-              data-testid="input-search-stock"
-            />
+            {activeTab === "ingredients" && (
+              <Input
+                placeholder="Cari bahan..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-9 text-sm w-full sm:w-48"
+                data-testid="input-search-stock"
+              />
+            )}
             <Dialog open={isIngredientOpen} onOpenChange={setIsIngredientOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="h-9 shrink-0" data-testid="btn-add-ingredient">

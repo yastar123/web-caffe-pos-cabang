@@ -220,7 +220,7 @@ export default function Kitchen() {
     {
       query: {
         enabled: !!branchId,
-        refetchInterval: 20000,
+        refetchInterval: 10000,
         queryKey: getGetKitchenQueueQueryKey({ branchId: branchId ?? undefined })
       }
     }
@@ -334,7 +334,7 @@ export default function Kitchen() {
               )}
             </div>
             <p className="text-muted-foreground text-xs mt-0.5">
-              {totalActive > 0 ? `${totalActive} pesanan aktif` : "Tidak ada pesanan aktif"} · pembaruan otomatis setiap 20 detik
+              {totalActive > 0 ? `${totalActive} pesanan aktif` : "Tidak ada pesanan aktif"} · pembaruan otomatis setiap 10 detik
             </p>
           </div>
 

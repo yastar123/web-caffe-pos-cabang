@@ -269,7 +269,12 @@ export default function POS() {
             <Input
               type="number"
               value={discountAmount || ""}
-              onChange={(e) => setDiscountAmount(Number(e.target.value))}
+              onChange={(e) => {
+                const val = Math.min(Math.max(0, Number(e.target.value)), subtotal);
+                setDiscountAmount(val);
+              }}
+              min={0}
+              max={subtotal}
               className="h-7 text-right text-xs"
               placeholder="0"
             />

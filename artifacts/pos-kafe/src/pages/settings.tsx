@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import {
   useGetBranch,
@@ -12,13 +13,16 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Settings, User, Store, Percent, MapPin, Phone, Mail, Building2 } from "lucide-react";
+import { Settings, User, Store, Percent, MapPin, Phone, Mail, Building2, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function SettingsPage() {
   const { user, refreshUser } = useAuth();
   const branchId = user?.branchId;
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   const { data: branch, isLoading: loadingBranch } = useGetBranch(
     branchId || 0,
@@ -41,6 +45,29 @@ export default function SettingsPage() {
       toast({ title: "Profil diperbarui" });
     } catch {
       toast({ title: "Gagal memperbarui profil", variant: "destructive" });
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user) return;
+    const fd = new FormData(e.currentTarget);
+    const newPassword = fd.get("newPassword") as string;
+    const confirmPassword = fd.get("confirmPassword") as string;
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Kata sandi tidak cocok", description: "Konfirmasi kata sandi harus sama dengan kata sandi baru.", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: "Kata sandi terlalu pendek", description: "Kata sandi minimal 6 karakter.", variant: "destructive" });
+      return;
+    }
+    try {
+      await updateUser.mutateAsync({ id: user.id, data: { password: newPassword } as any });
+      toast({ title: "Kata sandi berhasil diubah", description: "Gunakan kata sandi baru untuk masuk berikutnya." });
+      (e.target as HTMLFormElement).reset();
+    } catch {
+      toast({ title: "Gagal mengubah kata sandi", variant: "destructive" });
     }
   };
 
@@ -133,6 +160,78 @@ export default function SettingsPage() {
           <CardFooter className="border-t bg-muted/5 pt-4">
             <Button type="submit" disabled={updateUser.isPending} data-testid="btn-save-profile">
               Perbarui Profil
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+
+      {/* Password change card */}
+      <Card className="shadow-sm">
+        <form onSubmit={handlePasswordSubmit}>
+          <CardHeader className="border-b bg-muted/20">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Lock className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-base sm:text-lg">Ubah Kata Sandi</CardTitle>
+                <CardDescription className="text-sm">Perbarui kata sandi masuk Anda</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-5 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Kata Sandi Baru</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  name="newPassword"
+                  type={showNewPw ? "text" : "password"}
+                  required
+                  minLength={6}
+                  placeholder="Minimal 6 karakter"
+                  className="pr-11"
+                  data-testid="input-new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(!showNewPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                  tabIndex={-1}
+                  aria-label={showNewPw ? "Sembunyikan" : "Tampilkan"}
+                >
+                  {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Konfirmasi Kata Sandi Baru</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPw ? "text" : "password"}
+                  required
+                  minLength={6}
+                  placeholder="Ulangi kata sandi baru"
+                  className="pr-11"
+                  data-testid="input-confirm-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPw(!showConfirmPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                  tabIndex={-1}
+                  aria-label={showConfirmPw ? "Sembunyikan" : "Tampilkan"}
+                >
+                  {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t bg-muted/5 pt-4">
+            <Button type="submit" disabled={updateUser.isPending} data-testid="btn-change-password">
+              Ubah Kata Sandi
             </Button>
           </CardFooter>
         </form>
