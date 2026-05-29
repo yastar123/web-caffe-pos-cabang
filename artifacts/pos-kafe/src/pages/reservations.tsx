@@ -161,7 +161,7 @@ export default function Reservations() {
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" defaultValue={defaultValues?.customerEmail || ""} data-testid="input-email" />
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="date">Tanggal *</Label>
           <Input id="date" name="date" type="date" required defaultValue={defaultValues?.date || date} data-testid="input-res-date" />

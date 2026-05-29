@@ -375,7 +375,8 @@ export default function Stock() {
               {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
             </div>
           ) : (
-            <div className="rounded-xl border overflow-hidden shadow-sm">
+            <div className="overflow-x-auto rounded-xl shadow-sm">
+            <div className="rounded-xl border overflow-hidden min-w-[480px]">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
@@ -443,7 +444,8 @@ export default function Stock() {
                 </TableBody>
               </Table>
             </div>
-          )}
+          </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="purchase-orders" className="mt-0">
@@ -452,7 +454,8 @@ export default function Stock() {
               {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
             </div>
           ) : (
-            <div className="rounded-xl border overflow-hidden shadow-sm">
+            <div className="overflow-x-auto rounded-xl shadow-sm">
+            <div className="rounded-xl border overflow-hidden min-w-[440px]">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
@@ -485,6 +488,7 @@ export default function Stock() {
                   )}
                 </TableBody>
               </Table>
+            </div>
             </div>
           )}
         </TabsContent>
