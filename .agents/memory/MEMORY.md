@@ -5,3 +5,4 @@
 - [API shape mismatches](api-shape-mismatches.md) — several pages used wrong field names against generated types; fixed in audit pass
 - [Auth context refreshUser](auth-refresh-user.md) — refreshUser was missing from AuthContextType; settings.tsx calls it; must be in context
 - [DB must be seeded](db-seed-required.md) — DB schema is pushed but data is NOT auto-seeded; run scripts seed on fresh env or login fails
+- [Auth token getter](auth-token-getter.md) — setAuthTokenGetter must be called in main.tsx before render; Redirect must be imported from wouter in login.tsx

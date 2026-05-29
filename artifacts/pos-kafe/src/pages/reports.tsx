@@ -182,7 +182,7 @@ export default function Reports() {
             variant="outline"
             className="h-9"
             onClick={handleExportExcel}
-            disabled={loadingSummary && loadingTop && loadingPayment}
+            disabled={loadingSummary || loadingTop || loadingPayment}
           >
             <Download className="w-4 h-4 mr-1.5" />
             Export Excel
