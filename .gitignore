@@ -6,7 +6,6 @@ out-tsc
 
 # build outputs (generated, not committed)
 /dist
-/api
 artifacts/*/dist
 artifacts/api-server/api
 
