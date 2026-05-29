@@ -91,10 +91,18 @@ async function buildAll() {
     "puppeteer-core",
     "electron",
     "express",
-    "pino",
-    "pino-http",
-    "pg",
   ];
+
+  const banner = {
+    js: `import { createRequire as __bannerCrReq } from 'node:module';
+import __bannerPath from 'node:path';
+import __bannerUrl from 'node:url';
+
+globalThis.require = __bannerCrReq(import.meta.url);
+globalThis.__filename = __bannerUrl.fileURLToPath(import.meta.url);
+globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
+    `,
+  };
 
   const commonConfig = {
     platform: "node",
@@ -103,33 +111,30 @@ async function buildAll() {
     logLevel: "info",
     external: externals,
     sourcemap: "linked",
-    plugins: [],
-    banner: {
-      js: `import { createRequire as __bannerCrReq } from 'node:module';
-import __bannerPath from 'node:path';
-import __bannerUrl from 'node:url';
-
-globalThis.require = __bannerCrReq(import.meta.url);
-globalThis.__filename = __bannerUrl.fileURLToPath(import.meta.url);
-globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
-    `,
-    },
+    banner,
   };
 
-  // Build standalone dev/prod server
+  // Build standalone dev/prod server (with pino workers bundled)
   await esbuild({
     ...commonConfig,
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
     outdir: distDir,
     outExtension: { ".js": ".mjs" },
+    plugins: [esbuildPluginPino({ transports: ["pino-pretty"] })],
   });
 
   // Build Vercel Serverless Function handler
+  // Bundle everything (including pino and pg) so the handler is fully self-contained.
+  // Only express is kept external so Vercel's static analyzer can detect the Express handler.
+  // NO esbuildPluginPino here — pino is bundled inline and writes to stdout directly
+  // without spawning worker threads (workers only needed when transport is configured).
   await esbuild({
     ...commonConfig,
     entryPoints: { index: path.resolve(artifactDir, "src/vercel.ts") },
     outdir: rootApiDir,
     outExtension: { ".js": ".mjs" },
+    plugins: [], // No pino plugin — no worker files generated
+    external: externals, // express is still external for Vercel detection
   });
 }
 
