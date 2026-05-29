@@ -335,6 +335,22 @@ export default function POS() {
     </div>
   );
 
+  if (!branchId) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center gap-5 p-8 text-center">
+        <div className="w-20 h-20 rounded-3xl bg-muted/40 flex items-center justify-center">
+          <UtensilsCrossed className="w-10 h-10 opacity-25" />
+        </div>
+        <div>
+          <p className="text-xl font-bold">Tidak ada cabang yang ditugaskan</p>
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+            Akun Anda belum terhubung ke cabang tertentu. Hubungi admin untuk mengatur penugasan cabang.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex h-full w-full bg-background overflow-hidden">

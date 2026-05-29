@@ -379,7 +379,7 @@ export default function Stock() {
                     <TableHead>Bahan</TableHead>
                     <TableHead>Level Stok</TableHead>
                     <TableHead className="hidden sm:table-cell">Status</TableHead>
-                    <TableHead className="hidden md:table-cell">Pemasok</TableHead>
+                    <TableHead className="hidden md:table-cell">Biaya/Unit</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -419,8 +419,8 @@ export default function Stock() {
                               {status.label}
                             </Badge>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
-                            {ing.supplierName ?? "-"}
+                          <TableCell className="hidden md:table-cell text-sm tabular-nums">
+                            {ing.costPerUnit ? formatIDR(Number(ing.costPerUnit)) : <span className="text-muted-foreground">—</span>}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button

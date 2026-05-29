@@ -195,7 +195,7 @@ export default function Dashboard() {
           <Card
             key={card.label}
             className={cn(
-              "border-t-4 shadow-sm hover:shadow-md transition-all duration-200 card-hover overflow-hidden",
+              "border-t-4 shadow-sm hover:shadow-md transition-all duration-200 card-hover overflow-hidden relative",
               card.accent,
               card.alert && "bg-destructive/[0.03]"
             )}
