@@ -423,7 +423,7 @@ export default function Menu() {
                   </div>
                 )}
                 {/* Prep time badge */}
-                <div className="absolute bottom-2 left-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="flex items-center gap-1 text-[10px] font-semibold bg-black/60 text-white px-2 py-1 rounded-full backdrop-blur-sm">
                     <Clock className="w-2.5 h-2.5" />
                     {item.preparationTime}m

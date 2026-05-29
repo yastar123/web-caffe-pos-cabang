@@ -191,20 +191,20 @@ export default function Users() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 stagger-children">
+      <div className="grid grid-cols-3 gap-3 stagger-children">
         {[
           { label: "Total Staf", value: totalUsers, icon: UsersIcon, color: "text-foreground" },
           { label: "Aktif", value: activeCount, icon: UserCheck, color: "text-emerald-600 dark:text-emerald-400" },
           { label: "Tidak Aktif", value: inactiveCount, icon: UserX, color: "text-rose-600 dark:text-rose-400" },
         ].map(s => (
           <Card key={s.label} className="shadow-sm card-hover">
-            <CardContent className="p-2.5 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
-              <div className="hidden sm:flex w-9 h-9 rounded-lg bg-primary/8 items-center justify-center shrink-0">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
                 <s.icon className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <div className={cn("text-xl sm:text-2xl font-bold tabular-nums", s.color)}>{isLoading ? "—" : s.value}</div>
-                <div className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{s.label}</div>
+                <div className={cn("text-2xl font-bold tabular-nums", s.color)}>{isLoading ? "—" : s.value}</div>
+                <div className="text-xs text-muted-foreground">{s.label}</div>
               </div>
             </CardContent>
           </Card>
@@ -256,8 +256,7 @@ export default function Users() {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-xl shadow-sm">
-          <div className="rounded-xl border overflow-hidden min-w-[380px]">
+          <div className="rounded-xl border overflow-hidden shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
@@ -325,7 +324,6 @@ export default function Users() {
                 )}
               </TableBody>
             </Table>
-          </div>
           </div>
           {filtered.length > 0 && (
             <p className="text-xs text-muted-foreground text-right">

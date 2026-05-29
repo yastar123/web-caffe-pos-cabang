@@ -346,6 +346,8 @@ export default function Reports() {
                     outerRadius={85}
                     innerRadius={45}
                     paddingAngle={3}
+                    label={({ method, percent }) => `${method} ${Math.round(percent * 100)}%`}
+                    labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
                   >
                     {paymentStats.map((_: any, i: number) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
