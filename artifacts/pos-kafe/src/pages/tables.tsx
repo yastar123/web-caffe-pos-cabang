@@ -234,7 +234,7 @@ export default function Tables() {
             Denah Lantai
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {statusCounts.occupied} dari {totalTables} meja terisi · pembaruan otomatis setiap 30d
+            {statusCounts.occupied} dari {totalTables} meja terisi · pembaruan otomatis setiap 30 detik
           </p>
         </div>
         <Button

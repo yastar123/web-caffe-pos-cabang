@@ -27,8 +27,7 @@ export default function Branches() {
   const [editingBranch, setEditingBranch] = useState<any>(null);
 
   const { data: branches, isLoading } = useGetBranches(
-    {},
-    { query: { queryKey: getGetBranchesQueryKey({}) } }
+    { query: { queryKey: getGetBranchesQueryKey() } }
   );
 
   const createBranch = useCreateBranch();
@@ -38,23 +37,21 @@ export default function Branches() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const data = {
-      name: fd.get("name") as string,
-      address: fd.get("address") as string || undefined,
-      phone: fd.get("phone") as string || undefined,
-      email: fd.get("email") as string || undefined,
-      taxRate: fd.get("taxRate") ? Number(fd.get("taxRate")) : 10,
-      isActive: fd.get("isActive") === "on",
-    };
+    const name = fd.get("name") as string;
+    const address = (fd.get("address") as string) || "";
+    const phone = (fd.get("phone") as string) || "";
+    const email = (fd.get("email") as string) || undefined;
+    const taxRate = fd.get("taxRate") ? Number(fd.get("taxRate")) : 10;
+    const isActive = fd.get("isActive") === "on";
     try {
       if (editingBranch) {
-        await updateBranch.mutateAsync({ id: editingBranch.id, data });
+        await updateBranch.mutateAsync({ id: editingBranch.id, data: { name, address, phone, email, taxRate, isActive } });
         toast({ title: "Cabang diperbarui" });
       } else {
-        await createBranch.mutateAsync({ data });
+        await createBranch.mutateAsync({ data: { name, address, phone, email, taxRate } });
         toast({ title: "Cabang dibuat" });
       }
-      queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey({}) });
+      queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey() });
       setIsOpen(false);
       setEditingBranch(null);
     } catch {
@@ -66,7 +63,7 @@ export default function Branches() {
     try {
       await deleteBranch.mutateAsync({ id });
       toast({ title: "Cabang dihapus" });
-      queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey({}) });
+      queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey() });
     } catch {
       toast({ title: "Gagal menghapus cabang", variant: "destructive" });
     }

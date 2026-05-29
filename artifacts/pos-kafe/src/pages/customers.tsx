@@ -41,8 +41,8 @@ export default function Customers() {
   }, [search]);
 
   const { data: customers, isLoading } = useGetCustomers(
-    { query: debouncedSearch || undefined },
-    { query: { queryKey: getGetCustomersQueryKey({ query: debouncedSearch || undefined }) } }
+    { search: debouncedSearch || undefined },
+    { query: { queryKey: getGetCustomersQueryKey({ search: debouncedSearch || undefined }) } }
   );
 
   const createCustomer = useCreateCustomer();

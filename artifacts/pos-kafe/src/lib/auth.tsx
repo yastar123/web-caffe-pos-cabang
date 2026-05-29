@@ -9,6 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (data: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -47,6 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isLoading = isMeLoading && !!token;
 
+  const refreshUser = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["me"] });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -56,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         logout,
+        refreshUser,
       }}
     >
       {children}

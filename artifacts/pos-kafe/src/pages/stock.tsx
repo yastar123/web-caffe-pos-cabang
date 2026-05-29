@@ -97,11 +97,17 @@ export default function Stock() {
           supplierName: fd.get("supplier") as string,
           expectedDelivery: fd.get("expectedDelivery") as string || undefined,
           notes: fd.get("notes") as string || undefined,
-          items: poItems.map(item => ({
-            ingredientId: item.ingredientId,
-            quantity: item.quantity,
-            unitCost: item.unitCost,
-          })),
+          items: poItems.map(item => {
+            const ing = ingredients?.find((i: any) => i.id === item.ingredientId);
+            return {
+              ingredientId: item.ingredientId,
+              ingredientName: ing?.name ?? "",
+              quantity: item.quantity,
+              unit: ing?.unit ?? "",
+              unitCost: item.unitCost,
+              totalCost: item.quantity * item.unitCost,
+            };
+          }),
         }
       });
       toast({ title: "Pesanan pembelian dibuat" });

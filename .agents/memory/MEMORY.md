@@ -2,3 +2,6 @@
 - [Stock PO bug](stock-po-bug.md) — PurchaseOrderInput requires `items[]`; totalAmount not in API spec; fixed with items:[]
 - [Switch isActive bug](switch-isactive-bug.md) — HTML checkbox omits value when unchecked; must check `fd.get('isActive') === 'on'`
 - [Stagger children CSS](stagger-children.md) — applied to 13+ grids across all pages; fill-mode:both prevents flicker
+- [API shape mismatches](api-shape-mismatches.md) — several pages used wrong field names against generated types; fixed in audit pass
+- [Auth context refreshUser](auth-refresh-user.md) — refreshUser was missing from AuthContextType; settings.tsx calls it; must be in context
+- [DB must be seeded](db-seed-required.md) — DB schema is pushed but data is NOT auto-seeded; run scripts seed on fresh env or login fails

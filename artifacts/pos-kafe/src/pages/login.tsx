@@ -29,7 +29,7 @@ const FEATURES = [
 const STATS = [
   { value: "6", label: "Jenis peran" },
   { value: "99%", label: "Uptime" },
-  { value: "< 1d", label: "Respons" },
+  { value: "< 1 dtk", label: "Respons" },
 ];
 
 export default function Login() {

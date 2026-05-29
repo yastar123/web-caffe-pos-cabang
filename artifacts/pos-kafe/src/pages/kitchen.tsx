@@ -319,7 +319,7 @@ export default function Kitchen() {
               Tampilan Dapur
             </h1>
             <p className="text-muted-foreground text-xs mt-0.5">
-              {totalActive > 0 ? `${totalActive} pesanan aktif` : "Tidak ada pesanan aktif"} · pembaruan otomatis setiap 20d
+              {totalActive > 0 ? `${totalActive} pesanan aktif` : "Tidak ada pesanan aktif"} · pembaruan otomatis setiap 20 detik
             </p>
           </div>
 

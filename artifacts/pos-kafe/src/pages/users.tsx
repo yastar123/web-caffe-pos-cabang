@@ -46,8 +46,7 @@ export default function Users() {
   );
 
   const { data: branches } = useGetBranches(
-    {},
-    { query: { queryKey: ["branches-list"] } }
+    { query: { queryKey: ["branches-list"] as const } }
   );
 
   const createUser = useCreateUser();

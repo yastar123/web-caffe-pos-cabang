@@ -65,8 +65,8 @@ export default function Reports() {
   const handleExportExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    if (summary?.dailyRevenue && summary.dailyRevenue.length > 0) {
-      const revenueData = summary.dailyRevenue.map((r: any) => ({
+    if (summary?.periods && summary.periods.length > 0) {
+      const revenueData = summary.periods.map((r: any) => ({
         "Tanggal": r.date,
         "Pendapatan (IDR)": Number(r.revenue),
       }));
@@ -103,8 +103,8 @@ export default function Reports() {
       "Periode": `${appliedStart} s/d ${appliedEnd}`,
       "Total Pendapatan (IDR)": summary?.totalRevenue ?? 0,
       "Total Pesanan": summary?.totalOrders ?? 0,
-      "Rata-rata Nilai Pesanan (IDR)": summary?.avgOrderValue ?? 0,
-      "Item Terlaris": summary?.topItem ?? "-",
+      "Rata-rata Nilai Pesanan (IDR)": summary?.averageOrderValue ?? 0,
+      "Item Terlaris": topItems?.[0]?.menuItemName ?? "-",
     }]);
     XLSX.utils.book_append_sheet(wb, summarySheet, "Ringkasan");
 
@@ -126,13 +126,13 @@ export default function Reports() {
     },
     {
       label: "Rata-rata Nilai Pesanan",
-      value: loadingSummary ? null : formatIDR(summary?.avgOrderValue || 0),
+      value: loadingSummary ? null : formatIDR(summary?.averageOrderValue || 0),
       icon: TrendingUp,
       sub: "per transaksi",
     },
     {
       label: "Item Terlaris",
-      value: loadingSummary ? null : (summary?.topItem || "—"),
+      value: loadingSummary ? null : (topItems?.[0]?.menuItemName || "—"),
       icon: Star,
       sub: "terlaris dalam periode ini",
     },
@@ -223,9 +223,9 @@ export default function Reports() {
         <CardContent className="h-[220px] sm:h-[280px] px-2 sm:px-4 pb-4 pt-6">
           {loadingSummary ? (
             <Skeleton className="w-full h-full" />
-          ) : summary?.dailyRevenue && summary.dailyRevenue.length > 0 ? (
+          ) : summary?.periods && summary.periods.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={summary.dailyRevenue} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <LineChart data={summary.periods} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="date"
