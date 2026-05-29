@@ -29,6 +29,7 @@ export default function Dashboard() {
   const branchId = user?.branchId ?? undefined;
   const queryClient = useQueryClient();
   const [now, setNow] = useState(new Date());
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
@@ -54,7 +55,16 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["dashboard-overview", branchId] });
     queryClient.invalidateQueries({ queryKey: ["dashboard-peak-hours", branchId] });
     queryClient.invalidateQueries({ queryKey: ["dashboard-low-stock", branchId] });
+    setLastRefreshed(new Date());
   };
+
+  const refreshedLabel = (() => {
+    const diffMs = now.getTime() - lastRefreshed.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return "baru saja";
+    if (diffMin === 1) return "1 menit lalu";
+    return `${diffMin} menit lalu`;
+  })();
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount);
@@ -152,11 +162,13 @@ export default function Dashboard() {
           <Button
             variant="outline"
             size="sm"
-            className="h-8 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+            className="h-8 text-xs gap-1.5 text-muted-foreground hover:text-foreground group"
             onClick={handleRefresh}
+            title={`Diperbarui ${refreshedLabel}`}
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Segarkan
+            <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
+            <span className="hidden sm:inline">Segarkan</span>
+            <span className="hidden sm:inline text-[10px] opacity-60">· {refreshedLabel}</span>
           </Button>
         </div>
       </div>

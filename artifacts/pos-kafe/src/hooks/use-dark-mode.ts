@@ -19,7 +19,10 @@ export function useDarkMode() {
 
   const toggle = () => {
     const newDark = !isDark;
-    document.documentElement.classList.toggle("dark", newDark);
+    const root = document.documentElement;
+    root.classList.add("theme-transitioning");
+    root.classList.toggle("dark", newDark);
+    window.setTimeout(() => root.classList.remove("theme-transitioning"), 400);
     try {
       localStorage.setItem("kopiflow-theme", newDark ? "dark" : "light");
     } catch {}

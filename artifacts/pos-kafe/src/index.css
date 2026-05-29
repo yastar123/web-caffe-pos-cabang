@@ -67,6 +67,7 @@
 }
 
 :root {
+  color-scheme: light;
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
 
@@ -139,6 +140,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
 
@@ -371,6 +373,33 @@
     background: hsl(var(--primary) / 0.18);
     color: hsl(var(--foreground));
   }
+
+  /* Smooth dark/light mode crossfade — applied briefly by useDarkMode toggle */
+  .theme-transitioning *,
+  .theme-transitioning *::before,
+  .theme-transitioning *::after {
+    transition:
+      background-color 300ms ease,
+      border-color 300ms ease,
+      color 200ms ease !important;
+  }
+
+  /* Float utility */
+  .animate-float { animation: float 3s ease-in-out infinite; }
+
+  /* Pulse glow utility */
+  .animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+
+  /* Elevated card — stronger shadow on hover */
+  .card-hover-elevated {
+    transition: transform 160ms ease, box-shadow 200ms ease;
+    will-change: transform;
+  }
+  .card-hover-elevated:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px -8px rgb(0 0 0 / 0.15), 0 6px 16px -6px rgb(0 0 0 / 0.1);
+  }
+  .card-hover-elevated:active { transform: translateY(-1px); }
 
   /* Subtle dot grid background (used in login panels) */
   .dot-grid {

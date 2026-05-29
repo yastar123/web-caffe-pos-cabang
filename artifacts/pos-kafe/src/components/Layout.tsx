@@ -96,13 +96,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const NavContent = () => (
     <>
-      <div className="h-16 flex items-center px-5 border-b border-sidebar-border shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+      <div className="h-16 flex items-center px-5 border-b border-sidebar-border shrink-0 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/4 to-transparent pointer-events-none" />
+        <div className="flex items-center gap-3 relative z-10">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-md ring-2 ring-primary/20">
             <Coffee className="w-4 h-4 text-primary-foreground" />
           </div>
           <div>
-            <div className="font-bold text-base leading-tight text-sidebar-foreground">KopiFlow</div>
+            <div className="font-bold text-base leading-tight text-sidebar-foreground tracking-tight">KopiFlow</div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Sistem POS</div>
           </div>
         </div>
@@ -126,18 +127,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         key={item.href}
                         href={item.href}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 min-h-[42px] relative group",
+                          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[42px] relative group",
                           isActive
                             ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-0.5"
                         )}
                       >
                         {isActive && (
                           <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary-foreground/40 rounded-r-full" />
                         )}
                         <item.icon className={cn(
-                          "w-[17px] h-[17px] shrink-0",
-                          isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-sidebar-accent-foreground"
+                          "w-[17px] h-[17px] shrink-0 transition-transform duration-200",
+                          isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-sidebar-accent-foreground group-hover:scale-110"
                         )} />
                         {item.label}
                       </Link>
