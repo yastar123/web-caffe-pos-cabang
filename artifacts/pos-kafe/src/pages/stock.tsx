@@ -402,10 +402,10 @@ export default function Stock() {
                             <p className="text-xs text-muted-foreground">Min: {ing.minStock} {ing.unit}</p>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2 min-w-[100px]">
-                              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="flex items-center gap-2 min-w-[120px]">
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden relative">
                                 <div
-                                  className={cn("h-full rounded-full transition-all duration-500", status.barColor)}
+                                  className={cn("h-full rounded-full transition-all duration-700", status.barColor)}
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>

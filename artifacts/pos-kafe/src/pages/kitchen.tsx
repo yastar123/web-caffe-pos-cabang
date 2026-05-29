@@ -286,6 +286,7 @@ export default function Kitchen() {
 
   const totalActive = sortedQueue.length;
   const readyCount = columns.ready.flatMap((o: any) => o.items.filter((i: any) => i.kitchenStatus === "ready")).length;
+  const criticalCount = sortedQueue.filter((o: any) => getElapsedMinutes(o.createdAt) >= 20).length;
 
   if (isLoading) {
     return (
@@ -314,10 +315,24 @@ export default function Kitchen() {
       <div className="px-4 sm:px-6 lg:px-8 py-4 border-b bg-card shrink-0">
         <div className="flex flex-wrap justify-between items-center gap-3 max-w-[1600px] mx-auto">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
-              <ChefHat className="w-6 h-6 text-primary" />
-              Tampilan Dapur
-            </h1>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                <ChefHat className="w-6 h-6 text-primary" />
+                Tampilan Dapur
+              </h1>
+              {criticalCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-500 text-white urgency-pulse shadow-sm shadow-rose-500/40">
+                  <Flame className="w-3 h-3" />
+                  {criticalCount} kritis
+                </span>
+              )}
+              {totalActive > 0 && criticalCount === 0 && readyCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                  <CheckCheck className="w-3 h-3" />
+                  {readyCount} siap
+                </span>
+              )}
+            </div>
             <p className="text-muted-foreground text-xs mt-0.5">
               {totalActive > 0 ? `${totalActive} pesanan aktif` : "Tidak ada pesanan aktif"} · pembaruan otomatis setiap 20 detik
             </p>

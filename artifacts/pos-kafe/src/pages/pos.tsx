@@ -425,21 +425,27 @@ export default function POS() {
                     <Card
                       key={item.id}
                       className={cn(
-                        "cursor-pointer transition-all overflow-hidden flex flex-col select-none",
+                        "cursor-pointer transition-all overflow-hidden flex flex-col select-none group",
                         item.isAvailable
                           ? "hover:border-primary hover:shadow-md active:scale-[0.98]"
                           : "opacity-60 cursor-not-allowed",
-                        inCart ? "border-primary/50 ring-1 ring-primary/20" : ""
+                        inCart ? "border-primary/60 ring-2 ring-primary/20 shadow-sm" : ""
                       )}
                       onClick={() => item.isAvailable && addToCart(item)}
                       data-testid={`card-menu-item-${item.id}`}
                     >
                       <div className="h-28 sm:h-32 bg-muted relative flex items-center justify-center border-b overflow-hidden">
                         {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/5 to-secondary/10 flex items-center justify-center">
-                            <UtensilsCrossed className="h-9 w-9 text-muted-foreground/25" />
+                          <div className="w-full h-full bg-gradient-to-br from-primary/5 to-secondary/10 flex items-center justify-center group-hover:from-primary/10 transition-all duration-300">
+                            <UtensilsCrossed className="h-9 w-9 text-muted-foreground/25 group-hover:scale-110 transition-transform duration-300" />
                           </div>
                         )}
                         {!item.isAvailable && (
@@ -448,16 +454,26 @@ export default function POS() {
                           </div>
                         )}
                         {inCart && (
-                          <div className="absolute top-2 right-2">
-                            <Badge className="bg-primary text-primary-foreground text-xs font-bold h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full">
+                          <div className="absolute top-1.5 right-1.5 animate-bounce-in">
+                            <Badge className="bg-primary text-primary-foreground text-xs font-black h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full shadow-md">
                               {inCart.quantity}
                             </Badge>
                           </div>
                         )}
+                        {inCart && (
+                          <div className="absolute bottom-0 inset-x-0 h-1 bg-primary/80 transition-all duration-300" />
+                        )}
                       </div>
                       <CardContent className="p-3 flex flex-col flex-1 justify-between">
                         <p className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2">{item.name}</p>
-                        <p className="text-primary font-bold text-xs sm:text-sm mt-2 tabular-nums">{formatIDR(Number(item.price))}</p>
+                        <div className="flex items-center justify-between mt-2 gap-1">
+                          <p className="text-primary font-bold text-xs sm:text-sm tabular-nums">{formatIDR(Number(item.price))}</p>
+                          {item.isAvailable && !inCart && (
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shrink-0">
+                              <Plus className="w-3 h-3 text-primary" />
+                            </div>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   );

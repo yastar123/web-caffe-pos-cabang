@@ -59,8 +59,15 @@ function TableCard({ table, onStartOrder, onUpdateStatus }: {
       "relative group rounded-2xl border-2 border-t-4 p-4 flex flex-col gap-3 transition-all duration-200 card-hover cursor-default shadow-sm",
       cfg.borderCls,
       cfg.cardBg,
-      "bg-card dark:bg-card"
+      "bg-card dark:bg-card",
+      table.status === "occupied" && "shadow-rose-100/80 dark:shadow-rose-950/30"
     )}>
+      {table.status === "occupied" && (
+        <span className="absolute top-2.5 left-2.5 flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-60" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+        </span>
+      )}
       {/* Table number */}
       <div className="flex items-start justify-between gap-2">
         <div>
