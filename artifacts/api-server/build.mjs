@@ -90,6 +90,7 @@ async function buildAll() {
     "puppeteer",
     "puppeteer-core",
     "electron",
+    "express",
   ];
 
   const commonConfig = {
