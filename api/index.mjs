@@ -53427,7 +53427,10 @@ router8.get("/orders", requireAuth, async (req, res) => {
   res.json(results.filter(Boolean));
 });
 router8.get("/orders/:id", requireAuth, async (req, res) => {
-  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const id = parseInt(
+    Array.isArray(req.params.id) ? req.params.id[0] : req.params.id,
+    10
+  );
   const order = await getOrderWithItems(id);
   if (!order) {
     res.status(404).json({ error: "Order not found" });
@@ -53435,73 +53438,141 @@ router8.get("/orders/:id", requireAuth, async (req, res) => {
   }
   res.json(order);
 });
-router8.post("/orders", requireAuth, async (req, res) => {
-  const { tableId, branchId, customerId, items, notes, discountAmount } = req.body;
-  if (!tableId || !branchId || !items?.length) {
-    res.status(400).json({ error: "tableId, branchId, items required" });
-    return;
+router8.get(
+  "/orders/history",
+  requireAuth,
+  async (req, res) => {
+    const role = req.userRole;
+    if (role !== "owner" && role !== "manager") {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    const branchIdQuery = req.query.branchId ? parseInt(req.query.branchId, 10) : void 0;
+    const branchId = role === "owner" ? branchIdQuery : req.userBranchId ?? void 0;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+    const q = req.query.q;
+    const conditions = [];
+    if (branchId) conditions.push(eq(ordersTable.branchId, branchId));
+    if (startDate)
+      conditions.push(gte(ordersTable.createdAt, new Date(startDate)));
+    if (endDate)
+      conditions.push(
+        lte(ordersTable.createdAt, /* @__PURE__ */ new Date(endDate + "T23:59:59"))
+      );
+    const orders = conditions.length ? await db.select().from(ordersTable).where(and(...conditions)).orderBy(ordersTable.createdAt) : await db.select().from(ordersTable).orderBy(ordersTable.createdAt);
+    const results = await Promise.all(
+      orders.map((o) => getOrderWithItems(o.id))
+    );
+    let filtered = results.filter(Boolean);
+    if (q) {
+      const qLower = q.toLowerCase();
+      filtered = filtered.filter((order) => {
+        if (order.orderNumber?.toLowerCase().includes(qLower)) return true;
+        return order.items.some(
+          (i) => i.menuItemName?.toLowerCase().includes(qLower)
+        );
+      });
+    }
+    res.json(filtered);
   }
-  const menuIds = items.map((i) => i.menuItemId);
-  const menuItemRows = await db.select().from(menuItemsTable).where(
-    menuIds.length === 1 ? eq(menuItemsTable.id, menuIds[0]) : and(...menuIds.map((id) => eq(menuItemsTable.id, id)))
-  );
-  const priceMap = {};
-  menuItemRows.forEach((m) => {
-    priceMap[m.id] = parseFloat(m.price);
-  });
-  const taxRate = 0.1;
-  let subtotal = 0;
-  const orderItemData = [];
-  for (const item of items) {
-    const unitPrice = priceMap[item.menuItemId] ?? 0;
-    const totalPrice = unitPrice * item.quantity;
-    subtotal += totalPrice;
-    const menuItem = menuItemRows.find((m) => m.id === item.menuItemId);
-    orderItemData.push({ menuItemId: item.menuItemId, quantity: item.quantity, unitPrice, totalPrice, notes: item.notes, station: menuItem?.station ?? void 0 });
-  }
-  const discount = discountAmount ?? 0;
-  const taxable = subtotal - discount;
-  const tax = taxable * taxRate;
-  const total = taxable + tax;
-  const [order] = await db.insert(ordersTable).values({
-    orderNumber: generateOrderNumber(),
-    tableId,
-    branchId,
-    customerId,
-    notes,
-    status: "confirmed",
-    subtotal: subtotal.toFixed(2),
-    discountAmount: discount.toFixed(2),
-    tax: tax.toFixed(2),
-    total: total.toFixed(2),
-    staffId: req.userId
-  }).returning();
-  console.log("[ORDER CREATED] OrderNumber:", order.orderNumber, "status:", order.status, "branchId:", order.branchId);
-  for (const item of orderItemData) {
-    await db.insert(orderItemsTable).values({
-      orderId: order.id,
-      menuItemId: item.menuItemId,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice.toFixed(2),
-      totalPrice: item.totalPrice.toFixed(2),
-      notes: item.notes,
-      station: item.station
+);
+router8.post(
+  "/orders",
+  requireAuth,
+  async (req, res) => {
+    const { tableId, branchId, customerId, items, notes, discountAmount } = req.body;
+    if (!tableId || !branchId || !items?.length) {
+      res.status(400).json({ error: "tableId, branchId, items required" });
+      return;
+    }
+    const menuIds = items.map(
+      (i) => i.menuItemId
+    );
+    const menuItemRows = await db.select().from(menuItemsTable).where(
+      menuIds.length === 1 ? eq(menuItemsTable.id, menuIds[0]) : and(...menuIds.map((id) => eq(menuItemsTable.id, id)))
+    );
+    const priceMap = {};
+    menuItemRows.forEach((m) => {
+      priceMap[m.id] = parseFloat(m.price);
     });
+    const taxRate = 0.1;
+    let subtotal = 0;
+    const orderItemData = [];
+    for (const item of items) {
+      const unitPrice = priceMap[item.menuItemId] ?? 0;
+      const totalPrice = unitPrice * item.quantity;
+      subtotal += totalPrice;
+      const menuItem = menuItemRows.find((m) => m.id === item.menuItemId);
+      orderItemData.push({
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+        unitPrice,
+        totalPrice,
+        notes: item.notes,
+        station: menuItem?.station ?? void 0
+      });
+    }
+    const discount = discountAmount ?? 0;
+    const taxable = subtotal - discount;
+    const tax = taxable * taxRate;
+    const total = taxable + tax;
+    const [order] = await db.insert(ordersTable).values({
+      orderNumber: generateOrderNumber(),
+      tableId,
+      branchId,
+      customerId,
+      notes,
+      status: "confirmed",
+      subtotal: subtotal.toFixed(2),
+      discountAmount: discount.toFixed(2),
+      tax: tax.toFixed(2),
+      total: total.toFixed(2),
+      staffId: req.userId
+    }).returning();
+    console.log(
+      "[ORDER CREATED] OrderNumber:",
+      order.orderNumber,
+      "status:",
+      order.status,
+      "branchId:",
+      order.branchId
+    );
+    for (const item of orderItemData) {
+      await db.insert(orderItemsTable).values({
+        orderId: order.id,
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toFixed(2),
+        totalPrice: item.totalPrice.toFixed(2),
+        notes: item.notes,
+        station: item.station
+      });
+    }
+    await db.update(tablesTable).set({
+      status: "occupied",
+      currentOrderId: order.id,
+      occupiedAt: /* @__PURE__ */ new Date()
+    }).where(eq(tablesTable.id, tableId));
+    const result = await getOrderWithItems(order.id);
+    res.status(201).json(result);
   }
-  await db.update(tablesTable).set({ status: "occupied", currentOrderId: order.id, occupiedAt: /* @__PURE__ */ new Date() }).where(eq(tablesTable.id, tableId));
-  const result = await getOrderWithItems(order.id);
-  res.status(201).json(result);
-});
+);
 router8.patch("/orders/:id", requireAuth, async (req, res) => {
-  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const id = parseInt(
+    Array.isArray(req.params.id) ? req.params.id[0] : req.params.id,
+    10
+  );
   const { status, notes, discountAmount } = req.body;
   const updates = {};
   if (status != null) {
     updates.status = status;
-    if (status === "completed" || status === "voided") updates.completedAt = /* @__PURE__ */ new Date();
+    if (status === "completed" || status === "voided")
+      updates.completedAt = /* @__PURE__ */ new Date();
   }
   if (notes !== void 0) updates.notes = notes;
-  if (discountAmount != null) updates.discountAmount = discountAmount.toFixed(2);
+  if (discountAmount != null)
+    updates.discountAmount = discountAmount.toFixed(2);
   const [order] = await db.update(ordersTable).set(updates).where(eq(ordersTable.id, id)).returning();
   if (!order) {
     res.status(404).json({ error: "Order not found" });
@@ -53510,60 +53581,96 @@ router8.patch("/orders/:id", requireAuth, async (req, res) => {
   const result = await getOrderWithItems(id);
   res.json(result);
 });
-router8.post("/orders/:id/items", requireAuth, async (req, res) => {
-  const orderId = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  const { menuItemId, quantity, notes } = req.body;
-  const [menuItem] = await db.select().from(menuItemsTable).where(eq(menuItemsTable.id, menuItemId));
-  if (!menuItem) {
-    res.status(404).json({ error: "Menu item not found" });
-    return;
+router8.post(
+  "/orders/:id/items",
+  requireAuth,
+  async (req, res) => {
+    const orderId = parseInt(
+      Array.isArray(req.params.id) ? req.params.id[0] : req.params.id,
+      10
+    );
+    const { menuItemId, quantity, notes } = req.body;
+    const [menuItem] = await db.select().from(menuItemsTable).where(eq(menuItemsTable.id, menuItemId));
+    if (!menuItem) {
+      res.status(404).json({ error: "Menu item not found" });
+      return;
+    }
+    const unitPrice = parseFloat(menuItem.price);
+    const totalPrice = unitPrice * quantity;
+    const [item] = await db.insert(orderItemsTable).values({
+      orderId,
+      menuItemId,
+      quantity,
+      unitPrice: unitPrice.toFixed(2),
+      totalPrice: totalPrice.toFixed(2),
+      notes,
+      station: menuItem.station ?? void 0
+    }).returning();
+    res.status(201).json(
+      mapOrderItem({
+        ...item,
+        menuItemName: menuItem.name,
+        menuItemImage: menuItem.imageUrl
+      })
+    );
   }
-  const unitPrice = parseFloat(menuItem.price);
-  const totalPrice = unitPrice * quantity;
-  const [item] = await db.insert(orderItemsTable).values({
-    orderId,
-    menuItemId,
-    quantity,
-    unitPrice: unitPrice.toFixed(2),
-    totalPrice: totalPrice.toFixed(2),
-    notes,
-    station: menuItem.station ?? void 0
-  }).returning();
-  res.status(201).json(mapOrderItem({ ...item, menuItemName: menuItem.name, menuItemImage: menuItem.imageUrl }));
-});
-router8.patch("/orders/:id/items/:itemId", requireAuth, async (req, res) => {
-  const itemId = parseInt(Array.isArray(req.params.itemId) ? req.params.itemId[0] : req.params.itemId, 10);
-  const { quantity, notes } = req.body;
-  const [existing] = await db.select().from(orderItemsTable).where(eq(orderItemsTable.id, itemId));
-  if (!existing) {
-    res.status(404).json({ error: "Order item not found" });
-    return;
+);
+router8.patch(
+  "/orders/:id/items/:itemId",
+  requireAuth,
+  async (req, res) => {
+    const itemId = parseInt(
+      Array.isArray(req.params.itemId) ? req.params.itemId[0] : req.params.itemId,
+      10
+    );
+    const { quantity, notes } = req.body;
+    const [existing] = await db.select().from(orderItemsTable).where(eq(orderItemsTable.id, itemId));
+    if (!existing) {
+      res.status(404).json({ error: "Order item not found" });
+      return;
+    }
+    const updates = {};
+    if (quantity != null) {
+      updates.quantity = quantity;
+      updates.totalPrice = (parseFloat(existing.unitPrice) * quantity).toFixed(
+        2
+      );
+    }
+    if (notes !== void 0) updates.notes = notes;
+    const [item] = await db.update(orderItemsTable).set(updates).where(eq(orderItemsTable.id, itemId)).returning();
+    res.json(mapOrderItem(item));
   }
-  const updates = {};
-  if (quantity != null) {
-    updates.quantity = quantity;
-    updates.totalPrice = (parseFloat(existing.unitPrice) * quantity).toFixed(2);
+);
+router8.delete(
+  "/orders/:id/items/:itemId",
+  requireAuth,
+  async (req, res) => {
+    const itemId = parseInt(
+      Array.isArray(req.params.itemId) ? req.params.itemId[0] : req.params.itemId,
+      10
+    );
+    await db.delete(orderItemsTable).where(eq(orderItemsTable.id, itemId));
+    res.sendStatus(204);
   }
-  if (notes !== void 0) updates.notes = notes;
-  const [item] = await db.update(orderItemsTable).set(updates).where(eq(orderItemsTable.id, itemId)).returning();
-  res.json(mapOrderItem(item));
-});
-router8.delete("/orders/:id/items/:itemId", requireAuth, async (req, res) => {
-  const itemId = parseInt(Array.isArray(req.params.itemId) ? req.params.itemId[0] : req.params.itemId, 10);
-  await db.delete(orderItemsTable).where(eq(orderItemsTable.id, itemId));
-  res.sendStatus(204);
-});
-router8.post("/orders/:id/void", requireAuth, async (req, res) => {
-  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  const [order] = await db.update(ordersTable).set({ status: "voided", completedAt: /* @__PURE__ */ new Date() }).where(eq(ordersTable.id, id)).returning();
-  if (!order) {
-    res.status(404).json({ error: "Order not found" });
-    return;
+);
+router8.post(
+  "/orders/:id/void",
+  requireAuth,
+  async (req, res) => {
+    const id = parseInt(
+      Array.isArray(req.params.id) ? req.params.id[0] : req.params.id,
+      10
+    );
+    const [order] = await db.update(ordersTable).set({ status: "voided", completedAt: /* @__PURE__ */ new Date() }).where(eq(ordersTable.id, id)).returning();
+    if (!order) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    await db.update(tablesTable).set({ status: "available", currentOrderId: null, occupiedAt: null }).where(eq(tablesTable.id, order.tableId));
+    const result = await getOrderWithItems(id);
+    res.json(result);
   }
-  await db.update(tablesTable).set({ status: "available", currentOrderId: null, occupiedAt: null }).where(eq(tablesTable.id, order.tableId));
-  const result = await getOrderWithItems(id);
-  res.json(result);
-});
+);
 var orders_default = router8;
 
 // src/routes/kitchen.ts
@@ -53572,86 +53679,123 @@ var router9 = Router9();
 router9.get("/kitchen/queue", requireAuth, async (req, res) => {
   const branchId = req.query.branchId ? parseInt(req.query.branchId, 10) : void 0;
   const station = req.query.station;
-  console.log("[KITCHEN QUEUE] Request - branchId:", branchId, "station:", station);
+  console.log(
+    "[KITCHEN QUEUE] Request - branchId:",
+    branchId,
+    "station:",
+    station
+  );
   const conditions = [
-    inArray(ordersTable.status, ["confirmed", "preparing", "ready", "completed"])
+    inArray(ordersTable.status, [
+      "confirmed",
+      "preparing",
+      "ready",
+      "completed"
+    ])
   ];
   if (branchId) conditions.push(eq(ordersTable.branchId, branchId));
   const orders = await db.select().from(ordersTable).where(and(...conditions)).orderBy(ordersTable.createdAt);
-  console.log("[KITCHEN QUEUE] Found orders:", orders.length, "with status in confirmed/preparing/ready");
-  const results = await Promise.all(orders.map(async (order) => {
-    const itemConditions = [eq(orderItemsTable.orderId, order.id)];
-    if (station) itemConditions.push(eq(orderItemsTable.station, station));
-    const items = await db.select({
-      id: orderItemsTable.id,
-      orderId: orderItemsTable.orderId,
-      menuItemId: orderItemsTable.menuItemId,
-      menuItemName: menuItemsTable.name,
-      menuItemImage: menuItemsTable.imageUrl,
-      quantity: orderItemsTable.quantity,
-      unitPrice: orderItemsTable.unitPrice,
-      totalPrice: orderItemsTable.totalPrice,
-      notes: orderItemsTable.notes,
-      kitchenStatus: orderItemsTable.kitchenStatus,
-      station: orderItemsTable.station,
-      createdAt: orderItemsTable.createdAt
-    }).from(orderItemsTable).leftJoin(menuItemsTable, eq(orderItemsTable.menuItemId, menuItemsTable.id)).where(and(...itemConditions));
-    const [table] = await db.select().from(tablesTable).where(eq(tablesTable.id, order.tableId));
-    const result = {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      tableNumber: table?.number ?? "",
-      items: items.map((i) => ({
-        id: i.id,
-        orderId: i.orderId,
-        menuItemId: i.menuItemId,
-        menuItemName: i.menuItemName ?? "",
-        menuItemImage: i.menuItemImage ?? null,
-        quantity: i.quantity,
-        unitPrice: parseFloat(i.unitPrice),
-        totalPrice: parseFloat(i.totalPrice),
-        notes: i.notes,
-        kitchenStatus: i.kitchenStatus,
-        station: i.station,
-        createdAt: i.createdAt.toISOString()
-      })),
-      createdAt: order.createdAt.toISOString(),
-      priority: 0
-    };
-    console.log("[KITCHEN QUEUE] Order:", order.orderNumber, "branchId:", order.branchId, "items:", items.length);
-    return result;
-  }));
-  console.log("[KITCHEN QUEUE] Returning", results.length, "orders to frontend");
+  console.log(
+    "[KITCHEN QUEUE] Found orders:",
+    orders.length,
+    "with status in confirmed/preparing/ready"
+  );
+  const results = await Promise.all(
+    orders.map(async (order) => {
+      const itemConditions = [eq(orderItemsTable.orderId, order.id)];
+      if (station) itemConditions.push(eq(orderItemsTable.station, station));
+      const items = await db.select({
+        id: orderItemsTable.id,
+        orderId: orderItemsTable.orderId,
+        menuItemId: orderItemsTable.menuItemId,
+        menuItemName: menuItemsTable.name,
+        menuItemImage: menuItemsTable.imageUrl,
+        quantity: orderItemsTable.quantity,
+        unitPrice: orderItemsTable.unitPrice,
+        totalPrice: orderItemsTable.totalPrice,
+        notes: orderItemsTable.notes,
+        kitchenStatus: orderItemsTable.kitchenStatus,
+        station: orderItemsTable.station,
+        createdAt: orderItemsTable.createdAt
+      }).from(orderItemsTable).leftJoin(
+        menuItemsTable,
+        eq(orderItemsTable.menuItemId, menuItemsTable.id)
+      ).where(and(...itemConditions));
+      const [table] = await db.select().from(tablesTable).where(eq(tablesTable.id, order.tableId));
+      const result = {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        tableNumber: table?.number ?? "",
+        items: items.map((i) => ({
+          id: i.id,
+          orderId: i.orderId,
+          menuItemId: i.menuItemId,
+          menuItemName: i.menuItemName ?? "",
+          menuItemImage: i.menuItemImage ?? null,
+          quantity: i.quantity,
+          unitPrice: parseFloat(i.unitPrice),
+          totalPrice: parseFloat(i.totalPrice),
+          notes: i.notes,
+          kitchenStatus: i.kitchenStatus,
+          station: i.station,
+          createdAt: i.createdAt.toISOString()
+        })),
+        createdAt: order.createdAt.toISOString(),
+        priority: 0
+      };
+      console.log(
+        "[KITCHEN QUEUE] Order:",
+        order.orderNumber,
+        "branchId:",
+        order.branchId,
+        "items:",
+        items.length
+      );
+      return result;
+    })
+  );
+  console.log(
+    "[KITCHEN QUEUE] Returning",
+    results.length,
+    "orders to frontend"
+  );
   res.json(results);
 });
-router9.patch("/kitchen/items/:itemId/status", requireAuth, async (req, res) => {
-  const itemId = parseInt(Array.isArray(req.params.itemId) ? req.params.itemId[0] : req.params.itemId, 10);
-  const { status } = req.body;
-  if (!status) {
-    res.status(400).json({ error: "status required" });
-    return;
+router9.patch(
+  "/kitchen/items/:itemId/status",
+  requireAuth,
+  async (req, res) => {
+    const itemId = parseInt(
+      Array.isArray(req.params.itemId) ? req.params.itemId[0] : req.params.itemId,
+      10
+    );
+    const { status } = req.body;
+    if (!status) {
+      res.status(400).json({ error: "status required" });
+      return;
+    }
+    const [item] = await db.update(orderItemsTable).set({ kitchenStatus: status }).where(eq(orderItemsTable.id, itemId)).returning();
+    if (!item) {
+      res.status(404).json({ error: "Item not found" });
+      return;
+    }
+    const menuItem = await db.select().from(menuItemsTable).where(eq(menuItemsTable.id, item.menuItemId));
+    res.json({
+      id: item.id,
+      orderId: item.orderId,
+      menuItemId: item.menuItemId,
+      menuItemName: menuItem[0]?.name ?? "",
+      menuItemImage: menuItem[0]?.imageUrl ?? null,
+      quantity: item.quantity,
+      unitPrice: parseFloat(item.unitPrice),
+      totalPrice: parseFloat(item.totalPrice),
+      notes: item.notes,
+      kitchenStatus: item.kitchenStatus,
+      station: item.station,
+      createdAt: item.createdAt.toISOString()
+    });
   }
-  const [item] = await db.update(orderItemsTable).set({ kitchenStatus: status }).where(eq(orderItemsTable.id, itemId)).returning();
-  if (!item) {
-    res.status(404).json({ error: "Item not found" });
-    return;
-  }
-  const menuItem = await db.select().from(menuItemsTable).where(eq(menuItemsTable.id, item.menuItemId));
-  res.json({
-    id: item.id,
-    orderId: item.orderId,
-    menuItemId: item.menuItemId,
-    menuItemName: menuItem[0]?.name ?? "",
-    menuItemImage: menuItem[0]?.imageUrl ?? null,
-    quantity: item.quantity,
-    unitPrice: parseFloat(item.unitPrice),
-    totalPrice: parseFloat(item.totalPrice),
-    notes: item.notes,
-    kitchenStatus: item.kitchenStatus,
-    station: item.station,
-    createdAt: item.createdAt.toISOString()
-  });
-});
+);
 var kitchen_default = router9;
 
 // src/routes/payments.ts

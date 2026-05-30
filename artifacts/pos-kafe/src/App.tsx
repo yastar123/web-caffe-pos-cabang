@@ -101,28 +101,46 @@ function Router() {
         <ProtectedRoute component={Dashboard} roles={["owner", "manager"]} />
       </Route>
       <Route path="/pos">
-        <ProtectedRoute component={Pos} roles={["owner", "manager", "cashier", "waiter"]} />
+        <ProtectedRoute
+          component={Pos}
+          roles={["owner", "manager", "cashier", "waiter"]}
+        />
       </Route>
       <Route path="/tables">
-        <ProtectedRoute component={Tables} roles={["owner", "manager", "cashier", "waiter"]} />
+        <ProtectedRoute
+          component={Tables}
+          roles={["owner", "manager", "cashier", "waiter"]}
+        />
       </Route>
       <Route path="/kitchen">
-        <ProtectedRoute component={Kitchen} roles={["owner", "manager", "waiter", "chef"]} />
+        <ProtectedRoute
+          component={Kitchen}
+          roles={["owner", "manager", "waiter", "chef"]}
+        />
       </Route>
       <Route path="/reservations">
-        <ProtectedRoute component={Reservations} roles={["owner", "manager", "cashier", "waiter"]} />
+        <ProtectedRoute
+          component={Reservations}
+          roles={["owner", "manager", "cashier", "waiter"]}
+        />
       </Route>
       <Route path="/menu">
         <ProtectedRoute component={Menu} roles={["owner", "manager"]} />
       </Route>
       <Route path="/stock">
-        <ProtectedRoute component={Stock} roles={["owner", "manager", "warehouse"]} />
+        <ProtectedRoute
+          component={Stock}
+          roles={["owner", "manager", "warehouse"]}
+        />
       </Route>
       <Route path="/reports">
         <ProtectedRoute component={Reports} roles={["owner", "manager"]} />
       </Route>
       <Route path="/customers">
-        <ProtectedRoute component={Customers} roles={["owner", "manager", "cashier"]} />
+        <ProtectedRoute
+          component={Customers}
+          roles={["owner", "manager", "cashier"]}
+        />
       </Route>
       <Route path="/branches">
         <ProtectedRoute component={Branches} roles={["owner"]} />
