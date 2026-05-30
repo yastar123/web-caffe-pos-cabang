@@ -54237,6 +54237,9 @@ app.use(
 app.use((0, import_cors.default)());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.get("/", (_req, res) => {
+  res.redirect("/api/healthz");
+});
 app.use("/api", routes_default);
 var app_default = app;
 

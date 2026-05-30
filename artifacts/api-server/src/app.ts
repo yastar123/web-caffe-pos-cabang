@@ -35,4 +35,14 @@ app.get("/", (_req, res) => {
 
 app.use("/api", router);
 
+// Global error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error({ err }, "Unhandled Server Error");
+  res.status(500).json({ 
+    error: "Internal Server Error", 
+    message: err?.message || String(err),
+    stack: process.env.NODE_ENV === "development" ? err?.stack : undefined
+  });
+});
+
 export default app;
