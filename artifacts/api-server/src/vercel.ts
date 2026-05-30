@@ -7,4 +7,11 @@ declare global {
 
 // Preserve import for Vercel detection
 globalThis.__express = express;
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default app;
