@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, Redirect } from "wouter";
 import { useAuth } from "@/lib/auth";
+import { getDefaultRouteForRole } from "@/lib/role-routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +46,7 @@ export default function Login() {
   if (isAuthLoading) return null;
 
   if (isAuthenticated) {
-    return <Redirect to="/dashboard" />;
+    return <Redirect to="/" />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +55,7 @@ export default function Login() {
       setIsSubmitting(true);
       await login({ email, password });
       toast({ title: "Selamat datang kembali", description: "Berhasil masuk ke KopiFlow POS" });
-      setLocation("/dashboard");
+      setLocation("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Masuk Gagal", description: error.message || "Kredensial tidak valid" });
     } finally {

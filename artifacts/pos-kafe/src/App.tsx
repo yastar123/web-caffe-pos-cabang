@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { getDefaultRouteForRole } from "@/lib/role-routes";
 import { Layout } from "@/components/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Spinner } from "@/components/ui/spinner";
@@ -60,7 +61,7 @@ function ProtectedRoute({
   }
 
   if (roles && !roles.includes(user.role)) {
-    return <Redirect to="/dashboard" />;
+    return <Redirect to={getDefaultRouteForRole(user.role)} />;
   }
 
   return (
@@ -81,6 +82,24 @@ function ProtectedRoute({
 }
 
 function Router() {
+  const RoleBasedRedirect = () => {
+    const { isAuthenticated, user, isLoading } = useAuth();
+
+    if (isLoading) {
+      return (
+        <div className="h-screen w-full flex items-center justify-center">
+          <Spinner className="size-8" />
+        </div>
+      );
+    }
+
+    if (!isAuthenticated || !user) {
+      return <Redirect to="/login" />;
+    }
+
+    return <Redirect to={getDefaultRouteForRole(user.role)} />;
+  };
+
   return (
     <Switch>
       <Route path="/login">
@@ -95,7 +114,7 @@ function Router() {
         </Suspense>
       </Route>
       <Route path="/">
-        <Redirect to="/dashboard" />
+        <RoleBasedRedirect />
       </Route>
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} roles={["owner", "manager"]} />
