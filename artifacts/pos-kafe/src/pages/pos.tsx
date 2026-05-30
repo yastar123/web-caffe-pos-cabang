@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -34,11 +35,13 @@ import {
   X as XIcon,
   UtensilsCrossed,
   AlertCircle,
+  ChefHat,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+
 
 interface CartItem {
   menuItemId: number;
@@ -152,14 +155,11 @@ export default function POS() {
   const formatIDR = (num: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
 
-  const handleProcessOrder = async () => {
+  const [pendingOrder, setPendingOrder] = useState<{ id: number; orderNumber: string } | null>(null);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+
+  const handleSendToKitchen = async () => {
     if (!selectedTable || cart.length === 0) return;
-    if (!paymentMethod) {
-      setShowPaymentHint(true);
-      toast({ title: "Pilih metode pembayaran", description: "Pilih cara pembayaran pelanggan.", variant: "destructive" });
-      return;
-    }
-    setShowPaymentHint(false);
     try {
       const order = await createOrder.mutateAsync({
         data: {
@@ -170,27 +170,47 @@ export default function POS() {
           discountAmount
         }
       });
+      setPendingOrder({ id: order.id, orderNumber: order.orderNumber });
+      setPaymentOpen(true);
+      toast({ title: `Pesanan #${order.orderNumber} dikirim ke dapur ✓`, description: "Pilih metode pembayaran untuk menyelesaikan." });
+      queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
+    } catch {
+      toast({ title: "Gagal membuat pesanan", variant: "destructive" });
+    }
+  };
+
+  const handleProcessOrder = async () => {
+    if (!pendingOrder || !paymentMethod) {
+      setShowPaymentHint(true);
+      toast({ title: "Pilih metode pembayaran", description: "Pilih cara pembayaran pelanggan.", variant: "destructive" });
+      return;
+    }
+    setShowPaymentHint(false);
+    try {
       await processPayment.mutateAsync({
         data: {
-          orderId: order.id,
+          orderId: pendingOrder.id,
           branchId: branchId!,
           amount: grandTotal,
           method: paymentMethod as any,
         }
       });
-      toast({ title: "Pesanan berhasil diproses" });
+      toast({ title: "Pembayaran berhasil diproses" });
       setCart([]);
       setNotes("");
       setDiscountAmount(0);
       setPaymentMethod(null);
       setSelectedTable("");
       setCartOpen(false);
+      setPaymentOpen(false);
+      setPendingOrder(null);
       queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
       setLocation("/tables");
     } catch {
-      toast({ title: "Gagal memproses pesanan", variant: "destructive" });
+      toast({ title: "Gagal memproses pembayaran", variant: "destructive" });
     }
   };
+
 
   const renderCartItems = () => (
     <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
@@ -290,51 +310,20 @@ export default function POS() {
         </div>
       </div>
 
-      {/* Payment methods */}
-      <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Metode Pembayaran</span>
-          {showPaymentHint && !paymentMethod && (
-            <div className="flex items-center gap-1 text-destructive text-xs font-medium">
-              <AlertCircle className="w-3 h-3" />
-              Wajib dipilih
-            </div>
-          )}
-        </div>
-        <div className="grid grid-cols-4 gap-1.5">
-          {PAYMENT_METHODS.map(({ key, label, Icon }) => (
-            <button
-              key={key}
-              onClick={() => { setPaymentMethod(key === paymentMethod ? null : key); setShowPaymentHint(false); }}
-              className={cn(
-                "flex flex-col items-center gap-1 py-2 px-1 rounded-xl border text-xs font-semibold capitalize transition-all",
-                paymentMethod === key
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : showPaymentHint && !paymentMethod
-                  ? "border-destructive/50 bg-destructive/5 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
-                  : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <Button
-        className="w-full h-12 text-base font-bold rounded-xl shadow-sm"
+        className="w-full h-12 text-base font-bold rounded-xl shadow-sm gap-2"
         size="lg"
-        disabled={cart.length === 0 || !selectedTable || createOrder.isPending || processPayment.isPending}
-        onClick={handleProcessOrder}
+        disabled={cart.length === 0 || !selectedTable || createOrder.isPending}
+        onClick={handleSendToKitchen}
         data-testid="btn-process-order"
       >
-        {createOrder.isPending || processPayment.isPending ? "Memproses..." : "Proses Pesanan"}
+        <ChefHat className="w-5 h-5" />
+        {createOrder.isPending ? "Mengirim..." : "Kirim ke Dapur"}
       </Button>
 
-      {!paymentMethod && cart.length > 0 && selectedTable && (
-        <p className="text-center text-xs text-muted-foreground">
-          Pilih metode pembayaran untuk menyelesaikan pesanan
+      {cart.length > 0 && !selectedTable && (
+        <p className="text-center text-xs text-amber-600 font-medium">
+          ⚠ Pilih meja terlebih dahulu
         </p>
       )}
     </div>
@@ -576,6 +565,70 @@ export default function POS() {
           {renderCartFooter()}
         </SheetContent>
       </Sheet>
+
+      {/* Payment Dialog - appears after order sent to kitchen */}
+      <Dialog open={paymentOpen} onOpenChange={(open) => { if (!open && !processPayment.isPending) setPaymentOpen(open); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ChefHat className="w-5 h-5 text-emerald-600" />
+              Pesanan Dikirim ke Dapur!
+            </DialogTitle>
+            <DialogDescription>
+              Pesanan <span className="font-bold text-foreground">#{pendingOrder?.orderNumber}</span> sudah masuk ke antrian dapur.
+              Selesaikan pembayaran untuk menutup transaksi.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Total */}
+            <div className="flex justify-between items-center p-3 bg-muted/40 rounded-xl">
+              <span className="text-sm font-semibold">Total Tagihan</span>
+              <span className="text-xl font-black text-primary tabular-nums">{formatIDR(grandTotal)}</span>
+            </div>
+
+            {/* Payment methods */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Metode Pembayaran</span>
+                {showPaymentHint && !paymentMethod && (
+                  <div className="flex items-center gap-1 text-destructive text-xs font-medium">
+                    <AlertCircle className="w-3 h-3" />
+                    Wajib dipilih
+                  </div>
+                )}
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {PAYMENT_METHODS.map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    onClick={() => { setPaymentMethod(key === paymentMethod ? null : key); setShowPaymentHint(false); }}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl border text-xs font-semibold transition-all",
+                      paymentMethod === key
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : showPaymentHint && !paymentMethod
+                        ? "border-destructive/50 bg-destructive/5 text-muted-foreground"
+                        : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:bg-muted/60"
+                    )}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              className="w-full h-11 font-bold text-base"
+              disabled={processPayment.isPending}
+              onClick={handleProcessOrder}
+            >
+              {processPayment.isPending ? "Memproses..." : "Konfirmasi Pembayaran"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
