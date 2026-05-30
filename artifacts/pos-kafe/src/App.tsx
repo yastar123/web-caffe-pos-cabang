@@ -23,6 +23,7 @@ const Customers = React.lazy(() => import("@/pages/customers"));
 const Branches = React.lazy(() => import("@/pages/branches"));
 const Users = React.lazy(() => import("@/pages/users"));
 const Settings = React.lazy(() => import("@/pages/settings"));
+const OrderHistory = React.lazy(() => import("@/pages/order-history"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,7 +95,8 @@ function Router() {
       <Route path="/branches"><ProtectedRoute component={Branches} /></Route>
       <Route path="/users"><ProtectedRoute component={Users} /></Route>
       <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
-      
+      <Route path="/order-history"><ProtectedRoute component={OrderHistory} roles={["owner", "manager"]} /></Route>
+
       <Route component={NotFound} />
     </Switch>
   );
