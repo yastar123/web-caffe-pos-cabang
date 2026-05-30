@@ -21,7 +21,6 @@ import {
   Sun,
   Moon,
   MoreHorizontal,
-  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -50,7 +49,6 @@ const NAV_GROUPS = [
       { href: "/stock", label: "Stok", icon: PackageSearch, roles: ["owner", "manager", "warehouse"] },
       { href: "/reports", label: "Laporan", icon: LineChart, roles: ["owner", "manager"] },
       { href: "/customers", label: "Pelanggan", icon: Users, roles: ["owner", "manager", "cashier"] },
-      { href: "/order-history", label: "Riwayat Pesanan", icon: Receipt, roles: ["owner", "manager"] },
     ],
   },
   {
