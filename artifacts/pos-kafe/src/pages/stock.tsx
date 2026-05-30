@@ -7,6 +7,7 @@ import {
   useRecordStockMovement,
   useGetPurchaseOrders,
   useCreatePurchaseOrder,
+  useUpdatePurchaseOrder,
   useDeleteIngredient,
   getGetIngredientsQueryKey,
   getGetPurchaseOrdersQueryKey,
@@ -97,6 +98,12 @@ export default function Stock() {
   const [activeTab, setActiveTab] = useState("ingredients");
   const [isIngredientOpen, setIsIngredientOpen] = useState(false);
   const [isPoOpen, setIsPoOpen] = useState(false);
+  const [isEditPoOpen, setIsEditPoOpen] = useState(false);
+  const [editingPo, setEditingPo] = useState<any>(null);
+  const [editPoStatus, setEditPoStatus] = useState<
+    "pending" | "ordered" | "received" | "cancelled"
+  >("pending");
+  const [editPoNotes, setEditPoNotes] = useState("");
   const [movementIng, setMovementIng] = useState<any>(null);
   const [poItems, setPoItems] = useState<
     { ingredientId: number; quantity: number; unitCost: number }[]
@@ -129,8 +136,74 @@ export default function Stock() {
 
   const createIngredient = useCreateIngredient();
   const moveStock = useRecordStockMovement();
+  const updatePO = useUpdatePurchaseOrder();
   const deleteIngredient = useDeleteIngredient();
   const createPO = useCreatePurchaseOrder();
+
+  const openEditPurchaseOrder = (po: any) => {
+    setEditingPo(po);
+    setEditPoStatus((po.status as any) || "pending");
+    setEditPoNotes(po.notes || "");
+    setIsEditPoOpen(true);
+  };
+
+  const handleUpdatePurchaseOrder = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault();
+    if (!editingPo) return;
+
+    try {
+      await updatePO.mutateAsync({
+        id: editingPo.id,
+        data: {
+          status: editPoStatus as any,
+          notes: editPoNotes || undefined,
+        },
+      });
+      toast({ title: "Pesanan pembelian diperbarui" });
+      queryClient.invalidateQueries({
+        queryKey: getGetPurchaseOrdersQueryKey({
+          branchId: branchId ?? undefined,
+        }),
+      });
+      setIsEditPoOpen(false);
+      setEditingPo(null);
+    } catch {
+      toast({
+        title: "Gagal memperbarui pesanan pembelian",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeletePurchaseOrder = async (po: any) => {
+    if (
+      !window.confirm(
+        `Hapus pesanan pembelian dari ${po.supplierName}? Tindakan ini tidak dapat dibatalkan.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/purchase-orders/${po.id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete purchase order");
+      toast({ title: "Pesanan pembelian dihapus" });
+      queryClient.invalidateQueries({
+        queryKey: getGetPurchaseOrdersQueryKey({
+          branchId: branchId ?? undefined,
+        }),
+      });
+    } catch {
+      toast({
+        title: "Gagal menghapus pesanan pembelian",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDeleteIngredient = async (ingredient: any) => {
     if (
@@ -818,13 +891,14 @@ export default function Stock() {
                       Perkiraan
                     </TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {!purchaseOrders || purchaseOrders.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={5}
+                        colSpan={6}
                         className="text-center py-16 text-muted-foreground"
                       >
                         Pesanan pembelian tidak ditemukan
@@ -856,6 +930,26 @@ export default function Stock() {
                             {po.status}
                           </Badge>
                         </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => openEditPurchaseOrder(po)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => handleDeletePurchaseOrder(po)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -865,6 +959,65 @@ export default function Stock() {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog
+        open={isEditPoOpen}
+        onOpenChange={(open) => !open && setIsEditPoOpen(open)}
+      >
+        <DialogContent>
+          <form onSubmit={handleUpdatePurchaseOrder}>
+            <DialogHeader>
+              <DialogTitle>
+                Edit Pesanan Pembelian: {editingPo?.supplierName}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="po-status">Status</Label>
+                <Select
+                  value={editPoStatus}
+                  onValueChange={(value) => setEditPoStatus(value as any)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="ordered">Ordered</SelectItem>
+                    <SelectItem value="received">Received</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="po-notes">Catatan</Label>
+                <Textarea
+                  id="po-notes"
+                  value={editPoNotes}
+                  onChange={(e) => setEditPoNotes(e.target.value)}
+                  placeholder="Catatan pesanan"
+                  className="min-h-[120px]"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsEditPoOpen(false);
+                  setEditingPo(null);
+                }}
+              >
+                Batal
+              </Button>
+              <Button type="submit" disabled={updatePO.isPending}>
+                Simpan Perubahan
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={!!movementIng}
