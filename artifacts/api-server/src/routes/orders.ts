@@ -158,6 +158,7 @@ router.post("/orders", requireAuth, async (req: AuthRequest, res): Promise<void>
   const [order] = await db.insert(ordersTable).values({
     orderNumber: generateOrderNumber(),
     tableId, branchId, customerId, notes,
+    status: "confirmed",
     subtotal: subtotal.toFixed(2),
     discountAmount: discount.toFixed(2),
     tax: tax.toFixed(2),
