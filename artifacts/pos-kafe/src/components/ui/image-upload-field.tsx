@@ -1,10 +1,12 @@
 import { useState, useRef } from "react";
-import { useUploadImage } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 interface ImageUploadFieldProps {
   name: string;
@@ -17,27 +19,42 @@ export function ImageUploadField({ name, defaultValue, label = "Gambar", folder 
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(defaultValue ?? undefined);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadImage = useUploadImage();
   const { toast } = useToast();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!CLOUD_NAME || !UPLOAD_PRESET) {
+      toast({ title: "Konfigurasi Cloudinary belum diatur", description: "VITE_CLOUDINARY_CLOUD_NAME dan VITE_CLOUDINARY_UPLOAD_PRESET diperlukan", variant: "destructive" });
+      return;
+    }
+
     setUploading(true);
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-      try {
-        const result = await uploadImage.mutateAsync({ data: { url: dataUrl, folder } });
-        setPreviewUrl(result.url);
-      } catch {
-        toast({ title: "Gagal mengupload gambar", variant: "destructive" });
-      } finally {
-        setUploading(false);
-        if (fileInputRef.current) fileInputRef.current.value = "";
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", UPLOAD_PRESET);
+      formData.append("folder", folder);
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error?.message ?? "Upload gagal");
       }
-    };
-    reader.readAsDataURL(file);
+
+      const data = await res.json();
+      setPreviewUrl(data.secure_url);
+    } catch (err: any) {
+      toast({ title: "Gagal mengupload gambar", description: err?.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   return (

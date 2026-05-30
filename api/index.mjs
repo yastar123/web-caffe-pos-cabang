@@ -6049,19 +6049,19 @@ var require_utils = __commonJS({
       if (isBCYear) ret += " BC";
       return ret;
     }
-    function normalizeQueryConfig(config2, values, callback) {
-      config2 = typeof config2 === "string" ? { text: config2 } : config2;
+    function normalizeQueryConfig(config3, values, callback) {
+      config3 = typeof config3 === "string" ? { text: config3 } : config3;
       if (values) {
         if (typeof values === "function") {
-          config2.callback = values;
+          config3.callback = values;
         } else {
-          config2.values = values;
+          config3.values = values;
         }
       }
       if (callback) {
-        config2.callback = callback;
+        config3.callback = callback;
       }
-      return config2;
+      return config3;
     }
     var escapeIdentifier2 = function(str) {
       return '"' + str.replace(/"/g, '""') + '"';
@@ -6526,10 +6526,10 @@ var require_pg_connection_string = __commonJS({
     "use strict";
     function parse3(str, options = {}) {
       if (str.charAt(0) === "/") {
-        const config3 = str.split(" ");
-        return { host: config3[0], database: config3[1] };
+        const config4 = str.split(" ");
+        return { host: config4[0], database: config4[1] };
       }
-      const config2 = {};
+      const config3 = {};
       let result;
       let dummyHost = false;
       if (/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i.test(str)) {
@@ -6547,75 +6547,75 @@ var require_pg_connection_string = __commonJS({
         throw err;
       }
       for (const entry of result.searchParams.entries()) {
-        config2[entry[0]] = entry[1];
+        config3[entry[0]] = entry[1];
       }
-      config2.user = config2.user || decodeURIComponent(result.username);
-      config2.password = config2.password || decodeURIComponent(result.password);
+      config3.user = config3.user || decodeURIComponent(result.username);
+      config3.password = config3.password || decodeURIComponent(result.password);
       if (result.protocol == "socket:") {
-        config2.host = decodeURI(result.pathname);
-        config2.database = result.searchParams.get("db");
-        config2.client_encoding = result.searchParams.get("encoding");
-        return config2;
+        config3.host = decodeURI(result.pathname);
+        config3.database = result.searchParams.get("db");
+        config3.client_encoding = result.searchParams.get("encoding");
+        return config3;
       }
       const hostname2 = dummyHost ? "" : result.hostname;
-      if (!config2.host) {
-        config2.host = decodeURIComponent(hostname2);
+      if (!config3.host) {
+        config3.host = decodeURIComponent(hostname2);
       } else if (hostname2 && /^%2f/i.test(hostname2)) {
         result.pathname = hostname2 + result.pathname;
       }
-      if (!config2.port) {
-        config2.port = result.port;
+      if (!config3.port) {
+        config3.port = result.port;
       }
       const pathname = result.pathname.slice(1) || null;
-      config2.database = pathname ? decodeURI(pathname) : null;
-      if (config2.ssl === "true" || config2.ssl === "1") {
-        config2.ssl = true;
+      config3.database = pathname ? decodeURI(pathname) : null;
+      if (config3.ssl === "true" || config3.ssl === "1") {
+        config3.ssl = true;
       }
-      if (config2.ssl === "0") {
-        config2.ssl = false;
+      if (config3.ssl === "0") {
+        config3.ssl = false;
       }
-      if (config2.sslcert || config2.sslkey || config2.sslrootcert || config2.sslmode) {
-        config2.ssl = {};
+      if (config3.sslcert || config3.sslkey || config3.sslrootcert || config3.sslmode) {
+        config3.ssl = {};
       }
-      const fs = config2.sslcert || config2.sslkey || config2.sslrootcert ? __require("fs") : null;
-      if (config2.sslcert) {
-        config2.ssl.cert = fs.readFileSync(config2.sslcert).toString();
+      const fs = config3.sslcert || config3.sslkey || config3.sslrootcert ? __require("fs") : null;
+      if (config3.sslcert) {
+        config3.ssl.cert = fs.readFileSync(config3.sslcert).toString();
       }
-      if (config2.sslkey) {
-        config2.ssl.key = fs.readFileSync(config2.sslkey).toString();
+      if (config3.sslkey) {
+        config3.ssl.key = fs.readFileSync(config3.sslkey).toString();
       }
-      if (config2.sslrootcert) {
-        config2.ssl.ca = fs.readFileSync(config2.sslrootcert).toString();
+      if (config3.sslrootcert) {
+        config3.ssl.ca = fs.readFileSync(config3.sslrootcert).toString();
       }
-      if (options.useLibpqCompat && config2.uselibpqcompat) {
+      if (options.useLibpqCompat && config3.uselibpqcompat) {
         throw new Error("Both useLibpqCompat and uselibpqcompat are set. Please use only one of them.");
       }
-      if (config2.uselibpqcompat === "true" || options.useLibpqCompat) {
-        switch (config2.sslmode) {
+      if (config3.uselibpqcompat === "true" || options.useLibpqCompat) {
+        switch (config3.sslmode) {
           case "disable": {
-            config2.ssl = false;
+            config3.ssl = false;
             break;
           }
           case "prefer": {
-            config2.ssl.rejectUnauthorized = false;
+            config3.ssl.rejectUnauthorized = false;
             break;
           }
           case "require": {
-            if (config2.sslrootcert) {
-              config2.ssl.checkServerIdentity = function() {
+            if (config3.sslrootcert) {
+              config3.ssl.checkServerIdentity = function() {
               };
             } else {
-              config2.ssl.rejectUnauthorized = false;
+              config3.ssl.rejectUnauthorized = false;
             }
             break;
           }
           case "verify-ca": {
-            if (!config2.ssl.ca) {
+            if (!config3.ssl.ca) {
               throw new Error(
                 "SECURITY WARNING: Using sslmode=verify-ca requires specifying a CA with sslrootcert. If a public CA is used, verify-ca allows connections to a server that somebody else may have registered with the CA, making you vulnerable to Man-in-the-Middle attacks. Either specify a custom CA certificate with sslrootcert parameter or use sslmode=verify-full for proper security."
               );
             }
-            config2.ssl.checkServerIdentity = function() {
+            config3.ssl.checkServerIdentity = function() {
             };
             break;
           }
@@ -6624,27 +6624,27 @@ var require_pg_connection_string = __commonJS({
           }
         }
       } else {
-        switch (config2.sslmode) {
+        switch (config3.sslmode) {
           case "disable": {
-            config2.ssl = false;
+            config3.ssl = false;
             break;
           }
           case "prefer":
           case "require":
           case "verify-ca":
           case "verify-full": {
-            if (config2.sslmode !== "verify-full") {
-              deprecatedSslModeWarning(config2.sslmode);
+            if (config3.sslmode !== "verify-full") {
+              deprecatedSslModeWarning(config3.sslmode);
             }
             break;
           }
           case "no-verify": {
-            config2.ssl.rejectUnauthorized = false;
+            config3.ssl.rejectUnauthorized = false;
             break;
           }
         }
       }
-      return config2;
+      return config3;
     }
     function toConnectionOptions(sslConfig) {
       const connectionOptions = Object.entries(sslConfig).reduce((c, [key, value]) => {
@@ -6655,8 +6655,8 @@ var require_pg_connection_string = __commonJS({
       }, {});
       return connectionOptions;
     }
-    function toClientConfig(config2) {
-      const poolConfig = Object.entries(config2).reduce((c, [key, value]) => {
+    function toClientConfig(config3) {
+      const poolConfig = Object.entries(config3).reduce((c, [key, value]) => {
         if (key === "ssl") {
           const sslConfig = value;
           if (typeof sslConfig === "boolean") {
@@ -6712,9 +6712,9 @@ var require_connection_parameters = __commonJS({
     var dns = __require("dns");
     var defaults2 = require_defaults();
     var parse3 = require_pg_connection_string().parse;
-    var val = function(key, config2, envVar) {
-      if (config2[key]) {
-        return config2[key];
+    var val = function(key, config3, envVar) {
+      if (config3[key]) {
+        return config3[key];
       }
       if (envVar === void 0) {
         envVar = process.env["PG" + key.toUpperCase()];
@@ -6741,34 +6741,34 @@ var require_connection_parameters = __commonJS({
     var quoteParamValue = function(value) {
       return "'" + ("" + value).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'";
     };
-    var add = function(params, config2, paramName) {
-      const value = config2[paramName];
+    var add = function(params, config3, paramName) {
+      const value = config3[paramName];
       if (value !== void 0 && value !== null) {
         params.push(paramName + "=" + quoteParamValue(value));
       }
     };
     var ConnectionParameters = class {
-      constructor(config2) {
-        config2 = typeof config2 === "string" ? parse3(config2) : config2 || {};
-        if (config2.connectionString) {
-          config2 = Object.assign({}, config2, parse3(config2.connectionString));
+      constructor(config3) {
+        config3 = typeof config3 === "string" ? parse3(config3) : config3 || {};
+        if (config3.connectionString) {
+          config3 = Object.assign({}, config3, parse3(config3.connectionString));
         }
-        this.user = val("user", config2);
-        this.database = val("database", config2);
+        this.user = val("user", config3);
+        this.database = val("database", config3);
         if (this.database === void 0) {
           this.database = this.user;
         }
-        this.port = parseInt(val("port", config2), 10);
-        this.host = val("host", config2);
+        this.port = parseInt(val("port", config3), 10);
+        this.host = val("host", config3);
         Object.defineProperty(this, "password", {
           configurable: true,
           enumerable: false,
           writable: true,
-          value: val("password", config2)
+          value: val("password", config3)
         });
-        this.binary = val("binary", config2);
-        this.options = val("options", config2);
-        this.ssl = typeof config2.ssl === "undefined" ? readSSLConfigFromEnvironment() : config2.ssl;
+        this.binary = val("binary", config3);
+        this.options = val("options", config3);
+        this.ssl = typeof config3.ssl === "undefined" ? readSSLConfigFromEnvironment() : config3.ssl;
         if (typeof this.ssl === "string") {
           if (this.ssl === "true") {
             this.ssl = true;
@@ -6782,27 +6782,27 @@ var require_connection_parameters = __commonJS({
             enumerable: false
           });
         }
-        this.client_encoding = val("client_encoding", config2);
-        this.replication = val("replication", config2);
+        this.client_encoding = val("client_encoding", config3);
+        this.replication = val("replication", config3);
         this.isDomainSocket = !(this.host || "").indexOf("/");
-        this.application_name = val("application_name", config2, "PGAPPNAME");
-        this.fallback_application_name = val("fallback_application_name", config2, false);
-        this.statement_timeout = val("statement_timeout", config2, false);
-        this.lock_timeout = val("lock_timeout", config2, false);
-        this.idle_in_transaction_session_timeout = val("idle_in_transaction_session_timeout", config2, false);
-        this.query_timeout = val("query_timeout", config2, false);
-        if (config2.connectionTimeoutMillis === void 0) {
+        this.application_name = val("application_name", config3, "PGAPPNAME");
+        this.fallback_application_name = val("fallback_application_name", config3, false);
+        this.statement_timeout = val("statement_timeout", config3, false);
+        this.lock_timeout = val("lock_timeout", config3, false);
+        this.idle_in_transaction_session_timeout = val("idle_in_transaction_session_timeout", config3, false);
+        this.query_timeout = val("query_timeout", config3, false);
+        if (config3.connectionTimeoutMillis === void 0) {
           this.connect_timeout = process.env.PGCONNECT_TIMEOUT || 0;
         } else {
-          this.connect_timeout = Math.floor(config2.connectionTimeoutMillis / 1e3);
+          this.connect_timeout = Math.floor(config3.connectionTimeoutMillis / 1e3);
         }
-        if (config2.keepAlive === false) {
+        if (config3.keepAlive === false) {
           this.keepalives = 0;
-        } else if (config2.keepAlive === true) {
+        } else if (config3.keepAlive === true) {
           this.keepalives = 1;
         }
-        if (typeof config2.keepAliveInitialDelayMillis === "number") {
-          this.keepalives_idle = Math.floor(config2.keepAliveInitialDelayMillis / 1e3);
+        if (typeof config3.keepAliveInitialDelayMillis === "number") {
+          this.keepalives_idle = Math.floor(config3.keepAliveInitialDelayMillis / 1e3);
         }
       }
       getLibpqConnectionString(cb) {
@@ -6945,21 +6945,21 @@ var require_query = __commonJS({
     var Result2 = require_result();
     var utils = require_utils();
     var Query2 = class extends EventEmitter {
-      constructor(config2, values, callback) {
+      constructor(config3, values, callback) {
         super();
-        config2 = utils.normalizeQueryConfig(config2, values, callback);
-        this.text = config2.text;
-        this.values = config2.values;
-        this.rows = config2.rows;
-        this.types = config2.types;
-        this.name = config2.name;
-        this.queryMode = config2.queryMode;
-        this.binary = config2.binary;
-        this.portal = config2.portal || "";
-        this.callback = config2.callback;
-        this._rowMode = config2.rowMode;
-        if (process.domain && config2.callback) {
-          this.callback = process.domain.bind(config2.callback);
+        config3 = utils.normalizeQueryConfig(config3, values, callback);
+        this.text = config3.text;
+        this.values = config3.values;
+        this.rows = config3.rows;
+        this.types = config3.types;
+        this.name = config3.name;
+        this.queryMode = config3.queryMode;
+        this.binary = config3.binary;
+        this.portal = config3.portal || "";
+        this.callback = config3.callback;
+        this._rowMode = config3.rowMode;
+        if (process.domain && config3.callback) {
+          this.callback = process.domain.bind(config3.callback);
         }
         this._result = new Result2(this._rowMode, this.types);
         this._results = this._result;
@@ -7475,15 +7475,15 @@ var require_serializer = __commonJS({
         }
       }
     };
-    var bind = (config2 = {}) => {
-      const portal = config2.portal || "";
-      const statement = config2.statement || "";
-      const binary = config2.binary || false;
-      const values = config2.values || emptyArray;
+    var bind = (config3 = {}) => {
+      const portal = config3.portal || "";
+      const statement = config3.statement || "";
+      const binary = config3.binary || false;
+      const values = config3.values || emptyArray;
       const len = values.length;
       writer.addCString(portal).addCString(statement);
       writer.addInt16(len);
-      writeValues(values, config2.valueMapper);
+      writeValues(values, config3.valueMapper);
       writer.addInt16(len);
       writer.add(paramWriter.flush());
       writer.addInt16(1);
@@ -7497,12 +7497,12 @@ var require_serializer = __commonJS({
       );
     };
     var emptyExecute = Buffer.from([69, 0, 0, 0, 9, 0, 0, 0, 0, 0]);
-    var execute = (config2) => {
-      if (!config2 || !config2.portal && !config2.rows) {
+    var execute = (config3) => {
+      if (!config3 || !config3.portal && !config3.rows) {
         return emptyExecute;
       }
-      const portal = config2.portal || "";
-      const rows = config2.rows || 0;
+      const portal = config3.portal || "";
+      const rows = config3.rows || 0;
       const portalLength = Buffer.byteLength(portal);
       const len = 4 + portalLength + 1 + 4;
       const buff = Buffer.allocUnsafe(1 + len);
@@ -8073,17 +8073,17 @@ var require_connection = __commonJS({
     var syncBuffer = serialize.sync();
     var endBuffer = serialize.end();
     var Connection2 = class extends EventEmitter {
-      constructor(config2) {
+      constructor(config3) {
         super();
-        config2 = config2 || {};
-        this.stream = config2.stream || getStream(config2.ssl);
+        config3 = config3 || {};
+        this.stream = config3.stream || getStream(config3.ssl);
         if (typeof this.stream === "function") {
-          this.stream = this.stream(config2);
+          this.stream = this.stream(config3);
         }
-        this._keepAlive = config2.keepAlive;
-        this._keepAliveInitialDelayMillis = config2.keepAliveInitialDelayMillis;
+        this._keepAlive = config3.keepAlive;
+        this._keepAliveInitialDelayMillis = config3.keepAliveInitialDelayMillis;
         this.parsedStatements = {};
-        this.ssl = config2.ssl || false;
+        this.ssl = config3.ssl || false;
         this._ending = false;
         this._emitMessage = false;
         const self2 = this;
@@ -8164,8 +8164,8 @@ var require_connection = __commonJS({
       requestSsl() {
         this.stream.write(serialize.requestSsl());
       }
-      startup(config2) {
-        this.stream.write(serialize.startup(config2));
+      startup(config3) {
+        this.stream.write(serialize.startup(config3));
       }
       cancel(processID, secretKey) {
         this._send(serialize.cancel(processID, secretKey));
@@ -8193,12 +8193,12 @@ var require_connection = __commonJS({
         this._send(serialize.parse(query));
       }
       // send bind message
-      bind(config2) {
-        this._send(serialize.bind(config2));
+      bind(config3) {
+        this._send(serialize.bind(config3));
       }
       // send execute message
-      execute(config2) {
-        this._send(serialize.execute(config2));
+      execute(config3) {
+        this._send(serialize.execute(config3));
       }
       flush() {
         if (this.stream.writable) {
@@ -8577,9 +8577,9 @@ var require_client = __commonJS({
       "Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead."
     );
     var Client2 = class extends EventEmitter {
-      constructor(config2) {
+      constructor(config3) {
         super();
-        this.connectionParameters = new ConnectionParameters(config2);
+        this.connectionParameters = new ConnectionParameters(config3);
         this.user = this.connectionParameters.user;
         this.database = this.connectionParameters.database;
         this.port = this.connectionParameters.port;
@@ -8591,7 +8591,7 @@ var require_client = __commonJS({
           value: this.connectionParameters.password
         });
         this.replication = this.connectionParameters.replication;
-        const c = config2 || {};
+        const c = config3 || {};
         if (c.Promise) {
           byoPromiseDeprecationNotice();
         }
@@ -9041,17 +9041,17 @@ var require_client = __commonJS({
           }
         }
       }
-      query(config2, values, callback) {
+      query(config3, values, callback) {
         let query;
         let result;
         let readTimeout;
         let readTimeoutTimer;
         let queryCallback;
-        if (config2 === null || config2 === void 0) {
+        if (config3 === null || config3 === void 0) {
           throw new TypeError("Client was passed a null or undefined query");
-        } else if (typeof config2.submit === "function") {
-          readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
-          result = query = config2;
+        } else if (typeof config3.submit === "function") {
+          readTimeout = config3.query_timeout || this.connectionParameters.query_timeout;
+          result = query = config3;
           if (!query.callback) {
             if (typeof values === "function") {
               query.callback = values;
@@ -9060,8 +9060,8 @@ var require_client = __commonJS({
             }
           }
         } else {
-          readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
-          query = new Query2(config2, values, callback);
+          readTimeout = config3.query_timeout || this.connectionParameters.query_timeout;
+          query = new Query2(config3, values, callback);
           if (!query.callback) {
             result = new this._Promise((resolve, reject) => {
               query.callback = (err, res) => err ? reject(err) : resolve(res);
@@ -9589,16 +9589,16 @@ var require_query2 = __commonJS({
     var EventEmitter = __require("events").EventEmitter;
     var util2 = __require("util");
     var utils = require_utils();
-    var NativeQuery = module.exports = function(config2, values, callback) {
+    var NativeQuery = module.exports = function(config3, values, callback) {
       EventEmitter.call(this);
-      config2 = utils.normalizeQueryConfig(config2, values, callback);
-      this.text = config2.text;
-      this.values = config2.values;
-      this.name = config2.name;
-      this.queryMode = config2.queryMode;
-      this.callback = config2.callback;
+      config3 = utils.normalizeQueryConfig(config3, values, callback);
+      this.text = config3.text;
+      this.values = config3.values;
+      this.name = config3.name;
+      this.queryMode = config3.queryMode;
+      this.callback = config3.callback;
       this.state = "new";
-      this._arrayMode = config2.rowMode === "array";
+      this._arrayMode = config3.rowMode === "array";
       this._emitRowEvents = false;
       this.on(
         "newListener",
@@ -9743,11 +9743,11 @@ var require_client2 = __commonJS({
       },
       "Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead."
     );
-    var Client2 = module.exports = function(config2) {
+    var Client2 = module.exports = function(config3) {
       EventEmitter.call(this);
-      config2 = config2 || {};
-      this._Promise = config2.Promise || global.Promise;
-      this._types = new TypeOverrides2(config2.types);
+      config3 = config3 || {};
+      this._Promise = config3.Promise || global.Promise;
+      this._types = new TypeOverrides2(config3.types);
       this.native = new Native({
         types: this._types
       });
@@ -9756,8 +9756,8 @@ var require_client2 = __commonJS({
       this._connecting = false;
       this._connected = false;
       this._queryable = true;
-      const cp = this.connectionParameters = new ConnectionParameters(config2);
-      if (config2.nativeConnectionString) cp.nativeConnectionString = config2.nativeConnectionString;
+      const cp = this.connectionParameters = new ConnectionParameters(config3);
+      if (config3.nativeConnectionString) cp.nativeConnectionString = config3.nativeConnectionString;
       this.user = cp.user;
       Object.defineProperty(this, "password", {
         configurable: true,
@@ -9834,23 +9834,23 @@ var require_client2 = __commonJS({
         });
       });
     };
-    Client2.prototype.query = function(config2, values, callback) {
+    Client2.prototype.query = function(config3, values, callback) {
       let query;
       let result;
       let readTimeout;
       let readTimeoutTimer;
       let queryCallback;
-      if (config2 === null || config2 === void 0) {
+      if (config3 === null || config3 === void 0) {
         throw new TypeError("Client was passed a null or undefined query");
-      } else if (typeof config2.submit === "function") {
-        readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
-        result = query = config2;
+      } else if (typeof config3.submit === "function") {
+        readTimeout = config3.query_timeout || this.connectionParameters.query_timeout;
+        result = query = config3;
         if (typeof values === "function") {
-          config2.callback = values;
+          config3.callback = values;
         }
       } else {
-        readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
-        query = new NativeQuery(config2, values, callback);
+        readTimeout = config3.query_timeout || this.connectionParameters.query_timeout;
+        query = new NativeQuery(config3, values, callback);
         if (!query.callback) {
           let resolveOut, rejectOut;
           result = new this._Promise((resolve, reject) => {
@@ -23783,11 +23783,11 @@ var require_utils3 = __commonJS({
     var toArray = require_toArray();
     var { base64EncodeURL } = require_base64EncodeURL();
     var encodeDoubleArray = require_encodeDoubleArray();
-    var config2 = require_config();
+    var config3 = require_config();
     var generate_token = require_auth_token();
     var crc32 = require_crc32();
     var ensurePresenceOf = require_ensurePresenceOf();
-    var ensureOption = require_ensureOption().defaults(config2());
+    var ensureOption = require_ensureOption().defaults(config3());
     var entries = require_entries();
     var isRemoteUrl = require_isRemoteUrl();
     var getSDKVersions = require_getSDKVersions();
@@ -23803,7 +23803,7 @@ var require_utils3 = __commonJS({
       utils.VERSION = "";
     }
     function generate_auth_token(options) {
-      let token_options = Object.assign({}, config2().auth_token, options);
+      let token_options = Object.assign({}, config3().auth_token, options);
       return generate_token(token_options);
     }
     exports.CF_SHARED_CDN = "d3jpl91pxevbkh.cloudfront.net";
@@ -24136,7 +24136,7 @@ var require_utils3 = __commonJS({
       if (isArray(options)) {
         return options.map((t) => utils.generate_transformation_string(clone2(t))).filter(utils.present).join("/");
       }
-      let responsive_width = consumeOption(options, "responsive_width", config2().responsive_width);
+      let responsive_width = consumeOption(options, "responsive_width", config3().responsive_width);
       let width = options.width;
       let height = options.height;
       let size = consumeOption(options, "size");
@@ -24180,7 +24180,7 @@ var require_utils3 = __commonJS({
         border = void 0;
       }
       let flags = toArray(consumeOption(options, "flags")).join(".");
-      let dpr = consumeOption(options, "dpr", config2().dpr);
+      let dpr = consumeOption(options, "dpr", config3().dpr);
       if (options.offset != null) {
         [options.start_offset, options.end_offset] = split_range(consumeOption(options, "offset"));
       }
@@ -24250,7 +24250,7 @@ var require_utils3 = __commonJS({
       base_transformations.push(transformations);
       transformations = base_transformations;
       if (responsive_width) {
-        let responsive_width_transformation = config2().responsive_width_transformation || DEFAULT_RESPONSIVE_WIDTH_TRANSFORMATION;
+        let responsive_width_transformation = config3().responsive_width_transformation || DEFAULT_RESPONSIVE_WIDTH_TRANSFORMATION;
         transformations.push(utils.generate_transformation_string(clone2(responsive_width_transformation)));
       }
       if (String(width).startsWith("auto") || responsive_width) {
@@ -24353,20 +24353,20 @@ var require_utils3 = __commonJS({
       }
     }
     function build_distribution_domain(source, options) {
-      const cloud_name = consumeOption(options, "cloud_name", config2().cloud_name);
+      const cloud_name = consumeOption(options, "cloud_name", config3().cloud_name);
       if (!cloud_name) {
         throw new Error("Must supply cloud_name in tag or in configuration");
       }
       let secure = consumeOption(options, "secure", true);
-      const ssl_detected = consumeOption(options, "ssl_detected", config2().ssl_detected);
+      const ssl_detected = consumeOption(options, "ssl_detected", config3().ssl_detected);
       if (secure === null) {
-        secure = ssl_detected || config2().secure;
+        secure = ssl_detected || config3().secure;
       }
-      const private_cdn = consumeOption(options, "private_cdn", config2().private_cdn);
-      const cname = consumeOption(options, "cname", config2().cname);
-      const secure_distribution = consumeOption(options, "secure_distribution", config2().secure_distribution);
-      const cdn_subdomain = consumeOption(options, "cdn_subdomain", config2().cdn_subdomain);
-      const secure_cdn_subdomain = consumeOption(options, "secure_cdn_subdomain", config2().secure_cdn_subdomain);
+      const private_cdn = consumeOption(options, "private_cdn", config3().private_cdn);
+      const cname = consumeOption(options, "cname", config3().cname);
+      const secure_distribution = consumeOption(options, "secure_distribution", config3().secure_distribution);
+      const cdn_subdomain = consumeOption(options, "cdn_subdomain", config3().cdn_subdomain);
+      const secure_cdn_subdomain = consumeOption(options, "secure_cdn_subdomain", config3().secure_cdn_subdomain);
       return unsigned_url_prefix(source, cloud_name, private_cdn, cdn_subdomain, secure_cdn_subdomain, cname, secure, secure_distribution);
     }
     function url2(public_id, options = {}) {
@@ -24376,24 +24376,24 @@ var require_utils3 = __commonJS({
       let transformation = utils.generate_transformation_string(options);
       let resource_type = consumeOption(options, "resource_type", "image");
       let version3 = consumeOption(options, "version");
-      let force_version = consumeOption(options, "force_version", config2().force_version);
+      let force_version = consumeOption(options, "force_version", config3().force_version);
       if (force_version == null) {
         force_version = true;
       }
-      let long_url_signature = !!consumeOption(options, "long_url_signature", config2().long_url_signature);
+      let long_url_signature = !!consumeOption(options, "long_url_signature", config3().long_url_signature);
       let format = consumeOption(options, "format");
-      let shorten = consumeOption(options, "shorten", config2().shorten);
-      let sign_url = consumeOption(options, "sign_url", config2().sign_url);
-      let api_secret = consumeOption(options, "api_secret", config2().api_secret);
+      let shorten = consumeOption(options, "shorten", config3().shorten);
+      let sign_url = consumeOption(options, "sign_url", config3().sign_url);
+      let api_secret = consumeOption(options, "api_secret", config3().api_secret);
       let url_suffix = consumeOption(options, "url_suffix");
-      let use_root_path = consumeOption(options, "use_root_path", config2().use_root_path);
-      let signature_algorithm = consumeOption(options, "signature_algorithm", config2().signature_algorithm || DEFAULT_SIGNATURE_ALGORITHM);
+      let use_root_path = consumeOption(options, "use_root_path", config3().use_root_path);
+      let signature_algorithm = consumeOption(options, "signature_algorithm", config3().signature_algorithm || DEFAULT_SIGNATURE_ALGORITHM);
       if (long_url_signature) {
         signature_algorithm = "sha256";
       }
       let auth_token = consumeOption(options, "auth_token");
       if (auth_token !== false) {
-        auth_token = exports.merge(config2().auth_token, auth_token);
+        auth_token = exports.merge(config3().auth_token, auth_token);
       }
       let preloaded = /^(image|raw)\/([a-z0-9_]+)\/v(\d+)\/([^#]+)$/.exec(public_id);
       if (preloaded) {
@@ -24621,10 +24621,10 @@ var require_utils3 = __commonJS({
     }
     function api_sign_request(params_to_sign, api_secret, signature_algorithm = null, signature_version = null) {
       if (signature_version == null) {
-        signature_version = config2().signature_version || 2;
+        signature_version = config3().signature_version || 2;
       }
       const to_sign = api_string_to_sign(params_to_sign, signature_version);
-      const algo = signature_algorithm || config2().signature_algorithm || DEFAULT_SIGNATURE_ALGORITHM;
+      const algo = signature_algorithm || config3().signature_algorithm || DEFAULT_SIGNATURE_ALGORITHM;
       return compute_hash(to_sign + api_secret, algo, "hex");
     }
     function compute_hash(input, signature_algorithm, encoding) {
@@ -24674,8 +24674,8 @@ var require_utils3 = __commonJS({
         return false;
       }
       const payload_hash = utils.webhook_signature(body, timestamp2, {
-        api_secret: config2().api_secret,
-        signature_algorithm: config2().signature_algorithm
+        api_secret: config3().api_secret,
+        signature_algorithm: config3().signature_algorithm
       });
       return signature === payload_hash;
     }
@@ -24683,7 +24683,7 @@ var require_utils3 = __commonJS({
       if (options.unsigned != null && options.unsigned) {
         params = exports.clear_blank(params);
         delete params.timestamp;
-      } else if (options.oauth_token || config2().oauth_token) {
+      } else if (options.oauth_token || config3().oauth_token) {
         params = exports.clear_blank(params);
       } else if (options.signature) {
         params = exports.clear_blank(options);
@@ -24762,7 +24762,7 @@ var require_utils3 = __commonJS({
     };
     var CLOUDINARY_JS_CONFIG_PARAMS = ["api_key", "cloud_name", "private_cdn", "secure_distribution", "cdn_subdomain"];
     function cloudinary_js_config() {
-      let params = pickOnlyExistingValues(config2(), ...CLOUDINARY_JS_CONFIG_PARAMS);
+      let params = pickOnlyExistingValues(config3(), ...CLOUDINARY_JS_CONFIG_PARAMS);
       return `<script type='text/javascript'>
 $.cloudinary.config(${JSON.stringify(params)});
 </script>`;
@@ -25061,7 +25061,7 @@ $.cloudinary.config(${JSON.stringify(params)});
       ensurePresenceOf
     });
     function verify_api_response_signature(public_id, version3, signature) {
-      const api_secret = config2().api_secret;
+      const api_secret = config3().api_secret;
       const expected = exports.api_sign_request(
         {
           public_id,
@@ -25258,9 +25258,9 @@ var require_uploader = __commonJS({
     var Cache2 = require_cache();
     var utils = require_utils3();
     var UploadStream = require_upload_stream();
-    var config2 = require_config();
-    var ensureOption = require_ensureOption().defaults(config2());
-    var agent = config2.api_proxy ? new https.Agent(config2.api_proxy) : null;
+    var config3 = require_config();
+    var ensureOption = require_ensureOption().defaults(config3());
+    var agent = config3.api_proxy ? new https.Agent(config3.api_proxy) : null;
     var {
       build_upload_params,
       extend: extend2,
@@ -25662,7 +25662,7 @@ var require_uploader = __commonJS({
     function post(url2, post_data, boundary, file2, callback, options) {
       let file_header;
       let finish_buffer = Buffer.from("--" + boundary + "--", "ascii");
-      let oauth_token = options.oauth_token || config2().oauth_token;
+      let oauth_token = options.oauth_token || config3().oauth_token;
       if (file2 != null || options.stream) {
         let filename = options.stream ? options.filename ? options.filename : "file" : basename(file2);
         file_header = Buffer.from(encodeFilePart(boundary, "application/octet-stream", "file", filename), "binary");
@@ -25701,7 +25701,7 @@ var require_uploader = __commonJS({
       if (options.agent != null) {
         post_options.agent = options.agent;
       }
-      let proxy = options.api_proxy || config2().api_proxy;
+      let proxy = options.api_proxy || config3().api_proxy;
       if (!isEmpty(proxy)) {
         if (!post_options.agent && agent) {
           post_options.agent = agent;
@@ -25835,14 +25835,14 @@ var require_uploader = __commonJS({
 // ../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/api_client/execute_request.js
 var require_execute_request = __commonJS({
   "../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/api_client/execute_request.js"(exports, module) {
-    var config2 = require_config();
-    var https = /^http:/.test(config2().upload_prefix) ? __require("http") : __require("https");
+    var config3 = require_config();
+    var https = /^http:/.test(config3().upload_prefix) ? __require("http") : __require("https");
     var querystring = __require("querystring");
     var utils = require_utils3();
-    var ensureOption = require_ensureOption().defaults(config2());
+    var ensureOption = require_ensureOption().defaults(config3());
     var { URL: URL2 } = __require("url");
     var { extend: extend2, includes, isEmpty } = utils;
-    var agent = config2.api_proxy ? new https.Agent(config2.api_proxy) : null;
+    var agent = config3.api_proxy ? new https.Agent(config3.api_proxy) : null;
     function execute_request(method, params, auth, api_url, callback, options = {}) {
       method = method.toUpperCase();
       const deferred = utils.deferredPromise();
@@ -25886,7 +25886,7 @@ var require_execute_request = __commonJS({
       if (options.agent != null) {
         request_options.agent = options.agent;
       }
-      let proxy = options.api_proxy || config2().api_proxy;
+      let proxy = options.api_proxy || config3().api_proxy;
       if (!isEmpty(proxy)) {
         if (!request_options.agent && agent) {
           request_options.agent = agent;
@@ -25900,7 +25900,7 @@ var require_execute_request = __commonJS({
         request_options.headers["Content-Length"] = Buffer.byteLength(query_params);
       }
       handle_response = function(res) {
-        const { hide_sensitive = false, debug = false } = config2();
+        const { hide_sensitive = false, debug = false } = config3();
         const sanitizedOptions = { ...request_options };
         const requestId = res.headers["x-request-id"];
         if (hide_sensitive === true) {
@@ -26018,16 +26018,16 @@ var require_execute_request = __commonJS({
 // ../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/api_client/call_api.js
 var require_call_api = __commonJS({
   "../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/api_client/call_api.js"(exports, module) {
-    var config2 = require_config();
+    var config3 = require_config();
     var utils = require_utils3();
-    var ensureOption = require_ensureOption().defaults(config2());
+    var ensureOption = require_ensureOption().defaults(config3());
     var execute_request = require_execute_request();
     var { ensurePresenceOf } = utils;
     function call_api(method, uri, params, callback, options) {
       ensurePresenceOf({ method, uri });
       const api_url = utils.base_api_url_v1()(uri, options);
       let auth = {};
-      if (options.oauth_token || config2().oauth_token) {
+      if (options.oauth_token || config3().oauth_token) {
         auth = {
           oauth_token: ensureOption(options, "oauth_token")
         };
@@ -26541,7 +26541,7 @@ var require_api = __commonJS({
     exports.delete_metadata_rule = function delete_metadata_rule(field_external_id, callback, options = {}) {
       return call_api("delete", ["metadata_rules", field_external_id], {}, callback, options);
     };
-    exports.config = function config2(callback, options = {}) {
+    exports.config = function config3(callback, options = {}) {
       const params = pickOnlyExistingValues(options, "settings");
       return call_api("get", ["config"], params, callback, options);
     };
@@ -26552,8 +26552,8 @@ var require_api = __commonJS({
 var require_call_analysis_api = __commonJS({
   "../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/api_client/call_analysis_api.js"(exports, module) {
     var utils = require_utils3();
-    var config2 = require_config();
-    var ensureOption = require_ensureOption().defaults(config2());
+    var config3 = require_config();
+    var ensureOption = require_ensureOption().defaults(config3());
     var execute_request = require_execute_request();
     var { ensurePresenceOf } = utils;
     function call_analysis_api(method, uri, params, callback, options) {
@@ -26563,7 +26563,7 @@ var require_call_analysis_api = __commonJS({
       });
       const api_url = utils.base_api_url_v2()(uri, options);
       let auth = {};
-      if (options.oauth_token || config2().oauth_token) {
+      if (options.oauth_token || config3().oauth_token) {
         auth = {
           oauth_token: ensureOption(options, "oauth_token")
         };
@@ -26615,9 +26615,9 @@ var require_analysis = __commonJS({
 // ../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/api_client/call_account_api.js
 var require_call_account_api = __commonJS({
   "../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/api_client/call_account_api.js"(exports, module) {
-    var config2 = require_config();
+    var config3 = require_config();
     var utils = require_utils3();
-    var ensureOption = require_ensureOption().defaults(config2());
+    var ensureOption = require_ensureOption().defaults(config3());
     var execute_request = require_execute_request();
     var { ensurePresenceOf } = utils;
     function call_account_api(method, uri, params, callback, options) {
@@ -26843,10 +26843,10 @@ var require_account = __commonJS({
 var require_preloaded_file = __commonJS({
   "../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/preloaded_file.js"(exports, module) {
     var PRELOADED_CLOUDINARY_PATH;
-    var config2;
+    var config3;
     var utils;
     utils = require_utils3();
-    config2 = require_config();
+    config3 = require_config();
     PRELOADED_CLOUDINARY_PATH = /^([^\/]+)\/([^\/]+)\/v(\d+)\/([^#]+)#([^\/]+)$/;
     var PreloadedFile = class _PreloadedFile {
       constructor(file_info) {
@@ -27140,7 +27140,7 @@ var require_uploader2 = __commonJS({
 var require_search = __commonJS({
   "../../node_modules/.pnpm/cloudinary@2.10.0/node_modules/cloudinary/lib/v2/search.js"(exports, module) {
     var api = require_api2();
-    var config2 = require_config();
+    var config3 = require_config();
     var {
       isEmpty,
       isNumber,
@@ -27263,7 +27263,7 @@ var require_search = __commonJS({
         return api.search(this.to_query(), options, callback);
       }
       to_url(ttl, next_cursor, options = {}) {
-        const apiSecret = "api_secret" in options ? options.api_secret : config2().api_secret;
+        const apiSecret = "api_secret" in options ? options.api_secret : config3().api_secret;
         if (!apiSecret) {
           throw new Error("Must supply api_secret");
         }
@@ -32457,24 +32457,24 @@ function is(value, type) {
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/column.js
 var Column = class {
-  constructor(table, config2) {
+  constructor(table, config3) {
     this.table = table;
-    this.config = config2;
-    this.name = config2.name;
-    this.keyAsName = config2.keyAsName;
-    this.notNull = config2.notNull;
-    this.default = config2.default;
-    this.defaultFn = config2.defaultFn;
-    this.onUpdateFn = config2.onUpdateFn;
-    this.hasDefault = config2.hasDefault;
-    this.primary = config2.primaryKey;
-    this.isUnique = config2.isUnique;
-    this.uniqueName = config2.uniqueName;
-    this.uniqueType = config2.uniqueType;
-    this.dataType = config2.dataType;
-    this.columnType = config2.columnType;
-    this.generated = config2.generated;
-    this.generatedIdentity = config2.generatedIdentity;
+    this.config = config3;
+    this.name = config3.name;
+    this.keyAsName = config3.keyAsName;
+    this.notNull = config3.notNull;
+    this.default = config3.default;
+    this.defaultFn = config3.defaultFn;
+    this.onUpdateFn = config3.onUpdateFn;
+    this.hasDefault = config3.hasDefault;
+    this.primary = config3.primaryKey;
+    this.isUnique = config3.isUnique;
+    this.uniqueName = config3.uniqueName;
+    this.uniqueType = config3.uniqueType;
+    this.dataType = config3.dataType;
+    this.columnType = config3.columnType;
+    this.generated = config3.generated;
+    this.generatedIdentity = config3.generatedIdentity;
   }
   static [entityKind] = "Column";
   name;
@@ -32621,9 +32621,9 @@ var ForeignKeyBuilder = class {
   _onUpdate = "no action";
   /** @internal */
   _onDelete = "no action";
-  constructor(config2, actions) {
+  constructor(config3, actions) {
     this.reference = () => {
-      const { name, columns, foreignColumns } = config2();
+      const { name, columns, foreignColumns } = config3();
       return { name, columns, foreignTable: foreignColumns[0].table, foreignColumns };
     };
     if (actions) {
@@ -32811,10 +32811,10 @@ var PgColumnBuilder = class extends ColumnBuilder {
     this.foreignKeyConfigs.push({ ref, actions });
     return this;
   }
-  unique(name, config2) {
+  unique(name, config3) {
     this.config.isUnique = true;
     this.config.uniqueName = name;
-    this.config.uniqueType = config2?.nulls;
+    this.config.uniqueType = config3?.nulls;
     return this;
   }
   generatedAlwaysAs(as) {
@@ -32853,11 +32853,11 @@ var PgColumnBuilder = class extends ColumnBuilder {
   }
 };
 var PgColumn = class extends Column {
-  constructor(table, config2) {
-    if (!config2.uniqueName) {
-      config2.uniqueName = uniqueKeyName(table, [config2.name]);
+  constructor(table, config3) {
+    if (!config3.uniqueName) {
+      config3.uniqueName = uniqueKeyName(table, [config3.name]);
     }
-    super(table, config2);
+    super(table, config3);
     this.table = table;
   }
   static [entityKind] = "PgColumn";
@@ -32958,11 +32958,11 @@ var PgArrayBuilder = class extends PgColumnBuilder {
   }
 };
 var PgArray = class _PgArray extends PgColumn {
-  constructor(table, config2, baseColumn, range) {
-    super(table, config2);
+  constructor(table, config3, baseColumn, range) {
+    super(table, config3);
     this.baseColumn = baseColumn;
     this.range = range;
-    this.size = config2.size;
+    this.size = config3.size;
   }
   size;
   static [entityKind] = "PgArray";
@@ -33003,9 +33003,9 @@ var PgEnumObjectColumn = class extends PgColumn {
   static [entityKind] = "PgEnumObjectColumn";
   enum;
   enumValues = this.config.enum.enumValues;
-  constructor(table, config2) {
-    super(table, config2);
-    this.enum = config2.enum;
+  constructor(table, config3) {
+    super(table, config3);
+    this.enum = config3.enum;
   }
   getSQLType() {
     return this.enum.enumName;
@@ -33033,9 +33033,9 @@ var PgEnumColumn = class extends PgColumn {
   static [entityKind] = "PgEnumColumn";
   enum = this.config.enum;
   enumValues = this.config.enum.enumValues;
-  constructor(table, config2) {
-    super(table, config2);
-    this.enum = config2.enum;
+  constructor(table, config3) {
+    super(table, config3);
+    this.enum = config3.enum;
   }
   getSQLType() {
     return this.enum.enumName;
@@ -33222,9 +33222,9 @@ var SQL = class _SQL {
     this.queryChunks.push(...query.queryChunks);
     return this;
   }
-  toQuery(config2) {
+  toQuery(config3) {
     return tracer.startActiveSpan("drizzle.buildSQL", (span) => {
-      const query = this.buildQueryFromSourceParams(this.queryChunks, config2);
+      const query = this.buildQueryFromSourceParams(this.queryChunks, config3);
       span?.setAttributes({
         "drizzle.query.text": query.sql,
         "drizzle.query.params": JSON.stringify(query.params)
@@ -33233,7 +33233,7 @@ var SQL = class _SQL {
     });
   }
   buildQueryFromSourceParams(chunks, _config) {
-    const config2 = Object.assign({}, _config, {
+    const config3 = Object.assign({}, _config, {
       inlineParams: _config.inlineParams || this.shouldInlineParams,
       paramStartIndex: _config.paramStartIndex || { value: 0 }
     });
@@ -33244,7 +33244,7 @@ var SQL = class _SQL {
       prepareTyping,
       inlineParams,
       paramStartIndex
-    } = config2;
+    } = config3;
     return mergeQueries(chunks.map((chunk) => {
       if (is(chunk, StringChunk)) {
         return { sql: chunk.value.join(""), params: [] };
@@ -33264,11 +33264,11 @@ var SQL = class _SQL {
           }
         }
         result.push(new StringChunk(")"));
-        return this.buildQueryFromSourceParams(result, config2);
+        return this.buildQueryFromSourceParams(result, config3);
       }
       if (is(chunk, _SQL)) {
         return this.buildQueryFromSourceParams(chunk.queryChunks, {
-          ...config2,
+          ...config3,
           inlineParams: inlineParams || chunk.shouldInlineParams
         });
       }
@@ -33305,10 +33305,10 @@ var SQL = class _SQL {
         }
         const mappedValue = chunk.value === null ? null : chunk.encoder.mapToDriverValue(chunk.value);
         if (is(mappedValue, _SQL)) {
-          return this.buildQueryFromSourceParams([mappedValue], config2);
+          return this.buildQueryFromSourceParams([mappedValue], config3);
         }
         if (inlineParams) {
-          return { sql: this.mapInlineParam(mappedValue, config2), params: [] };
+          return { sql: this.mapInlineParam(mappedValue, config3), params: [] };
         }
         let typings = ["none"];
         if (prepareTyping) {
@@ -33331,7 +33331,7 @@ var SQL = class _SQL {
           chunk._.sql,
           new StringChunk(") "),
           new Name(chunk._.alias)
-        ], config2);
+        ], config3);
       }
       if (isPgEnum(chunk)) {
         if (chunk.schema) {
@@ -33341,16 +33341,16 @@ var SQL = class _SQL {
       }
       if (isSQLWrapper(chunk)) {
         if (chunk.shouldOmitSQLParens?.()) {
-          return this.buildQueryFromSourceParams([chunk.getSQL()], config2);
+          return this.buildQueryFromSourceParams([chunk.getSQL()], config3);
         }
         return this.buildQueryFromSourceParams([
           new StringChunk("("),
           chunk.getSQL(),
           new StringChunk(")")
-        ], config2);
+        ], config3);
       }
       if (inlineParams) {
-        return { sql: this.mapInlineParam(chunk, config2), params: [] };
+        return { sql: this.mapInlineParam(chunk, config3), params: [] };
       }
       return { sql: escapeParam(paramStartIndex.value++, chunk), params: [chunk], typings: ["none"] };
     }));
@@ -33699,8 +33699,8 @@ var ConsoleLogWriter = class {
 var DefaultLogger = class {
   static [entityKind] = "DefaultLogger";
   writer;
-  constructor(config2) {
-    this.writer = config2?.writer ?? new ConsoleLogWriter();
+  constructor(config3) {
+    this.writer = config3?.writer ?? new ConsoleLogWriter();
   }
   logQuery(query, params) {
     const stringifiedParams = params.map((p) => {
@@ -33984,8 +33984,8 @@ var PgBigInt64 = class extends PgColumn {
   }
 };
 function bigint(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  if (config2.mode === "number") {
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  if (config3.mode === "number") {
     return new PgBigInt53Builder(name);
   }
   return new PgBigInt64Builder(name);
@@ -34044,8 +34044,8 @@ var PgBigSerial64 = class extends PgColumn {
   }
 };
 function bigserial(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  if (config2.mode === "number") {
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  if (config3.mode === "number") {
     return new PgBigSerial53Builder(name);
   }
   return new PgBigSerial64Builder(name);
@@ -34075,10 +34075,10 @@ function boolean(name) {
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/char.js
 var PgCharBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgCharBuilder";
-  constructor(name, config2) {
+  constructor(name, config3) {
     super(name, "string", "PgChar");
-    this.config.length = config2.length;
-    this.config.enumValues = config2.enum;
+    this.config.length = config3.length;
+    this.config.enumValues = config3.enum;
   }
   /** @internal */
   build(table) {
@@ -34097,8 +34097,8 @@ var PgChar = class extends PgColumn {
   }
 };
 function char(a, b = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgCharBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgCharBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/cidr.js
@@ -34143,11 +34143,11 @@ var PgCustomColumn = class extends PgColumn {
   sqlName;
   mapTo;
   mapFrom;
-  constructor(table, config2) {
-    super(table, config2);
-    this.sqlName = config2.customTypeParams.dataType(config2.fieldConfig);
-    this.mapTo = config2.customTypeParams.toDriver;
-    this.mapFrom = config2.customTypeParams.fromDriver;
+  constructor(table, config3) {
+    super(table, config3);
+    this.sqlName = config3.customTypeParams.dataType(config3.fieldConfig);
+    this.mapTo = config3.customTypeParams.toDriver;
+    this.mapFrom = config3.customTypeParams.fromDriver;
   }
   getSQLType() {
     return this.sqlName;
@@ -34161,8 +34161,8 @@ var PgCustomColumn = class extends PgColumn {
 };
 function customType(customTypeParams) {
   return (a, b) => {
-    const { name, config: config2 } = getColumnNameAndConfig(a, b);
-    return new PgCustomColumnBuilder(name, config2, customTypeParams);
+    const { name, config: config3 } = getColumnNameAndConfig(a, b);
+    return new PgCustomColumnBuilder(name, config3, customTypeParams);
   };
 }
 
@@ -34222,8 +34222,8 @@ var PgDateString = class extends PgColumn {
   }
 };
 function date(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  if (config2?.mode === "date") {
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  if (config3?.mode === "date") {
     return new PgDateBuilder(name);
   }
   return new PgDateStringBuilder(name);
@@ -34330,8 +34330,8 @@ var PgInterval = class extends PgColumn {
   }
 };
 function interval(a, b = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgIntervalBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgIntervalBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/json.js
@@ -34347,8 +34347,8 @@ var PgJsonBuilder = class extends PgColumnBuilder {
 };
 var PgJson = class extends PgColumn {
   static [entityKind] = "PgJson";
-  constructor(table, config2) {
-    super(table, config2);
+  constructor(table, config3) {
+    super(table, config3);
   }
   getSQLType() {
     return "json";
@@ -34384,8 +34384,8 @@ var PgJsonbBuilder = class extends PgColumnBuilder {
 };
 var PgJsonb = class extends PgColumn {
   static [entityKind] = "PgJsonb";
-  constructor(table, config2) {
-    super(table, config2);
+  constructor(table, config3) {
+    super(table, config3);
   }
   getSQLType() {
     return "jsonb";
@@ -34462,8 +34462,8 @@ var PgLineABC = class extends PgColumn {
   }
 };
 function line(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  if (!config2?.mode || config2.mode === "tuple") {
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  if (!config3?.mode || config3.mode === "tuple") {
     return new PgLineBuilder(name);
   }
   return new PgLineABCBuilder(name);
@@ -34528,10 +34528,10 @@ var PgNumeric = class extends PgColumn {
   static [entityKind] = "PgNumeric";
   precision;
   scale;
-  constructor(table, config2) {
-    super(table, config2);
-    this.precision = config2.precision;
-    this.scale = config2.scale;
+  constructor(table, config3) {
+    super(table, config3);
+    this.precision = config3.precision;
+    this.scale = config3.scale;
   }
   mapFromDriverValue(value) {
     if (typeof value === "string") return value;
@@ -34566,10 +34566,10 @@ var PgNumericNumber = class extends PgColumn {
   static [entityKind] = "PgNumericNumber";
   precision;
   scale;
-  constructor(table, config2) {
-    super(table, config2);
-    this.precision = config2.precision;
-    this.scale = config2.scale;
+  constructor(table, config3) {
+    super(table, config3);
+    this.precision = config3.precision;
+    this.scale = config3.scale;
   }
   mapFromDriverValue(value) {
     if (typeof value === "number") return value;
@@ -34605,10 +34605,10 @@ var PgNumericBigInt = class extends PgColumn {
   static [entityKind] = "PgNumericBigInt";
   precision;
   scale;
-  constructor(table, config2) {
-    super(table, config2);
-    this.precision = config2.precision;
-    this.scale = config2.scale;
+  constructor(table, config3) {
+    super(table, config3);
+    this.precision = config3.precision;
+    this.scale = config3.scale;
   }
   mapFromDriverValue = BigInt;
   mapToDriverValue = String;
@@ -34623,9 +34623,9 @@ var PgNumericBigInt = class extends PgColumn {
   }
 };
 function numeric(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  const mode = config2?.mode;
-  return mode === "number" ? new PgNumericNumberBuilder(name, config2?.precision, config2?.scale) : mode === "bigint" ? new PgNumericBigIntBuilder(name, config2?.precision, config2?.scale) : new PgNumericBuilder(name, config2?.precision, config2?.scale);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  const mode = config3?.mode;
+  return mode === "number" ? new PgNumericNumberBuilder(name, config3?.precision, config3?.scale) : mode === "bigint" ? new PgNumericBigIntBuilder(name, config3?.precision, config3?.scale) : new PgNumericBuilder(name, config3?.precision, config3?.scale);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/point.js
@@ -34688,8 +34688,8 @@ var PgPointObject = class extends PgColumn {
   }
 };
 function point(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  if (!config2?.mode || config2.mode === "tuple") {
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  if (!config3?.mode || config3.mode === "tuple") {
     return new PgPointTupleBuilder(name);
   }
   return new PgPointObjectBuilder(name);
@@ -34787,8 +34787,8 @@ var PgGeometryObject = class extends PgColumn {
   }
 };
 function geometry(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  if (!config2?.mode || config2.mode === "tuple") {
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  if (!config3?.mode || config3.mode === "tuple") {
     return new PgGeometryBuilder(name);
   }
   return new PgGeometryObjectBuilder(name);
@@ -34808,8 +34808,8 @@ var PgRealBuilder = class extends PgColumnBuilder {
 };
 var PgReal = class extends PgColumn {
   static [entityKind] = "PgReal";
-  constructor(table, config2) {
-    super(table, config2);
+  constructor(table, config3) {
+    super(table, config3);
   }
   getSQLType() {
     return "real";
@@ -34904,9 +34904,9 @@ function smallserial(name) {
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/text.js
 var PgTextBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgTextBuilder";
-  constructor(name, config2) {
+  constructor(name, config3) {
     super(name, "string", "PgText");
-    this.config.enumValues = config2.enum;
+    this.config.enumValues = config3.enum;
   }
   /** @internal */
   build(table) {
@@ -34921,8 +34921,8 @@ var PgText = class extends PgColumn {
   }
 };
 function text(a, b = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgTextBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgTextBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/time.js
@@ -34944,10 +34944,10 @@ var PgTime = class extends PgColumn {
   static [entityKind] = "PgTime";
   withTimezone;
   precision;
-  constructor(table, config2) {
-    super(table, config2);
-    this.withTimezone = config2.withTimezone;
-    this.precision = config2.precision;
+  constructor(table, config3) {
+    super(table, config3);
+    this.withTimezone = config3.withTimezone;
+    this.precision = config3.precision;
   }
   getSQLType() {
     const precision = this.precision === void 0 ? "" : `(${this.precision})`;
@@ -34955,8 +34955,8 @@ var PgTime = class extends PgColumn {
   }
 };
 function time(a, b = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgTimeBuilder(name, config2.withTimezone ?? false, config2.precision);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgTimeBuilder(name, config3.withTimezone ?? false, config3.precision);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/timestamp.js
@@ -34976,10 +34976,10 @@ var PgTimestamp = class extends PgColumn {
   static [entityKind] = "PgTimestamp";
   withTimezone;
   precision;
-  constructor(table, config2) {
-    super(table, config2);
-    this.withTimezone = config2.withTimezone;
-    this.precision = config2.precision;
+  constructor(table, config3) {
+    super(table, config3);
+    this.withTimezone = config3.withTimezone;
+    this.precision = config3.precision;
   }
   getSQLType() {
     const precision = this.precision === void 0 ? "" : ` (${this.precision})`;
@@ -35012,10 +35012,10 @@ var PgTimestampString = class extends PgColumn {
   static [entityKind] = "PgTimestampString";
   withTimezone;
   precision;
-  constructor(table, config2) {
-    super(table, config2);
-    this.withTimezone = config2.withTimezone;
-    this.precision = config2.precision;
+  constructor(table, config3) {
+    super(table, config3);
+    this.withTimezone = config3.withTimezone;
+    this.precision = config3.precision;
   }
   getSQLType() {
     const precision = this.precision === void 0 ? "" : `(${this.precision})`;
@@ -35033,11 +35033,11 @@ var PgTimestampString = class extends PgColumn {
   }
 };
 function timestamp(a, b = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  if (config2?.mode === "string") {
-    return new PgTimestampStringBuilder(name, config2.withTimezone ?? false, config2.precision);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  if (config3?.mode === "string") {
+    return new PgTimestampStringBuilder(name, config3.withTimezone ?? false, config3.precision);
   }
-  return new PgTimestampBuilder(name, config2?.withTimezone ?? false, config2?.precision);
+  return new PgTimestampBuilder(name, config3?.withTimezone ?? false, config3?.precision);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/uuid.js
@@ -35070,10 +35070,10 @@ function uuid(name) {
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/varchar.js
 var PgVarcharBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgVarcharBuilder";
-  constructor(name, config2) {
+  constructor(name, config3) {
     super(name, "string", "PgVarchar");
-    this.config.length = config2.length;
-    this.config.enumValues = config2.enum;
+    this.config.length = config3.length;
+    this.config.enumValues = config3.enum;
   }
   /** @internal */
   build(table) {
@@ -35092,16 +35092,16 @@ var PgVarchar = class extends PgColumn {
   }
 };
 function varchar(a, b = {}) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgVarcharBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgVarcharBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
 var PgBinaryVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgBinaryVectorBuilder";
-  constructor(name, config2) {
+  constructor(name, config3) {
     super(name, "string", "PgBinaryVector");
-    this.config.dimensions = config2.dimensions;
+    this.config.dimensions = config3.dimensions;
   }
   /** @internal */
   build(table) {
@@ -35119,16 +35119,16 @@ var PgBinaryVector = class extends PgColumn {
   }
 };
 function bit(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgBinaryVectorBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgBinaryVectorBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
 var PgHalfVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgHalfVectorBuilder";
-  constructor(name, config2) {
+  constructor(name, config3) {
     super(name, "array", "PgHalfVector");
-    this.config.dimensions = config2.dimensions;
+    this.config.dimensions = config3.dimensions;
   }
   /** @internal */
   build(table) {
@@ -35152,16 +35152,16 @@ var PgHalfVector = class extends PgColumn {
   }
 };
 function halfvec(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgHalfVectorBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgHalfVectorBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
 var PgSparseVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgSparseVectorBuilder";
-  constructor(name, config2) {
+  constructor(name, config3) {
     super(name, "string", "PgSparseVector");
-    this.config.dimensions = config2.dimensions;
+    this.config.dimensions = config3.dimensions;
   }
   /** @internal */
   build(table) {
@@ -35179,16 +35179,16 @@ var PgSparseVector = class extends PgColumn {
   }
 };
 function sparsevec(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgSparseVectorBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgSparseVectorBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
 var PgVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgVectorBuilder";
-  constructor(name, config2) {
+  constructor(name, config3) {
     super(name, "array", "PgVector");
-    this.config.dimensions = config2.dimensions;
+    this.config.dimensions = config3.dimensions;
   }
   /** @internal */
   build(table) {
@@ -35212,8 +35212,8 @@ var PgVector = class extends PgColumn {
   }
 };
 function vector(a, b) {
-  const { name, config: config2 } = getColumnNameAndConfig(a, b);
-  return new PgVectorBuilder(name, config2);
+  const { name, config: config3 } = getColumnNameAndConfig(a, b);
+  return new PgVectorBuilder(name, config3);
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/all.js
@@ -35476,16 +35476,16 @@ var Relation = class {
   fieldName;
 };
 var Relations = class {
-  constructor(table, config2) {
+  constructor(table, config3) {
     this.table = table;
-    this.config = config2;
+    this.config = config3;
   }
   static [entityKind] = "Relations";
 };
 var One = class _One extends Relation {
-  constructor(sourceTable, referencedTable, config2, isNullable) {
-    super(sourceTable, referencedTable, config2?.relationName);
-    this.config = config2;
+  constructor(sourceTable, referencedTable, config3, isNullable) {
+    super(sourceTable, referencedTable, config3?.relationName);
+    this.config = config3;
     this.isNullable = isNullable;
   }
   static [entityKind] = "One";
@@ -35501,9 +35501,9 @@ var One = class _One extends Relation {
   }
 };
 var Many = class _Many extends Relation {
-  constructor(sourceTable, referencedTable, config2) {
-    super(sourceTable, referencedTable, config2?.relationName);
-    this.config = config2;
+  constructor(sourceTable, referencedTable, config3) {
+    super(sourceTable, referencedTable, config3?.relationName);
+    this.config = config3;
   }
   static [entityKind] = "Many";
   withFieldName(fieldName) {
@@ -35613,18 +35613,18 @@ function extractTablesRelationalConfig(schema, configHelpers) {
   return { tables: tablesConfig, tableNamesMap };
 }
 function createOne(sourceTable) {
-  return function one(table, config2) {
+  return function one(table, config3) {
     return new One(
       sourceTable,
       table,
-      config2,
-      config2?.fields.reduce((res, f) => res && f.notNull, true) ?? false
+      config3,
+      config3?.fields.reduce((res, f) => res && f.notNull, true) ?? false
     );
   };
 }
 function createMany(sourceTable) {
-  return function many(referencedTable, config2) {
-    return new Many(sourceTable, referencedTable, config2);
+  return function many(referencedTable, config3) {
+    return new Many(sourceTable, referencedTable, config3);
   };
 }
 function normalizeRelation(schema, tableNamesMap, relation) {
@@ -35743,8 +35743,8 @@ var esm_default = import_lib.default;
 var SelectionProxyHandler = class _SelectionProxyHandler {
   static [entityKind] = "SelectionProxyHandler";
   config;
-  constructor(config2) {
-    this.config = { ...config2 };
+  constructor(config3) {
+    this.config = { ...config3 };
   }
   get(subquery, prop) {
     if (prop === "_") {
@@ -35869,12 +35869,12 @@ var PgDialect = class {
   static [entityKind] = "PgDialect";
   /** @internal */
   casing;
-  constructor(config2) {
-    this.casing = new CasingCache(config2?.casing);
+  constructor(config3) {
+    this.casing = new CasingCache(config3?.casing);
   }
-  async migrate(migrations, session, config2) {
-    const migrationsTable = typeof config2 === "string" ? "__drizzle_migrations" : config2.migrationsTable ?? "__drizzle_migrations";
-    const migrationsSchema = typeof config2 === "string" ? "drizzle" : config2.migrationsSchema ?? "drizzle";
+  async migrate(migrations, session, config3) {
+    const migrationsTable = typeof config3 === "string" ? "__drizzle_migrations" : config3.migrationsTable ?? "__drizzle_migrations";
+    const migrationsSchema = typeof config3 === "string" ? "drizzle" : config3.migrationsSchema ?? "drizzle";
     const migrationTableCreate = sql`
 			CREATE TABLE IF NOT EXISTS ${sql.identifier(migrationsSchema)}.${sql.identifier(migrationsTable)} (
 				id SERIAL PRIMARY KEY,
@@ -36753,7 +36753,7 @@ var PgDialect = class {
     tableNamesMap,
     table,
     tableConfig,
-    queryConfig: config2,
+    queryConfig: config3,
     tableAlias,
     nestedQueryRelation,
     joinOn
@@ -36761,7 +36761,7 @@ var PgDialect = class {
     let selection = [];
     let limit, offset, orderBy = [], where;
     const joins = [];
-    if (config2 === true) {
+    if (config3 === true) {
       const selectionEntries = Object.entries(tableConfig.columns);
       selection = selectionEntries.map(([key, value]) => ({
         dbKey: value.name,
@@ -36775,15 +36775,15 @@ var PgDialect = class {
       const aliasedColumns = Object.fromEntries(
         Object.entries(tableConfig.columns).map(([key, value]) => [key, aliasedTableColumn(value, tableAlias)])
       );
-      if (config2.where) {
-        const whereSql = typeof config2.where === "function" ? config2.where(aliasedColumns, getOperators()) : config2.where;
+      if (config3.where) {
+        const whereSql = typeof config3.where === "function" ? config3.where(aliasedColumns, getOperators()) : config3.where;
         where = whereSql && mapColumnsInSQLToAlias(whereSql, tableAlias);
       }
       const fieldsSelection = [];
       let selectedColumns = [];
-      if (config2.columns) {
+      if (config3.columns) {
         let isIncludeMode = false;
-        for (const [field, value] of Object.entries(config2.columns)) {
+        for (const [field, value] of Object.entries(config3.columns)) {
           if (value === void 0) {
             continue;
           }
@@ -36795,7 +36795,7 @@ var PgDialect = class {
           }
         }
         if (selectedColumns.length > 0) {
-          selectedColumns = isIncludeMode ? selectedColumns.filter((c) => config2.columns?.[c] === true) : Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
+          selectedColumns = isIncludeMode ? selectedColumns.filter((c) => config3.columns?.[c] === true) : Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
         }
       } else {
         selectedColumns = Object.keys(tableConfig.columns);
@@ -36805,12 +36805,12 @@ var PgDialect = class {
         fieldsSelection.push({ tsKey: field, value: column });
       }
       let selectedRelations = [];
-      if (config2.with) {
-        selectedRelations = Object.entries(config2.with).filter((entry) => !!entry[1]).map(([tsKey, queryConfig]) => ({ tsKey, queryConfig, relation: tableConfig.relations[tsKey] }));
+      if (config3.with) {
+        selectedRelations = Object.entries(config3.with).filter((entry) => !!entry[1]).map(([tsKey, queryConfig]) => ({ tsKey, queryConfig, relation: tableConfig.relations[tsKey] }));
       }
       let extras;
-      if (config2.extras) {
-        extras = typeof config2.extras === "function" ? config2.extras(aliasedColumns, { sql }) : config2.extras;
+      if (config3.extras) {
+        extras = typeof config3.extras === "function" ? config3.extras(aliasedColumns, { sql }) : config3.extras;
         for (const [tsKey, value] of Object.entries(extras)) {
           fieldsSelection.push({
             tsKey,
@@ -36828,7 +36828,7 @@ var PgDialect = class {
           selection: []
         });
       }
-      let orderByOrig = typeof config2.orderBy === "function" ? config2.orderBy(aliasedColumns, getOrderByOperators()) : config2.orderBy ?? [];
+      let orderByOrig = typeof config3.orderBy === "function" ? config3.orderBy(aliasedColumns, getOrderByOperators()) : config3.orderBy ?? [];
       if (!Array.isArray(orderByOrig)) {
         orderByOrig = [orderByOrig];
       }
@@ -36838,8 +36838,8 @@ var PgDialect = class {
         }
         return mapColumnsInSQLToAlias(orderByValue, tableAlias);
       });
-      limit = config2.limit;
-      offset = config2.offset;
+      limit = config3.limit;
+      offset = config3.offset;
       for (const {
         tsKey: selectedRelationTsKey,
         queryConfig: selectedRelationConfigValue,
@@ -36986,14 +36986,14 @@ var PgSelectBuilder = class {
   dialect;
   withList = [];
   distinct;
-  constructor(config2) {
-    this.fields = config2.fields;
-    this.session = config2.session;
-    this.dialect = config2.dialect;
-    if (config2.withList) {
-      this.withList = config2.withList;
+  constructor(config3) {
+    this.fields = config3.fields;
+    this.session = config3.session;
+    this.dialect = config3.dialect;
+    if (config3.withList) {
+      this.withList = config3.withList;
     }
-    this.distinct = config2.distinct;
+    this.distinct = config3.distinct;
   }
   authToken;
   /** @internal */
@@ -37682,8 +37682,8 @@ var PgSelectQueryBuilderBase = class extends TypedQueryBuilder {
    * @param strength the lock strength.
    * @param config the lock configuration.
    */
-  for(strength, config2 = {}) {
-    this.config.lockingClause = { strength, config: config2 };
+  for(strength, config3 = {}) {
+    this.config.lockingClause = { strength, config: config3 };
     return this;
   }
   /** @internal */
@@ -37715,8 +37715,8 @@ var PgSelectQueryBuilderBase = class extends TypedQueryBuilder {
   $dynamic() {
     return this;
   }
-  $withCache(config2) {
-    this.cacheConfig = config2 === void 0 ? { config: {}, enable: true, autoInvalidate: true } : config2 === false ? { enable: false } : { enable: true, autoInvalidate: true, ...config2 };
+  $withCache(config3) {
+    this.cacheConfig = config3 === void 0 ? { config: {}, enable: true, autoInvalidate: true } : config3 === false ? { enable: false } : { enable: true, autoInvalidate: true, ...config3 };
     return this;
   }
 };
@@ -37724,11 +37724,11 @@ var PgSelectBase = class extends PgSelectQueryBuilderBase {
   static [entityKind] = "PgSelect";
   /** @internal */
   _prepare(name) {
-    const { session, config: config2, dialect, joinsNotNullableMap, authToken, cacheConfig, usedTables } = this;
+    const { session, config: config3, dialect, joinsNotNullableMap, authToken, cacheConfig, usedTables } = this;
     if (!session) {
       throw new Error("Cannot execute a query on a query builder. Please use a database instance instead.");
     }
-    const { fields } = config2;
+    const { fields } = config3;
     return tracer.startActiveSpan("drizzle.prepareQuery", () => {
       const fieldsList = orderSelectedFields(fields);
       const query = session.prepareQuery(dialect.sqlToQuery(this.getSQL()), fieldsList, name, true, void 0, {
@@ -38082,13 +38082,13 @@ var PgInsertBase = class extends QueryPromise {
    *   .onConflictDoNothing({ target: cars.id });
    * ```
    */
-  onConflictDoNothing(config2 = {}) {
-    if (config2.target === void 0) {
+  onConflictDoNothing(config3 = {}) {
+    if (config3.target === void 0) {
       this.config.onConflict = sql`do nothing`;
     } else {
       let targetColumn = "";
-      targetColumn = Array.isArray(config2.target) ? config2.target.map((it) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config2.target));
-      const whereSql = config2.where ? sql` where ${config2.where}` : void 0;
+      targetColumn = Array.isArray(config3.target) ? config3.target.map((it) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config3.target));
+      const whereSql = config3.where ? sql` where ${config3.where}` : void 0;
       this.config.onConflict = sql`(${sql.raw(targetColumn)})${whereSql} do nothing`;
     }
     return this;
@@ -38122,18 +38122,18 @@ var PgInsertBase = class extends QueryPromise {
    *   });
    * ```
    */
-  onConflictDoUpdate(config2) {
-    if (config2.where && (config2.targetWhere || config2.setWhere)) {
+  onConflictDoUpdate(config3) {
+    if (config3.where && (config3.targetWhere || config3.setWhere)) {
       throw new Error(
         'You cannot use both "where" and "targetWhere"/"setWhere" at the same time - "where" is deprecated, use "targetWhere" or "setWhere" instead.'
       );
     }
-    const whereSql = config2.where ? sql` where ${config2.where}` : void 0;
-    const targetWhereSql = config2.targetWhere ? sql` where ${config2.targetWhere}` : void 0;
-    const setWhereSql = config2.setWhere ? sql` where ${config2.setWhere}` : void 0;
-    const setSql = this.dialect.buildUpdateSet(this.config.table, mapUpdateSet(this.config.table, config2.set));
+    const whereSql = config3.where ? sql` where ${config3.where}` : void 0;
+    const targetWhereSql = config3.targetWhere ? sql` where ${config3.targetWhere}` : void 0;
+    const setWhereSql = config3.setWhere ? sql` where ${config3.setWhere}` : void 0;
+    const setSql = this.dialect.buildUpdateSet(this.config.table, mapUpdateSet(this.config.table, config3.set));
     let targetColumn = "";
-    targetColumn = Array.isArray(config2.target) ? config2.target.map((it) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config2.target));
+    targetColumn = Array.isArray(config3.target) ? config3.target.map((it) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(it))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(config3.target));
     this.config.onConflict = sql`(${sql.raw(targetColumn)})${targetWhereSql} do update set ${setSql}${whereSql}${setWhereSql}`;
     return this;
   }
@@ -38513,7 +38513,7 @@ var RelationalQueryBuilder = class {
     this.session = session;
   }
   static [entityKind] = "PgRelationalQueryBuilder";
-  findMany(config2) {
+  findMany(config3) {
     return new PgRelationalQuery(
       this.fullSchema,
       this.schema,
@@ -38522,11 +38522,11 @@ var RelationalQueryBuilder = class {
       this.tableConfig,
       this.dialect,
       this.session,
-      config2 ? config2 : {},
+      config3 ? config3 : {},
       "many"
     );
   }
-  findFirst(config2) {
+  findFirst(config3) {
     return new PgRelationalQuery(
       this.fullSchema,
       this.schema,
@@ -38535,13 +38535,13 @@ var RelationalQueryBuilder = class {
       this.tableConfig,
       this.dialect,
       this.session,
-      config2 ? { ...config2, limit: 1 } : { limit: 1 },
+      config3 ? { ...config3, limit: 1 } : { limit: 1 },
       "first"
     );
   }
 };
 var PgRelationalQuery = class extends QueryPromise {
-  constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session, config2, mode) {
+  constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session, config3, mode) {
     super();
     this.fullSchema = fullSchema;
     this.schema = schema;
@@ -38550,7 +38550,7 @@ var PgRelationalQuery = class extends QueryPromise {
     this.tableConfig = tableConfig;
     this.dialect = dialect;
     this.session = session;
-    this.config = config2;
+    this.config = config3;
     this.mode = mode;
   }
   static [entityKind] = "PgRelationalQuery";
@@ -38917,8 +38917,8 @@ var PgDatabase = class {
       (result) => prepared.mapResult(result, true)
     );
   }
-  transaction(transaction, config2) {
-    return this.session.transaction(transaction, config2);
+  transaction(transaction, config3) {
+    return this.session.transaction(transaction, config3);
   }
 };
 
@@ -39091,21 +39091,21 @@ var PgTransaction = class extends PgDatabase {
     throw new TransactionRollbackError();
   }
   /** @internal */
-  getTransactionConfigSQL(config2) {
+  getTransactionConfigSQL(config3) {
     const chunks = [];
-    if (config2.isolationLevel) {
-      chunks.push(`isolation level ${config2.isolationLevel}`);
+    if (config3.isolationLevel) {
+      chunks.push(`isolation level ${config3.isolationLevel}`);
     }
-    if (config2.accessMode) {
-      chunks.push(config2.accessMode);
+    if (config3.accessMode) {
+      chunks.push(config3.accessMode);
     }
-    if (typeof config2.deferrable === "boolean") {
-      chunks.push(config2.deferrable ? "deferrable" : "not deferrable");
+    if (typeof config3.deferrable === "boolean") {
+      chunks.push(config3.deferrable ? "deferrable" : "not deferrable");
     }
     return sql.raw(chunks.join(" "));
   }
-  setTransaction(config2) {
-    return this.session.execute(sql`set transaction ${this.getTransactionConfigSQL(config2)}`);
+  setTransaction(config3) {
+    return this.session.execute(sql`set transaction ${this.getTransactionConfigSQL(config3)}`);
   }
 };
 
@@ -39280,11 +39280,11 @@ var NodePgSession = class _NodePgSession extends PgSession {
       customResultMapper
     );
   }
-  async transaction(transaction, config2) {
+  async transaction(transaction, config3) {
     const isPool = this.client instanceof Pool2 || Object.getPrototypeOf(this.client).constructor.name.includes("Pool");
     const session = isPool ? new _NodePgSession(await this.client.connect(), this.dialect, this.schema, this.options) : this;
     const tx = new NodePgTransaction(this.dialect, session, this.schema);
-    await tx.execute(sql`begin${config2 ? sql` ${tx.getTransactionConfigSQL(config2)}` : void 0}`);
+    await tx.execute(sql`begin${config3 ? sql` ${tx.getTransactionConfigSQL(config3)}` : void 0}`);
     try {
       const result = await transaction(tx);
       await tx.execute(sql`commit`);
@@ -39343,33 +39343,33 @@ var NodePgDriver = class {
 var NodePgDatabase = class extends PgDatabase {
   static [entityKind] = "NodePgDatabase";
 };
-function construct(client, config2 = {}) {
-  const dialect = new PgDialect({ casing: config2.casing });
+function construct(client, config3 = {}) {
+  const dialect = new PgDialect({ casing: config3.casing });
   let logger2;
-  if (config2.logger === true) {
+  if (config3.logger === true) {
     logger2 = new DefaultLogger();
-  } else if (config2.logger !== false) {
-    logger2 = config2.logger;
+  } else if (config3.logger !== false) {
+    logger2 = config3.logger;
   }
   let schema;
-  if (config2.schema) {
+  if (config3.schema) {
     const tablesConfig = extractTablesRelationalConfig(
-      config2.schema,
+      config3.schema,
       createTableRelationsHelpers
     );
     schema = {
-      fullSchema: config2.schema,
+      fullSchema: config3.schema,
       schema: tablesConfig.tables,
       tableNamesMap: tablesConfig.tableNamesMap
     };
   }
-  const driver = new NodePgDriver(client, dialect, { logger: logger2, cache: config2.cache });
+  const driver = new NodePgDriver(client, dialect, { logger: logger2, cache: config3.cache });
   const session = driver.createSession(schema);
   const db2 = new NodePgDatabase(dialect, session, schema);
   db2.$client = client;
-  db2.$cache = config2.cache;
+  db2.$cache = config3.cache;
   if (db2.$cache) {
-    db2.$cache["invalidate"] = config2.cache?.onMutate;
+    db2.$cache["invalidate"] = config3.cache?.onMutate;
   }
   return db2;
 }
@@ -39391,8 +39391,8 @@ function drizzle(...params) {
   return construct(params[0], params[1]);
 }
 ((drizzle2) => {
-  function mock(config2) {
-    return construct({}, config2);
+  function mock(config3) {
+    return construct({}, config3);
   }
   drizzle2.mock = mock;
 })(drizzle || (drizzle = {}));
@@ -40415,10 +40415,10 @@ function prefixIssues(path, issues) {
 function unwrapMessage(message) {
   return typeof message === "string" ? message : message?.message;
 }
-function finalizeIssue(iss, ctx, config2) {
+function finalizeIssue(iss, ctx, config3) {
   const full = { ...iss, path: iss.path ?? [] };
   if (!iss.message) {
-    const message = unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config2.customError?.(iss)) ?? unwrapMessage(config2.localeError?.(iss)) ?? "Invalid input";
+    const message = unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config3.customError?.(iss)) ?? unwrapMessage(config3.localeError?.(iss)) ?? "Invalid input";
     full.message = message;
   }
   delete full.inst;
@@ -51021,7 +51021,10 @@ if (!process.env.DATABASE_URL) {
     "DATABASE_URL must be set. Did you forget to provision a database?"
   );
 }
-var pool = new Pool3({ connectionString: process.env.DATABASE_URL });
+var pool = new Pool3({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : void 0
+});
 var db = drizzle(pool, { schema: schema_exports });
 
 // src/lib/auth.ts
@@ -53050,8 +53053,16 @@ router5.patch("/menu-categories/:id", requireAuth, async (req, res) => {
 });
 router5.delete("/menu-categories/:id", requireAuth, async (req, res) => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  await db.delete(menuCategoriesTable).where(eq(menuCategoriesTable.id, id));
-  res.sendStatus(204);
+  try {
+    await db.delete(menuCategoriesTable).where(eq(menuCategoriesTable.id, id));
+    res.sendStatus(204);
+  } catch (err) {
+    if (err.code === "23503") {
+      res.status(400).json({ error: "Tidak dapat menghapus kategori ini karena masih digunakan oleh produk menu." });
+      return;
+    }
+    throw err;
+  }
 });
 router5.get("/menu-items", requireAuth, async (req, res) => {
   const branchId = req.query.branchId ? parseInt(req.query.branchId, 10) : void 0;
@@ -53125,8 +53136,17 @@ router5.patch("/menu-items/:id", requireAuth, async (req, res) => {
 });
 router5.delete("/menu-items/:id", requireAuth, async (req, res) => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  await db.delete(menuItemsTable).where(eq(menuItemsTable.id, id));
-  res.sendStatus(204);
+  try {
+    await db.delete(orderItemsTable).where(eq(orderItemsTable.menuItemId, id));
+    await db.delete(menuItemsTable).where(eq(menuItemsTable.id, id));
+    res.sendStatus(204);
+  } catch (err) {
+    if (err.code === "23503") {
+      res.status(400).json({ error: "Tidak dapat menghapus menu ini karena sudah ada di dalam riwayat pesanan (Order)." });
+      return;
+    }
+    throw err;
+  }
 });
 var menu_default = router5;
 
@@ -54235,18 +54255,32 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.get("/", (_req, res) => {
   res.redirect("/api/healthz");
 });
 app.use("/api", routes_default);
+app.use((err, req, res, next) => {
+  logger.error({ err }, "Unhandled Server Error");
+  res.status(500).json({
+    error: "Internal Server Error",
+    message: err?.message || String(err),
+    stack: process.env.NODE_ENV === "development" ? err?.stack : void 0
+  });
+});
 var app_default = app;
 
 // src/vercel.ts
 globalThis.__express = express2;
+var config2 = {
+  api: {
+    bodyParser: false
+  }
+};
 var vercel_default = app_default;
 export {
+  config2 as config,
   vercel_default as default
 };
 /*! Bundled license information:
