@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, menuCategoriesTable, menuItemsTable } from "@workspace/db";
+import { db, menuCategoriesTable, menuItemsTable, orderItemsTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
@@ -150,6 +150,10 @@ router.patch("/menu-items/:id", requireAuth, async (req, res): Promise<void> => 
 router.delete("/menu-items/:id", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   try {
+    // Delete any order items referencing this menu item first (cascade manually)
+    await db.delete(orderItemsTable).where(eq(orderItemsTable.menuItemId, id));
+    
+    // Now delete the menu item
     await db.delete(menuItemsTable).where(eq(menuItemsTable.id, id));
     res.sendStatus(204);
   } catch (err: any) {
