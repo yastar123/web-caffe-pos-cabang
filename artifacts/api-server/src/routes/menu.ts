@@ -65,8 +65,16 @@ router.patch("/menu-categories/:id", requireAuth, async (req, res): Promise<void
 
 router.delete("/menu-categories/:id", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  await db.delete(menuCategoriesTable).where(eq(menuCategoriesTable.id, id));
-  res.sendStatus(204);
+  try {
+    await db.delete(menuCategoriesTable).where(eq(menuCategoriesTable.id, id));
+    res.sendStatus(204);
+  } catch (err: any) {
+    if (err.code === '23503') {
+      res.status(400).json({ error: "Tidak dapat menghapus kategori ini karena masih digunakan oleh produk menu." });
+      return;
+    }
+    throw err;
+  }
 });
 
 // ITEMS
@@ -141,8 +149,16 @@ router.patch("/menu-items/:id", requireAuth, async (req, res): Promise<void> => 
 
 router.delete("/menu-items/:id", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  await db.delete(menuItemsTable).where(eq(menuItemsTable.id, id));
-  res.sendStatus(204);
+  try {
+    await db.delete(menuItemsTable).where(eq(menuItemsTable.id, id));
+    res.sendStatus(204);
+  } catch (err: any) {
+    if (err.code === '23503') {
+      res.status(400).json({ error: "Tidak dapat menghapus menu ini karena sudah ada di dalam riwayat pesanan (Order)." });
+      return;
+    }
+    throw err;
+  }
 });
 
 export default router;
