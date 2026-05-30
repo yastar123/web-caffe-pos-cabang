@@ -166,8 +166,6 @@ router.post("/orders", requireAuth, async (req: AuthRequest, res): Promise<void>
     staffId: req.userId,
   }).returning();
 
-  console.log("[ORDER CREATED] OrderNumber:", order.orderNumber, "status:", order.status, "branchId:", order.branchId);
-
   for (const item of orderItemData) {
     await db.insert(orderItemsTable).values({
       orderId: order.id,

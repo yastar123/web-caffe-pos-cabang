@@ -9,15 +9,12 @@ router.get("/kitchen/queue", requireAuth, async (req, res): Promise<void> => {
   const branchId = req.query.branchId ? parseInt(req.query.branchId as string, 10) : undefined;
   const station = req.query.station as string | undefined;
 
-  console.log("[KITCHEN QUEUE] Request - branchId:", branchId, "station:", station);
-
   const conditions = [
     inArray(ordersTable.status, ["confirmed", "preparing", "ready"])
   ];
   if (branchId) conditions.push(eq(ordersTable.branchId, branchId));
 
   const orders = await db.select().from(ordersTable).where(and(...conditions)).orderBy(ordersTable.createdAt);
-  console.log("[KITCHEN QUEUE] Found orders:", orders.length, "with status in confirmed/preparing/ready");
 
   const results = await Promise.all(orders.map(async (order) => {
     const itemConditions = [eq(orderItemsTable.orderId, order.id)];
@@ -44,7 +41,7 @@ router.get("/kitchen/queue", requireAuth, async (req, res): Promise<void> => {
 
     const [table] = await db.select().from(tablesTable).where(eq(tablesTable.id, order.tableId));
 
-    const result = {
+    return {
       orderId: order.id,
       orderNumber: order.orderNumber,
       tableNumber: table?.number ?? "",
@@ -65,11 +62,8 @@ router.get("/kitchen/queue", requireAuth, async (req, res): Promise<void> => {
       createdAt: order.createdAt.toISOString(),
       priority: 0,
     };
-    console.log("[KITCHEN QUEUE] Order:", order.orderNumber, "branchId:", order.branchId, "items:", items.length);
-    return result;
   }));
 
-  console.log("[KITCHEN QUEUE] Returning", results.length, "orders to frontend");
   res.json(results);
 });
 
