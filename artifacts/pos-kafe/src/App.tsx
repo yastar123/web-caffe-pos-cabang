@@ -98,40 +98,40 @@ function Router() {
         <Redirect to="/dashboard" />
       </Route>
       <Route path="/dashboard">
-        <ProtectedRoute component={Dashboard} />
+        <ProtectedRoute component={Dashboard} roles={["owner", "manager"]} />
       </Route>
       <Route path="/pos">
-        <ProtectedRoute component={Pos} />
+        <ProtectedRoute component={Pos} roles={["owner", "manager", "cashier", "waiter"]} />
       </Route>
       <Route path="/tables">
-        <ProtectedRoute component={Tables} />
+        <ProtectedRoute component={Tables} roles={["owner", "manager", "cashier", "waiter"]} />
       </Route>
       <Route path="/kitchen">
-        <ProtectedRoute component={Kitchen} />
+        <ProtectedRoute component={Kitchen} roles={["owner", "manager", "waiter", "chef"]} />
       </Route>
       <Route path="/reservations">
-        <ProtectedRoute component={Reservations} />
+        <ProtectedRoute component={Reservations} roles={["owner", "manager", "cashier", "waiter"]} />
       </Route>
       <Route path="/menu">
-        <ProtectedRoute component={Menu} />
+        <ProtectedRoute component={Menu} roles={["owner", "manager"]} />
       </Route>
       <Route path="/stock">
-        <ProtectedRoute component={Stock} />
+        <ProtectedRoute component={Stock} roles={["owner", "manager", "warehouse"]} />
       </Route>
       <Route path="/reports">
-        <ProtectedRoute component={Reports} />
+        <ProtectedRoute component={Reports} roles={["owner", "manager"]} />
       </Route>
       <Route path="/customers">
-        <ProtectedRoute component={Customers} />
+        <ProtectedRoute component={Customers} roles={["owner", "manager", "cashier"]} />
       </Route>
       <Route path="/branches">
-        <ProtectedRoute component={Branches} />
+        <ProtectedRoute component={Branches} roles={["owner"]} />
       </Route>
       <Route path="/users">
-        <ProtectedRoute component={Users} />
+        <ProtectedRoute component={Users} roles={["owner", "manager"]} />
       </Route>
       <Route path="/settings">
-        <ProtectedRoute component={Settings} />
+        <ProtectedRoute component={Settings} roles={["owner", "manager"]} />
       </Route>
       <Route path="/orders-history">
         <ProtectedRoute component={OrderHistory} roles={["owner", "manager"]} />
