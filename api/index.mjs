@@ -53469,6 +53469,7 @@ router8.post("/orders", requireAuth, async (req, res) => {
     branchId,
     customerId,
     notes,
+    status: "confirmed",
     subtotal: subtotal.toFixed(2),
     discountAmount: discount.toFixed(2),
     tax: tax.toFixed(2),
