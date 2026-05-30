@@ -3172,6 +3172,13 @@ export declare const UpdatePurchaseOrderResponse: zod.ZodObject<{
     supplierContact?: string | null | undefined;
     expectedDelivery?: string | null | undefined;
 }>;
+export declare const DeletePurchaseOrderParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
 export declare const GetCustomersQueryParams: zod.ZodObject<{
     search: zod.ZodOptional<zod.ZodString>;
     branchId: zod.ZodOptional<zod.ZodNumber>;

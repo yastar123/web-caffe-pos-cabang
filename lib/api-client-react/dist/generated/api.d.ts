@@ -1141,6 +1141,26 @@ export declare const useUpdatePurchaseOrder: <TError = ErrorType<unknown>, TCont
     id: number;
     data: BodyType<PurchaseOrderUpdate>;
 }, TContext>;
+export declare const getDeletePurchaseOrderUrl: (id: number) => string;
+export declare const deletePurchaseOrder: (id: number, options?: RequestInit) => Promise<void>;
+export declare const getDeletePurchaseOrderMutationOptions: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof deletePurchaseOrder>>, TError, {
+        id: number;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationOptions<Awaited<ReturnType<typeof deletePurchaseOrder>>, TError, {
+    id: number;
+}, TContext>;
+export type DeletePurchaseOrderMutationResult = NonNullable<Awaited<ReturnType<typeof deletePurchaseOrder>>>;
+export type DeletePurchaseOrderMutationError = ErrorType<unknown>;
+export declare const useDeletePurchaseOrder: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof deletePurchaseOrder>>, TError, {
+        id: number;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationResult<Awaited<ReturnType<typeof deletePurchaseOrder>>, TError, {
+    id: number;
+}, TContext>;
 export declare const getGetCustomersUrl: (params?: GetCustomersParams) => string;
 export declare const getCustomers: (params?: GetCustomersParams, options?: RequestInit) => Promise<Customer[]>;
 export declare const getGetCustomersQueryKey: (params?: GetCustomersParams) => readonly ["/api/customers", ...GetCustomersParams[]];

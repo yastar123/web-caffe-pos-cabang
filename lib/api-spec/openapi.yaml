@@ -1085,6 +1085,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PurchaseOrder"
+    delete:
+      operationId: deletePurchaseOrder
+      tags: [stock]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: No content
 
   # CUSTOMERS / MEMBERS
   /customers:
@@ -1702,7 +1714,18 @@ components:
     # RESERVATION
     Reservation:
       type: object
-      required: [id, customerName, customerPhone, date, time, guestCount, status, branchId, createdAt]
+      required:
+        [
+          id,
+          customerName,
+          customerPhone,
+          date,
+          time,
+          guestCount,
+          status,
+          branchId,
+          createdAt,
+        ]
       properties:
         id:
           type: integer
@@ -1787,7 +1810,20 @@ components:
     # ORDER
     Order:
       type: object
-      required: [id, orderNumber, tableId, tableNumber, status, branchId, items, subtotal, tax, total, createdAt]
+      required:
+        [
+          id,
+          orderNumber,
+          tableId,
+          tableNumber,
+          status,
+          branchId,
+          items,
+          subtotal,
+          tax,
+          total,
+          createdAt,
+        ]
       properties:
         id:
           type: integer
@@ -1803,7 +1839,8 @@ components:
           type: ["string", "null"]
         status:
           type: string
-          enum: [pending, confirmed, preparing, ready, served, completed, voided]
+          enum:
+            [pending, confirmed, preparing, ready, served, completed, voided]
         branchId:
           type: integer
         items:
@@ -1853,7 +1890,8 @@ components:
       properties:
         status:
           type: string
-          enum: [pending, confirmed, preparing, ready, served, completed, voided]
+          enum:
+            [pending, confirmed, preparing, ready, served, completed, voided]
         notes:
           type: ["string", "null"]
         discountAmount:
@@ -1861,7 +1899,18 @@ components:
 
     OrderItem:
       type: object
-      required: [id, orderId, menuItemId, menuItemName, quantity, unitPrice, totalPrice, kitchenStatus, createdAt]
+      required:
+        [
+          id,
+          orderId,
+          menuItemId,
+          menuItemName,
+          quantity,
+          unitPrice,
+          totalPrice,
+          kitchenStatus,
+          createdAt,
+        ]
       properties:
         id:
           type: integer
@@ -2075,7 +2124,8 @@ components:
 
     StockMovement:
       type: object
-      required: [id, ingredientId, ingredientName, type, quantity, branchId, createdAt]
+      required:
+        [id, ingredientId, ingredientName, type, quantity, branchId, createdAt]
       properties:
         id:
           type: integer
@@ -2115,7 +2165,8 @@ components:
 
     PurchaseOrder:
       type: object
-      required: [id, supplierName, status, branchId, items, totalAmount, createdAt]
+      required:
+        [id, supplierName, status, branchId, items, totalAmount, createdAt]
       properties:
         id:
           type: integer
@@ -2143,7 +2194,8 @@ components:
 
     PurchaseOrderItem:
       type: object
-      required: [ingredientId, ingredientName, quantity, unit, unitCost, totalCost]
+      required:
+        [ingredientId, ingredientName, quantity, unit, unitCost, totalCost]
       properties:
         ingredientId:
           type: integer
@@ -2189,7 +2241,8 @@ components:
     # CUSTOMER
     Customer:
       type: object
-      required: [id, name, phone, loyaltyPoints, totalSpend, visitCount, createdAt]
+      required:
+        [id, name, phone, loyaltyPoints, totalSpend, visitCount, createdAt]
       properties:
         id:
           type: integer
@@ -2318,7 +2371,16 @@ components:
     # DASHBOARD
     DashboardOverview:
       type: object
-      required: [todayRevenue, todayOrders, activeOrders, activeTables, totalTables, pendingReservations, lowStockCount]
+      required:
+        [
+          todayRevenue,
+          todayOrders,
+          activeOrders,
+          activeTables,
+          totalTables,
+          pendingReservations,
+          lowStockCount,
+        ]
       properties:
         todayRevenue:
           type: number

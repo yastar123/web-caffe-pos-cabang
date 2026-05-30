@@ -1033,6 +1033,11 @@ export const UpdatePurchaseOrderResponse = zod.object({
 })
 
 
+export const DeletePurchaseOrderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
 export const GetCustomersQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
   "branchId": zod.coerce.number().optional()

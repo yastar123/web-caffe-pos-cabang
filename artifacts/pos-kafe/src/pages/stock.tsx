@@ -9,6 +9,7 @@ import {
   useCreatePurchaseOrder,
   useUpdatePurchaseOrder,
   useDeleteIngredient,
+  useDeletePurchaseOrder,
   getGetIngredientsQueryKey,
   getGetPurchaseOrdersQueryKey,
 } from "@workspace/api-client-react";
@@ -177,6 +178,8 @@ export default function Stock() {
     }
   };
 
+  const deletePO = useDeletePurchaseOrder();
+
   const handleDeletePurchaseOrder = async (po: any) => {
     if (
       !window.confirm(
@@ -187,10 +190,7 @@ export default function Stock() {
     }
 
     try {
-      const response = await fetch(`/api/purchase-orders/${po.id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete purchase order");
+      await deletePO.mutateAsync({ id: po.id });
       toast({ title: "Pesanan pembelian dihapus" });
       queryClient.invalidateQueries({
         queryKey: getGetPurchaseOrdersQueryKey({
