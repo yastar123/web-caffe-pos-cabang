@@ -12,7 +12,7 @@ router.get("/kitchen/queue", requireAuth, async (req, res): Promise<void> => {
   console.log("[KITCHEN QUEUE] Request - branchId:", branchId, "station:", station);
 
   const conditions = [
-    inArray(ordersTable.status, ["confirmed", "preparing", "ready"])
+    inArray(ordersTable.status, ["confirmed", "preparing", "ready", "completed"])
   ];
   if (branchId) conditions.push(eq(ordersTable.branchId, branchId));
 

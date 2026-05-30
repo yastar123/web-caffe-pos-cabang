@@ -53476,6 +53476,7 @@ router8.post("/orders", requireAuth, async (req, res) => {
     total: total.toFixed(2),
     staffId: req.userId
   }).returning();
+  console.log("[ORDER CREATED] OrderNumber:", order.orderNumber, "status:", order.status, "branchId:", order.branchId);
   for (const item of orderItemData) {
     await db.insert(orderItemsTable).values({
       orderId: order.id,
@@ -53571,11 +53572,13 @@ var router9 = Router9();
 router9.get("/kitchen/queue", requireAuth, async (req, res) => {
   const branchId = req.query.branchId ? parseInt(req.query.branchId, 10) : void 0;
   const station = req.query.station;
+  console.log("[KITCHEN QUEUE] Request - branchId:", branchId, "station:", station);
   const conditions = [
-    inArray(ordersTable.status, ["confirmed", "preparing", "ready"])
+    inArray(ordersTable.status, ["confirmed", "preparing", "ready", "completed"])
   ];
   if (branchId) conditions.push(eq(ordersTable.branchId, branchId));
   const orders = await db.select().from(ordersTable).where(and(...conditions)).orderBy(ordersTable.createdAt);
+  console.log("[KITCHEN QUEUE] Found orders:", orders.length, "with status in confirmed/preparing/ready");
   const results = await Promise.all(orders.map(async (order) => {
     const itemConditions = [eq(orderItemsTable.orderId, order.id)];
     if (station) itemConditions.push(eq(orderItemsTable.station, station));
@@ -53594,7 +53597,7 @@ router9.get("/kitchen/queue", requireAuth, async (req, res) => {
       createdAt: orderItemsTable.createdAt
     }).from(orderItemsTable).leftJoin(menuItemsTable, eq(orderItemsTable.menuItemId, menuItemsTable.id)).where(and(...itemConditions));
     const [table] = await db.select().from(tablesTable).where(eq(tablesTable.id, order.tableId));
-    return {
+    const result = {
       orderId: order.id,
       orderNumber: order.orderNumber,
       tableNumber: table?.number ?? "",
@@ -53615,7 +53618,10 @@ router9.get("/kitchen/queue", requireAuth, async (req, res) => {
       createdAt: order.createdAt.toISOString(),
       priority: 0
     };
+    console.log("[KITCHEN QUEUE] Order:", order.orderNumber, "branchId:", order.branchId, "items:", items.length);
+    return result;
   }));
+  console.log("[KITCHEN QUEUE] Returning", results.length, "orders to frontend");
   res.json(results);
 });
 router9.patch("/kitchen/items/:itemId/status", requireAuth, async (req, res) => {
