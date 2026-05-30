@@ -35,18 +35,24 @@ const queryClient = new QueryClient({
 });
 
 function PageWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="animate-fade-in h-full min-h-0">
-      {children}
-    </div>
-  );
+  return <div className="animate-fade-in h-full min-h-0">{children}</div>;
 }
 
-function ProtectedRoute({ component: Component, roles }: { component: React.ComponentType; roles?: string[] }) {
+function ProtectedRoute({
+  component: Component,
+  roles,
+}: {
+  component: React.ComponentType;
+  roles?: string[];
+}) {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
-    return <div className="h-screen w-full flex items-center justify-center"><Spinner className="size-8" /></div>;
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+        <Spinner className="size-8" />
+      </div>
+    );
   }
 
   if (!isAuthenticated || !user) {
@@ -59,7 +65,13 @@ function ProtectedRoute({ component: Component, roles }: { component: React.Comp
 
   return (
     <Layout>
-      <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Spinner className="size-8" /></div>}>
+      <Suspense
+        fallback={
+          <div className="h-full w-full flex items-center justify-center">
+            <Spinner className="size-8" />
+          </div>
+        }
+      >
         <PageWrapper>
           <Component />
         </PageWrapper>
@@ -72,7 +84,13 @@ function Router() {
   return (
     <Switch>
       <Route path="/login">
-        <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Spinner className="size-8" /></div>}>
+        <Suspense
+          fallback={
+            <div className="h-screen w-full flex items-center justify-center">
+              <Spinner className="size-8" />
+            </div>
+          }
+        >
           <Login />
         </Suspense>
       </Route>
@@ -85,18 +103,40 @@ function Router() {
       <Route path="/pos">
         <ProtectedRoute component={Pos} />
       </Route>
-      <Route path="/tables"><ProtectedRoute component={Tables} /></Route>
-      <Route path="/kitchen"><ProtectedRoute component={Kitchen} /></Route>
-      <Route path="/reservations"><ProtectedRoute component={Reservations} /></Route>
-      <Route path="/menu"><ProtectedRoute component={Menu} /></Route>
-      <Route path="/stock"><ProtectedRoute component={Stock} /></Route>
-      <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
-      <Route path="/customers"><ProtectedRoute component={Customers} /></Route>
-      <Route path="/branches"><ProtectedRoute component={Branches} /></Route>
-      <Route path="/users"><ProtectedRoute component={Users} /></Route>
-      <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
-      <Route path="/orders-history"><ProtectedRoute component={OrderHistory} roles={["owner","manager"]} /></Route>
-      
+      <Route path="/tables">
+        <ProtectedRoute component={Tables} />
+      </Route>
+      <Route path="/kitchen">
+        <ProtectedRoute component={Kitchen} />
+      </Route>
+      <Route path="/reservations">
+        <ProtectedRoute component={Reservations} />
+      </Route>
+      <Route path="/menu">
+        <ProtectedRoute component={Menu} />
+      </Route>
+      <Route path="/stock">
+        <ProtectedRoute component={Stock} />
+      </Route>
+      <Route path="/reports">
+        <ProtectedRoute component={Reports} />
+      </Route>
+      <Route path="/customers">
+        <ProtectedRoute component={Customers} />
+      </Route>
+      <Route path="/branches">
+        <ProtectedRoute component={Branches} />
+      </Route>
+      <Route path="/users">
+        <ProtectedRoute component={Users} />
+      </Route>
+      <Route path="/settings">
+        <ProtectedRoute component={Settings} />
+      </Route>
+      <Route path="/orders-history">
+        <ProtectedRoute component={OrderHistory} roles={["owner", "manager"]} />
+      </Route>
+
       <Route component={NotFound} />
     </Switch>
   );

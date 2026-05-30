@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, ShoppingBag, Users, AlertTriangle, Activity, TrendingUp, TrendingDown, ListOrdered, Grid2X2, ChefHat, BarChart3, CalendarDays, RefreshCw, ArrowRight } from "lucide-react";
+import { DollarSign, ShoppingBag, Users, AlertTriangle, Activity, TrendingUp, TrendingDown, ListOrdered, Grid2X2, ChefHat, BarChart3, CalendarDays, RefreshCw, ArrowRight, PackageSearch } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
 import { Link } from "wouter";
@@ -73,7 +73,7 @@ export default function Dashboard() {
   const isPositive = revenueChange > 0;
   const lowStockCount = overview?.lowStockCount ?? 0;
 
-  const kpiCards = [
+  const allKpiCards = [
     {
       label: "Pendapatan Hari Ini",
       value: isOverviewLoading ? null : formatCurrency(overview?.todayRevenue || 0),
@@ -87,6 +87,7 @@ export default function Dashboard() {
       iconColor: "text-primary",
       accent: "border-t-primary",
       gradient: "from-primary/5 to-transparent",
+      roles: ["owner", "manager"],
     },
     {
       label: "Pesanan Aktif",
@@ -97,6 +98,7 @@ export default function Dashboard() {
       iconColor: "text-blue-500",
       accent: "border-t-blue-500",
       gradient: "from-blue-500/5 to-transparent",
+      roles: ["owner", "manager"],
     },
     {
       label: "Okupansi Meja",
@@ -107,6 +109,7 @@ export default function Dashboard() {
       iconColor: "text-secondary",
       accent: "border-t-secondary",
       gradient: "from-secondary/5 to-transparent",
+      roles: ["owner", "manager"],
     },
     {
       label: "Peringatan Stok Rendah",
@@ -120,15 +123,21 @@ export default function Dashboard() {
       accent: lowStockCount > 0 ? "border-t-destructive" : "border-t-border",
       gradient: lowStockCount > 0 ? "from-destructive/5 to-transparent" : "from-muted/30 to-transparent",
       alert: lowStockCount > 0,
+      roles: ["owner", "manager", "warehouse"],
     },
   ];
 
-  const quickActions = [
-    { label: "Buka POS", href: "/pos", icon: ListOrdered, color: "bg-primary", desc: "Ambil pesanan", shadow: "shadow-primary/30" },
-    { label: "Meja", href: "/tables", icon: Grid2X2, color: "bg-blue-500", desc: "Denah lantai", shadow: "shadow-blue-500/30" },
-    { label: "Dapur", href: "/kitchen", icon: ChefHat, color: "bg-orange-500", desc: "Antrean langsung", shadow: "shadow-orange-500/30" },
-    { label: "Laporan", href: "/reports", icon: BarChart3, color: "bg-secondary", desc: "Analitik", shadow: "shadow-secondary/30" },
+  const kpiCards = allKpiCards.filter(card => card.roles.includes(user?.role ?? ""));
+
+  const allQuickActions = [
+    { label: "Buka POS", href: "/pos", icon: ListOrdered, color: "bg-primary", desc: "Ambil pesanan", shadow: "shadow-primary/30", roles: ["owner", "manager", "cashier", "waiter"] },
+    { label: "Meja", href: "/tables", icon: Grid2X2, color: "bg-blue-500", desc: "Denah lantai", shadow: "shadow-blue-500/30", roles: ["owner", "manager", "cashier", "waiter"] },
+    { label: "Dapur", href: "/kitchen", icon: ChefHat, color: "bg-orange-500", desc: "Antrean langsung", shadow: "shadow-orange-500/30", roles: ["owner", "manager", "waiter", "chef"] },
+    { label: "Stok", href: "/stock", icon: PackageSearch, color: "bg-amber-500", desc: "Manajemen", shadow: "shadow-amber-500/30", roles: ["owner", "manager", "warehouse"] },
+    { label: "Laporan", href: "/reports", icon: BarChart3, color: "bg-secondary", desc: "Analitik", shadow: "shadow-secondary/30", roles: ["owner", "manager"] },
   ];
+
+  const quickActions = allQuickActions.filter(action => action.roles.includes(user?.role ?? ""));
 
   const clockDisplay = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
