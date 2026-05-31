@@ -86,7 +86,7 @@ export default function POS() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedTable, setSelectedTable] = useState<string>(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("table") || "";
+    return params.get("table") || "none";
   });
   const [notes, setNotes] = useState("");
   const [discountAmount, setDiscountAmount] = useState<number>(0);
@@ -231,7 +231,10 @@ export default function POS() {
     try {
       const order = await createOrder.mutateAsync({
         data: {
-          tableId: selectedTable ? Number(selectedTable) : undefined,
+          tableId:
+            selectedTable && selectedTable !== "none"
+              ? Number(selectedTable)
+              : undefined,
           branchId: branchId!,
           items: cart.map((item) => ({
             menuItemId: item.menuItemId,
@@ -281,7 +284,7 @@ export default function POS() {
       setNotes("");
       setDiscountAmount(0);
       setPaymentMethod(null);
-      setSelectedTable("");
+      setSelectedTable("none");
       setCartOpen(false);
       setPaymentOpen(false);
       setPendingOrder(null);
@@ -420,7 +423,7 @@ export default function POS() {
         {createOrder.isPending ? "Mengirim..." : "Kirim ke Dapur"}
       </Button>
 
-      {cart.length > 0 && !selectedTable && (
+      {cart.length > 0 && selectedTable === "none" && (
         <p className="text-center text-xs text-slate-600 font-medium">
           Pesanan tanpa meja akan dikirim tanpa memilih meja.
         </p>
@@ -457,7 +460,7 @@ export default function POS() {
                 <SelectTrigger
                   className={cn(
                     "w-full h-9 text-sm font-semibold",
-                    !selectedTable &&
+                    selectedTable === "none" &&
                       "border-amber-400/60 bg-amber-50/60 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400",
                   )}
                   data-testid="select-table-top"
@@ -465,7 +468,7 @@ export default function POS() {
                   <SelectValue placeholder="Pilih meja atau Tanpa Meja" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem key="none" value="">
+                  <SelectItem key="none" value="none">
                     Tanpa Meja
                   </SelectItem>
                   {tables
@@ -621,7 +624,7 @@ export default function POS() {
                 <SelectValue placeholder="Pilih Meja atau Tanpa Meja" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem key="none" value="">
+                <SelectItem key="none" value="none">
                   Tanpa Meja
                 </SelectItem>
                 {tables
@@ -659,7 +662,7 @@ export default function POS() {
             <div className="flex items-center gap-2.5">
               <ShoppingCart className="w-5 h-5" />
               <span>{totalItems} item</span>
-              {selectedTable && tables && (
+              {selectedTable && selectedTable !== "none" && tables && (
                 <span className="text-primary-foreground/70 font-normal">
                   ·{" "}
                   {(() => {
@@ -706,7 +709,7 @@ export default function POS() {
                     <SelectValue placeholder="Meja atau Tanpa Meja" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem key="none" value="">
+                    <SelectItem key="none" value="none">
                       Tanpa Meja
                     </SelectItem>
                     {tables
