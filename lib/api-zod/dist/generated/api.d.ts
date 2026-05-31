@@ -1404,8 +1404,8 @@ export declare const GetOrdersQueryParams: zod.ZodObject<{
 export declare const GetOrdersResponseItem: zod.ZodObject<{
     id: zod.ZodNumber;
     orderNumber: zod.ZodString;
-    tableId: zod.ZodNumber;
-    tableNumber: zod.ZodString;
+    tableId: zod.ZodNullable<zod.ZodNumber>;
+    tableNumber: zod.ZodNullable<zod.ZodString>;
     customerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     customerName: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodEnum<["pending", "confirmed", "preparing", "ready", "served", "completed", "voided"]>;
@@ -1464,8 +1464,8 @@ export declare const GetOrdersResponseItem: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -1496,8 +1496,8 @@ export declare const GetOrdersResponseItem: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -1527,8 +1527,8 @@ export declare const GetOrdersResponseItem: zod.ZodObject<{
 export declare const GetOrdersResponse: zod.ZodArray<zod.ZodObject<{
     id: zod.ZodNumber;
     orderNumber: zod.ZodString;
-    tableId: zod.ZodNumber;
-    tableNumber: zod.ZodString;
+    tableId: zod.ZodNullable<zod.ZodNumber>;
+    tableNumber: zod.ZodNullable<zod.ZodString>;
     customerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     customerName: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodEnum<["pending", "confirmed", "preparing", "ready", "served", "completed", "voided"]>;
@@ -1587,8 +1587,8 @@ export declare const GetOrdersResponse: zod.ZodArray<zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -1619,8 +1619,8 @@ export declare const GetOrdersResponse: zod.ZodArray<zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -1648,7 +1648,7 @@ export declare const GetOrdersResponse: zod.ZodArray<zod.ZodObject<{
     completedAt?: string | null | undefined;
 }>, "many">;
 export declare const CreateOrderBody: zod.ZodObject<{
-    tableId: zod.ZodNumber;
+    tableId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     branchId: zod.ZodNumber;
     customerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     items: zod.ZodArray<zod.ZodObject<{
@@ -1668,23 +1668,23 @@ export declare const CreateOrderBody: zod.ZodObject<{
     discountAmount: zod.ZodOptional<zod.ZodNumber>;
 }, "strip", zod.ZodTypeAny, {
     branchId: number;
-    tableId: number;
     items: {
         menuItemId: number;
         quantity: number;
         notes?: string | null | undefined;
     }[];
+    tableId?: number | null | undefined;
     notes?: string | null | undefined;
     customerId?: number | null | undefined;
     discountAmount?: number | undefined;
 }, {
     branchId: number;
-    tableId: number;
     items: {
         menuItemId: number;
         quantity: number;
         notes?: string | null | undefined;
     }[];
+    tableId?: number | null | undefined;
     notes?: string | null | undefined;
     customerId?: number | null | undefined;
     discountAmount?: number | undefined;
@@ -1699,8 +1699,8 @@ export declare const GetOrderParams: zod.ZodObject<{
 export declare const GetOrderResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     orderNumber: zod.ZodString;
-    tableId: zod.ZodNumber;
-    tableNumber: zod.ZodString;
+    tableId: zod.ZodNullable<zod.ZodNumber>;
+    tableNumber: zod.ZodNullable<zod.ZodString>;
     customerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     customerName: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodEnum<["pending", "confirmed", "preparing", "ready", "served", "completed", "voided"]>;
@@ -1759,8 +1759,8 @@ export declare const GetOrderResponse: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -1791,8 +1791,8 @@ export declare const GetOrderResponse: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -1842,8 +1842,8 @@ export declare const UpdateOrderBody: zod.ZodObject<{
 export declare const UpdateOrderResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     orderNumber: zod.ZodString;
-    tableId: zod.ZodNumber;
-    tableNumber: zod.ZodString;
+    tableId: zod.ZodNullable<zod.ZodNumber>;
+    tableNumber: zod.ZodNullable<zod.ZodString>;
     customerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     customerName: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodEnum<["pending", "confirmed", "preparing", "ready", "served", "completed", "voided"]>;
@@ -1902,8 +1902,8 @@ export declare const UpdateOrderResponse: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -1934,8 +1934,8 @@ export declare const UpdateOrderResponse: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -2072,8 +2072,8 @@ export declare const VoidOrderBody: zod.ZodObject<{
 export declare const VoidOrderResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     orderNumber: zod.ZodString;
-    tableId: zod.ZodNumber;
-    tableNumber: zod.ZodString;
+    tableId: zod.ZodNullable<zod.ZodNumber>;
+    tableNumber: zod.ZodNullable<zod.ZodString>;
     customerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     customerName: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodEnum<["pending", "confirmed", "preparing", "ready", "served", "completed", "voided"]>;
@@ -2132,8 +2132,8 @@ export declare const VoidOrderResponse: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;
@@ -2164,8 +2164,8 @@ export declare const VoidOrderResponse: zod.ZodObject<{
     branchId: number;
     id: number;
     createdAt: string;
-    tableId: number;
-    tableNumber: string;
+    tableId: number | null;
+    tableNumber: string | null;
     orderNumber: string;
     items: {
         id: number;

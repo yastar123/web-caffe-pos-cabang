@@ -44,7 +44,7 @@ export declare const ordersTable: import("drizzle-orm/pg-core").PgTableWithColum
             columnType: "PgInteger";
             data: number;
             driverParam: string | number;
-            notNull: true;
+            notNull: false;
             hasDefault: false;
             isPrimaryKey: false;
             isAutoincrement: false;
@@ -422,16 +422,16 @@ export declare const orderItemsTable: import("drizzle-orm/pg-core").PgTableWithC
     dialect: "pg";
 }>;
 export declare const insertOrderSchema: z.ZodObject<{
-    branchId: z.ZodInt;
-    status: z.ZodOptional<z.ZodString>;
-    tableId: z.ZodInt;
-    notes: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     orderNumber: z.ZodString;
+    status: z.ZodOptional<z.ZodString>;
+    branchId: z.ZodInt;
+    tableId: z.ZodOptional<z.ZodNullable<z.ZodInt>>;
     customerId: z.ZodOptional<z.ZodNullable<z.ZodInt>>;
     subtotal: z.ZodOptional<z.ZodString>;
     discountAmount: z.ZodOptional<z.ZodString>;
     tax: z.ZodOptional<z.ZodString>;
     total: z.ZodOptional<z.ZodString>;
+    notes: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     staffId: z.ZodOptional<z.ZodNullable<z.ZodInt>>;
     completedAt: z.ZodOptional<z.ZodNullable<z.ZodDate>>;
 }, {
@@ -441,9 +441,9 @@ export declare const insertOrderSchema: z.ZodObject<{
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Order = typeof ordersTable.$inferSelect;
 export declare const insertOrderItemSchema: z.ZodObject<{
-    station: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     notes: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     orderId: z.ZodInt;
+    station: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     menuItemId: z.ZodInt;
     quantity: z.ZodOptional<z.ZodInt>;
     unitPrice: z.ZodString;

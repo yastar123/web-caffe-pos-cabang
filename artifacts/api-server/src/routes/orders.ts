@@ -211,8 +211,8 @@ router.post(
   async (req: AuthRequest, res): Promise<void> => {
     const { tableId, branchId, customerId, items, notes, discountAmount } =
       req.body;
-    if (!tableId || !branchId || !items?.length) {
-      res.status(400).json({ error: "tableId, branchId, items required" });
+    if (!branchId || !items?.length) {
+      res.status(400).json({ error: "branchId and items are required" });
       return;
     }
 
@@ -273,7 +273,7 @@ router.post(
       .insert(ordersTable)
       .values({
         orderNumber: generateOrderNumber(),
-        tableId,
+        tableId: tableId ?? null,
         branchId,
         customerId,
         notes,
@@ -307,15 +307,17 @@ router.post(
       });
     }
 
-    // Mark table as occupied
-    await db
-      .update(tablesTable)
-      .set({
-        status: "occupied",
-        currentOrderId: order.id,
-        occupiedAt: new Date(),
-      })
-      .where(eq(tablesTable.id, tableId));
+    if (tableId) {
+      // Mark table as occupied only when a table is assigned.
+      await db
+        .update(tablesTable)
+        .set({
+          status: "occupied",
+          currentOrderId: order.id,
+          occupiedAt: new Date(),
+        })
+        .where(eq(tablesTable.id, tableId));
+    }
 
     const result = await getOrderWithItems(order.id);
     res.status(201).json(result);
@@ -381,15 +383,13 @@ router.post(
         station: menuItem.station ?? undefined,
       })
       .returning();
-    res
-      .status(201)
-      .json(
-        mapOrderItem({
-          ...item,
-          menuItemName: menuItem.name,
-          menuItemImage: menuItem.imageUrl,
-        }),
-      );
+    res.status(201).json(
+      mapOrderItem({
+        ...item,
+        menuItemName: menuItem.name,
+        menuItemImage: menuItem.imageUrl,
+      }),
+    );
   },
 );
 
@@ -461,10 +461,12 @@ router.post(
       res.status(404).json({ error: "Order not found" });
       return;
     }
-    await db
-      .update(tablesTable)
-      .set({ status: "available", currentOrderId: null, occupiedAt: null })
-      .where(eq(tablesTable.id, order.tableId));
+    if (order.tableId != null) {
+      await db
+        .update(tablesTable)
+        .set({ status: "available", currentOrderId: null, occupiedAt: null })
+        .where(eq(tablesTable.id, order.tableId));
+    }
     const result = await getOrderWithItems(id);
     res.json(result);
   },

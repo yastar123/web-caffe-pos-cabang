@@ -8,7 +8,8 @@
 import type { OrderItemInput } from './orderItemInput';
 
 export interface OrderInput {
-  tableId: number;
+  /** @nullable */
+  tableId?: number | null;
   branchId: number;
   /** @nullable */
   customerId?: number | null;

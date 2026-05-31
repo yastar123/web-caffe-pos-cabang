@@ -10,17 +10,34 @@ import {
   getGetMenuCategoriesQueryKey,
   getGetMenuItemsQueryKey,
   getGetTablesQueryKey,
-  getGetBranchQueryKey
+  getGetBranchQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
@@ -41,7 +58,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-
 
 interface CartItem {
   menuItemId: number;
@@ -74,30 +90,59 @@ export default function POS() {
   });
   const [notes, setNotes] = useState("");
   const [discountAmount, setDiscountAmount] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "qris" | "ewallet" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "card" | "qris" | "ewallet" | null
+  >(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [showPaymentHint, setShowPaymentHint] = useState(false);
   const tableInitialized = useRef(false);
 
-  const { data: categories, isLoading: loadingCategories } = useGetMenuCategories(
-    { branchId: branchId ?? undefined },
-    { query: { enabled: !!branchId, queryKey: getGetMenuCategoriesQueryKey({ branchId: branchId ?? undefined }) } }
-  );
+  const { data: categories, isLoading: loadingCategories } =
+    useGetMenuCategories(
+      { branchId: branchId ?? undefined },
+      {
+        query: {
+          enabled: !!branchId,
+          queryKey: getGetMenuCategoriesQueryKey({
+            branchId: branchId ?? undefined,
+          }),
+        },
+      },
+    );
 
   const { data: menuItems, isLoading: loadingItems } = useGetMenuItems(
-    { branchId: branchId ?? undefined, categoryId: activeCategory !== "all" ? Number(activeCategory) : undefined },
-    { query: { enabled: !!branchId, queryKey: getGetMenuItemsQueryKey({ branchId: branchId ?? undefined, categoryId: activeCategory !== "all" ? Number(activeCategory) : undefined }) } }
+    {
+      branchId: branchId ?? undefined,
+      categoryId: activeCategory !== "all" ? Number(activeCategory) : undefined,
+    },
+    {
+      query: {
+        enabled: !!branchId,
+        queryKey: getGetMenuItemsQueryKey({
+          branchId: branchId ?? undefined,
+          categoryId:
+            activeCategory !== "all" ? Number(activeCategory) : undefined,
+        }),
+      },
+    },
   );
 
   const { data: tables } = useGetTables(
     { branchId: branchId ?? undefined },
-    { query: { enabled: !!branchId, queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) } }
+    {
+      query: {
+        enabled: !!branchId,
+        queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }),
+      },
+    },
   );
 
-  const { data: branch } = useGetBranch(
-    branchId || 0,
-    { query: { enabled: !!branchId, queryKey: getGetBranchQueryKey(branchId || 0) } }
-  );
+  const { data: branch } = useGetBranch(branchId || 0, {
+    query: {
+      enabled: !!branchId,
+      queryKey: getGetBranchQueryKey(branchId || 0),
+    },
+  });
 
   const createOrder = useCreateOrder();
   const processPayment = useProcessPayment();
@@ -106,7 +151,10 @@ export default function POS() {
     if (tables && !tableInitialized.current) {
       const params = new URLSearchParams(window.location.search);
       const tableParam = params.get("table");
-      if (tableParam && tables.some((t: any) => t.id.toString() === tableParam)) {
+      if (
+        tableParam &&
+        tables.some((t: any) => t.id.toString() === tableParam)
+      ) {
         setSelectedTable(tableParam);
       }
       tableInitialized.current = true;
@@ -116,64 +164,93 @@ export default function POS() {
   const filteredItems = useMemo(() => {
     if (!menuItems) return [];
     return menuItems.filter((item: any) =>
-      item.name.toLowerCase().includes(search.toLowerCase())
+      item.name.toLowerCase().includes(search.toLowerCase()),
     );
   }, [menuItems, search]);
 
   const addToCart = (item: any): void => {
-    setCart(prev => {
-      const existing = prev.find(i => i.menuItemId === item.id);
+    setCart((prev) => {
+      const existing = prev.find((i) => i.menuItemId === item.id);
       if (existing) {
-        return prev.map(i => i.menuItemId === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map((i) =>
+          i.menuItemId === item.id ? { ...i, quantity: i.quantity + 1 } : i,
+        );
       }
-      return [...prev, { menuItemId: item.id, name: item.name, price: Number(item.price), quantity: 1 }];
+      return [
+        ...prev,
+        {
+          menuItemId: item.id,
+          name: item.name,
+          price: Number(item.price),
+          quantity: 1,
+        },
+      ];
     });
   };
 
   const updateQuantity = (id: number, delta: number) => {
-    setCart(prev => {
-      const item = prev.find(i => i.menuItemId === id);
+    setCart((prev) => {
+      const item = prev.find((i) => i.menuItemId === id);
       if (item && item.quantity + delta <= 0) {
-        return prev.filter(i => i.menuItemId !== id);
+        return prev.filter((i) => i.menuItemId !== id);
       }
-      return prev.map(i =>
-        i.menuItemId === id ? { ...i, quantity: i.quantity + delta } : i
+      return prev.map((i) =>
+        i.menuItemId === id ? { ...i, quantity: i.quantity + delta } : i,
       );
     });
   };
 
   const removeFromCart = (id: number) => {
-    setCart(prev => prev.filter(item => item.menuItemId !== id));
+    setCart((prev) => prev.filter((item) => item.menuItemId !== id));
   };
 
   const TAX_RATE = branch?.taxRate != null ? Number(branch.taxRate) / 100 : 0.1;
   const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
   const tax = (subtotal - discountAmount) * TAX_RATE;
   const grandTotal = Math.max(0, subtotal - discountAmount + tax);
 
   const formatIDR = (num: number) =>
-    new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(num);
 
-  const [pendingOrder, setPendingOrder] = useState<{ id: number; orderNumber: string } | null>(null);
+  const [pendingOrder, setPendingOrder] = useState<{
+    id: number;
+    orderNumber: string;
+  } | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
   const handleSendToKitchen = async () => {
-    if (!selectedTable || cart.length === 0) return;
+    if (cart.length === 0) return;
     try {
       const order = await createOrder.mutateAsync({
         data: {
-          tableId: Number(selectedTable),
+          tableId: selectedTable ? Number(selectedTable) : undefined,
           branchId: branchId!,
-          items: cart.map(item => ({ menuItemId: item.menuItemId, quantity: item.quantity, notes: item.notes })),
+          items: cart.map((item) => ({
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            notes: item.notes,
+          })),
           notes,
-          discountAmount
-        }
+          discountAmount,
+        },
       });
       setPendingOrder({ id: order.id, orderNumber: order.orderNumber });
       setPaymentOpen(true);
-      toast({ title: `Pesanan #${order.orderNumber} dikirim ke dapur ✓`, description: "Pilih metode pembayaran untuk menyelesaikan." });
-      queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
+      toast({
+        title: `Pesanan #${order.orderNumber} dikirim ke dapur ✓`,
+        description: "Pilih metode pembayaran untuk menyelesaikan.",
+      });
+      queryClient.invalidateQueries({
+        queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }),
+      });
     } catch {
       toast({ title: "Gagal membuat pesanan", variant: "destructive" });
     }
@@ -182,7 +259,11 @@ export default function POS() {
   const handleProcessOrder = async () => {
     if (!pendingOrder || !paymentMethod) {
       setShowPaymentHint(true);
-      toast({ title: "Pilih metode pembayaran", description: "Pilih cara pembayaran pelanggan.", variant: "destructive" });
+      toast({
+        title: "Pilih metode pembayaran",
+        description: "Pilih cara pembayaran pelanggan.",
+        variant: "destructive",
+      });
       return;
     }
     setShowPaymentHint(false);
@@ -193,7 +274,7 @@ export default function POS() {
           branchId: branchId!,
           amount: grandTotal,
           method: paymentMethod as any,
-        }
+        },
       });
       toast({ title: "Pembayaran berhasil diproses" });
       setCart([]);
@@ -204,13 +285,14 @@ export default function POS() {
       setCartOpen(false);
       setPaymentOpen(false);
       setPendingOrder(null);
-      queryClient.invalidateQueries({ queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }) });
+      queryClient.invalidateQueries({
+        queryKey: getGetTablesQueryKey({ branchId: branchId ?? undefined }),
+      });
       setLocation("/tables");
     } catch {
       toast({ title: "Gagal memproses pembayaran", variant: "destructive" });
     }
   };
-
 
   const renderCartItems = () => (
     <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
@@ -218,18 +300,24 @@ export default function POS() {
         <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl p-8 text-center">
           <UtensilsCrossed className="h-10 w-10 mb-3 opacity-20" />
           <p className="font-medium text-sm">Keranjang kosong</p>
-          <p className="text-xs opacity-70 mt-1">Ketuk item menu untuk menambahkan</p>
+          <p className="text-xs opacity-70 mt-1">
+            Ketuk item menu untuk menambahkan
+          </p>
         </div>
       ) : (
         <>
-          {cart.map(item => (
+          {cart.map((item) => (
             <div
               key={item.menuItemId}
               className="flex items-center gap-3 bg-muted/30 hover:bg-muted/50 p-3 rounded-xl border hover:border-primary/20 transition-all group"
             >
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm leading-tight truncate">{item.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">{formatIDR(item.price)}</p>
+                <p className="font-semibold text-sm leading-tight truncate">
+                  {item.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+                  {formatIDR(item.price)}
+                </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <Button
@@ -240,7 +328,9 @@ export default function POS() {
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                <span className="w-6 text-center text-sm font-bold">{item.quantity}</span>
+                <span className="w-6 text-center text-sm font-bold">
+                  {item.quantity}
+                </span>
                 <Button
                   variant="outline"
                   size="icon"
@@ -281,7 +371,9 @@ export default function POS() {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between text-muted-foreground">
           <span>Subtotal</span>
-          <span className="font-medium text-foreground tabular-nums">{formatIDR(subtotal)}</span>
+          <span className="font-medium text-foreground tabular-nums">
+            {formatIDR(subtotal)}
+          </span>
         </div>
         <div className="flex justify-between items-center text-muted-foreground">
           <span>Diskon</span>
@@ -290,7 +382,10 @@ export default function POS() {
               type="number"
               value={discountAmount || ""}
               onChange={(e) => {
-                const val = Math.min(Math.max(0, Number(e.target.value)), subtotal);
+                const val = Math.min(
+                  Math.max(0, Number(e.target.value)),
+                  subtotal,
+                );
                 setDiscountAmount(val);
               }}
               min={0}
@@ -302,18 +397,22 @@ export default function POS() {
         </div>
         <div className="flex justify-between text-muted-foreground">
           <span>Pajak ({Math.round(TAX_RATE * 100)}%)</span>
-          <span className="font-medium text-foreground tabular-nums">{formatIDR(tax)}</span>
+          <span className="font-medium text-foreground tabular-nums">
+            {formatIDR(tax)}
+          </span>
         </div>
         <div className="flex justify-between items-center font-bold text-base pt-2 border-t">
           <span>Total</span>
-          <span className="text-primary text-lg tabular-nums">{formatIDR(grandTotal)}</span>
+          <span className="text-primary text-lg tabular-nums">
+            {formatIDR(grandTotal)}
+          </span>
         </div>
       </div>
 
       <Button
         className="w-full h-12 text-base font-bold rounded-xl shadow-sm gap-2"
         size="lg"
-        disabled={cart.length === 0 || !selectedTable || createOrder.isPending}
+        disabled={cart.length === 0 || createOrder.isPending}
         onClick={handleSendToKitchen}
         data-testid="btn-process-order"
       >
@@ -322,8 +421,8 @@ export default function POS() {
       </Button>
 
       {cart.length > 0 && !selectedTable && (
-        <p className="text-center text-xs text-amber-600 font-medium">
-          ⚠ Pilih meja terlebih dahulu
+        <p className="text-center text-xs text-slate-600 font-medium">
+          Pesanan tanpa meja akan dikirim tanpa memilih meja.
         </p>
       )}
     </div>
@@ -338,7 +437,8 @@ export default function POS() {
         <div>
           <p className="text-xl font-bold">Tidak ada cabang yang ditugaskan</p>
           <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-            Akun Anda belum terhubung ke cabang tertentu. Hubungi admin untuk mengatur penugasan cabang.
+            Akun Anda belum terhubung ke cabang tertentu. Hubungi admin untuk
+            mengatur penugasan cabang.
           </p>
         </div>
       </div>
@@ -357,19 +457,29 @@ export default function POS() {
                 <SelectTrigger
                   className={cn(
                     "w-full h-9 text-sm font-semibold",
-                    !selectedTable && "border-amber-400/60 bg-amber-50/60 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
+                    !selectedTable &&
+                      "border-amber-400/60 bg-amber-50/60 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400",
                   )}
                   data-testid="select-table-top"
                 >
-                  <SelectValue placeholder="⚠ Pilih meja terlebih dahulu" />
+                  <SelectValue placeholder="Pilih meja atau Tanpa Meja" />
                 </SelectTrigger>
                 <SelectContent>
-                  {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
-                    <SelectItem key={t.id} value={t.id.toString()}>
-                      Meja {t.number}
-                      {t.status === "occupied" ? " (terisi)" : ""}
-                    </SelectItem>
-                  ))}
+                  <SelectItem key="none" value="">
+                    Tanpa Meja
+                  </SelectItem>
+                  {tables
+                    ?.filter(
+                      (t: any) =>
+                        t.status === "available" ||
+                        t.id.toString() === selectedTable,
+                    )
+                    .map((t: any) => (
+                      <SelectItem key={t.id} value={t.id.toString()}>
+                        Meja {t.number}
+                        {t.status === "occupied" ? " (terisi)" : ""}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -388,11 +498,24 @@ export default function POS() {
             {loadingCategories ? (
               <Skeleton className="h-10 w-full" />
             ) : (
-              <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
+              <Tabs
+                value={activeCategory}
+                onValueChange={setActiveCategory}
+                className="w-full"
+              >
                 <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/40 rounded-xl gap-0.5">
-                  <TabsTrigger value="all" className="rounded-lg text-xs font-semibold">Semua</TabsTrigger>
+                  <TabsTrigger
+                    value="all"
+                    className="rounded-lg text-xs font-semibold"
+                  >
+                    Semua
+                  </TabsTrigger>
                   {categories?.map((cat: any) => (
-                    <TabsTrigger key={cat.id} value={cat.id.toString()} className="rounded-lg text-xs font-semibold whitespace-nowrap">
+                    <TabsTrigger
+                      key={cat.id}
+                      value={cat.id.toString()}
+                      className="rounded-lg text-xs font-semibold whitespace-nowrap"
+                    >
                       {cat.name}
                     </TabsTrigger>
                   ))}
@@ -404,7 +527,9 @@ export default function POS() {
           <div className="flex-1 overflow-y-auto p-4 bg-accent/10">
             {loadingItems ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-44 w-full rounded-xl" />)}
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Skeleton key={i} className="h-44 w-full rounded-xl" />
+                ))}
               </div>
             ) : filteredItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl p-8 text-center">
@@ -414,7 +539,7 @@ export default function POS() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {filteredItems.map((item: any) => {
-                  const inCart = cart.find(c => c.menuItemId === item.id);
+                  const inCart = cart.find((c) => c.menuItemId === item.id);
                   return (
                     <Card
                       key={item.id}
@@ -423,7 +548,9 @@ export default function POS() {
                         item.isAvailable
                           ? "hover:border-primary hover:shadow-md active:scale-[0.98]"
                           : "opacity-60 cursor-not-allowed",
-                        inCart ? "border-primary/60 ring-2 ring-primary/20 shadow-sm" : ""
+                        inCart
+                          ? "border-primary/60 ring-2 ring-primary/20 shadow-sm"
+                          : "",
                       )}
                       onClick={() => item.isAvailable && addToCart(item)}
                       data-testid={`card-menu-item-${item.id}`}
@@ -444,7 +571,9 @@ export default function POS() {
                         )}
                         {!item.isAvailable && (
                           <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                            <span className="text-xs font-bold text-destructive bg-destructive/10 border border-destructive/20 px-2 py-1 rounded-full">Habis</span>
+                            <span className="text-xs font-bold text-destructive bg-destructive/10 border border-destructive/20 px-2 py-1 rounded-full">
+                              Habis
+                            </span>
                           </div>
                         )}
                         {inCart && (
@@ -459,9 +588,13 @@ export default function POS() {
                         )}
                       </div>
                       <CardContent className="p-3 flex flex-col flex-1 justify-between">
-                        <p className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2">{item.name}</p>
+                        <p className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2">
+                          {item.name}
+                        </p>
                         <div className="flex items-center justify-between mt-2 gap-1">
-                          <p className="text-primary font-bold text-xs sm:text-sm tabular-nums">{formatIDR(Number(item.price))}</p>
+                          <p className="text-primary font-bold text-xs sm:text-sm tabular-nums">
+                            {formatIDR(Number(item.price))}
+                          </p>
                           {item.isAvailable && !inCart && (
                             <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shrink-0">
                               <Plus className="w-3 h-3 text-primary" />
@@ -485,15 +618,24 @@ export default function POS() {
           <div className="p-4 border-b shrink-0 flex items-center gap-3">
             <Select value={selectedTable} onValueChange={setSelectedTable}>
               <SelectTrigger className="flex-1" data-testid="select-table">
-                <SelectValue placeholder="Pilih Meja" />
+                <SelectValue placeholder="Pilih Meja atau Tanpa Meja" />
               </SelectTrigger>
               <SelectContent>
-                {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
-                  <SelectItem key={t.id} value={t.id.toString()}>
-                    Meja {t.number}
-                    {t.status === "occupied" ? " (terisi)" : ""}
-                  </SelectItem>
-                ))}
+                <SelectItem key="none" value="">
+                  Tanpa Meja
+                </SelectItem>
+                {tables
+                  ?.filter(
+                    (t: any) =>
+                      t.status === "available" ||
+                      t.id.toString() === selectedTable,
+                  )
+                  .map((t: any) => (
+                    <SelectItem key={t.id} value={t.id.toString()}>
+                      Meja {t.number}
+                      {t.status === "occupied" ? " (terisi)" : ""}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
             {cart.length > 0 && (
@@ -519,11 +661,19 @@ export default function POS() {
               <span>{totalItems} item</span>
               {selectedTable && tables && (
                 <span className="text-primary-foreground/70 font-normal">
-                  · {(() => { const t = tables.find((t: any) => t.id.toString() === selectedTable); return t ? `Meja ${t.number}` : ""; })()}
+                  ·{" "}
+                  {(() => {
+                    const t = tables.find(
+                      (t: any) => t.id.toString() === selectedTable,
+                    );
+                    return t ? `Meja ${t.number}` : "";
+                  })()}
                 </span>
               )}
             </div>
-            <span className="tabular-nums font-black">{formatIDR(grandTotal)}</span>
+            <span className="tabular-nums font-black">
+              {formatIDR(grandTotal)}
+            </span>
           </Button>
         </div>
       )}
@@ -544,18 +694,32 @@ export default function POS() {
               >
                 <XIcon className="w-4 h-4" />
               </Button>
-              <SheetTitle className="flex-1 text-left text-base">Pesanan Anda</SheetTitle>
+              <SheetTitle className="flex-1 text-left text-base">
+                Pesanan Anda
+              </SheetTitle>
               <div className="shrink-0">
                 <Select value={selectedTable} onValueChange={setSelectedTable}>
-                  <SelectTrigger className="w-[140px] h-8 text-xs" data-testid="select-table-mobile">
-                    <SelectValue placeholder="Pilih Meja" />
+                  <SelectTrigger
+                    className="w-[140px] h-8 text-xs"
+                    data-testid="select-table-mobile"
+                  >
+                    <SelectValue placeholder="Meja atau Tanpa Meja" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tables?.filter((t: any) => t.status === "available" || t.id.toString() === selectedTable).map((t: any) => (
-                      <SelectItem key={t.id} value={t.id.toString()}>
-                        Meja {t.number}
-                      </SelectItem>
-                    ))}
+                    <SelectItem key="none" value="">
+                      Tanpa Meja
+                    </SelectItem>
+                    {tables
+                      ?.filter(
+                        (t: any) =>
+                          t.status === "available" ||
+                          t.id.toString() === selectedTable,
+                      )
+                      .map((t: any) => (
+                        <SelectItem key={t.id} value={t.id.toString()}>
+                          Meja {t.number}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -567,7 +731,12 @@ export default function POS() {
       </Sheet>
 
       {/* Payment Dialog - appears after order sent to kitchen */}
-      <Dialog open={paymentOpen} onOpenChange={(open) => { if (!open && !processPayment.isPending) setPaymentOpen(open); }}>
+      <Dialog
+        open={paymentOpen}
+        onOpenChange={(open) => {
+          if (!open && !processPayment.isPending) setPaymentOpen(open);
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -575,8 +744,12 @@ export default function POS() {
               Pesanan Dikirim ke Dapur!
             </DialogTitle>
             <DialogDescription>
-              Pesanan <span className="font-bold text-foreground">#{pendingOrder?.orderNumber}</span> sudah masuk ke antrian dapur.
-              Selesaikan pembayaran untuk menutup transaksi.
+              Pesanan{" "}
+              <span className="font-bold text-foreground">
+                #{pendingOrder?.orderNumber}
+              </span>{" "}
+              sudah masuk ke antrian dapur. Selesaikan pembayaran untuk menutup
+              transaksi.
             </DialogDescription>
           </DialogHeader>
 
@@ -584,13 +757,17 @@ export default function POS() {
             {/* Total */}
             <div className="flex justify-between items-center p-3 bg-muted/40 rounded-xl">
               <span className="text-sm font-semibold">Total Tagihan</span>
-              <span className="text-xl font-black text-primary tabular-nums">{formatIDR(grandTotal)}</span>
+              <span className="text-xl font-black text-primary tabular-nums">
+                {formatIDR(grandTotal)}
+              </span>
             </div>
 
             {/* Payment methods */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Metode Pembayaran</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Metode Pembayaran
+                </span>
                 {showPaymentHint && !paymentMethod && (
                   <div className="flex items-center gap-1 text-destructive text-xs font-medium">
                     <AlertCircle className="w-3 h-3" />
@@ -602,14 +779,17 @@ export default function POS() {
                 {PAYMENT_METHODS.map(({ key, label, Icon }) => (
                   <button
                     key={key}
-                    onClick={() => { setPaymentMethod(key === paymentMethod ? null : key); setShowPaymentHint(false); }}
+                    onClick={() => {
+                      setPaymentMethod(key === paymentMethod ? null : key);
+                      setShowPaymentHint(false);
+                    }}
                     className={cn(
                       "flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl border text-xs font-semibold transition-all",
                       paymentMethod === key
                         ? "bg-primary text-primary-foreground border-primary shadow-sm"
                         : showPaymentHint && !paymentMethod
-                        ? "border-destructive/50 bg-destructive/5 text-muted-foreground"
-                        : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:bg-muted/60"
+                          ? "border-destructive/50 bg-destructive/5 text-muted-foreground"
+                          : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:bg-muted/60",
                     )}
                   >
                     <Icon className="w-5 h-5" />
@@ -624,7 +804,9 @@ export default function POS() {
               disabled={processPayment.isPending}
               onClick={handleProcessOrder}
             >
-              {processPayment.isPending ? "Memproses..." : "Konfirmasi Pembayaran"}
+              {processPayment.isPending
+                ? "Memproses..."
+                : "Konfirmasi Pembayaran"}
             </Button>
           </div>
         </DialogContent>

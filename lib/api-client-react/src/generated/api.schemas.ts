@@ -420,8 +420,10 @@ export interface OrderItem {
 export interface Order {
   id: number;
   orderNumber: string;
-  tableId: number;
-  tableNumber: string;
+  /** @nullable */
+  tableId: number | null;
+  /** @nullable */
+  tableNumber: string | null;
   /** @nullable */
   customerId?: number | null;
   /** @nullable */
@@ -452,7 +454,8 @@ export interface OrderItemInput {
 }
 
 export interface OrderInput {
-  tableId: number;
+  /** @nullable */
+  tableId?: number | null;
   branchId: number;
   /** @nullable */
   customerId?: number | null;

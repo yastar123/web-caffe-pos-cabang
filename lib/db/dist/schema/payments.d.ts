@@ -177,8 +177,8 @@ export declare const paymentsTable: import("drizzle-orm/pg-core").PgTableWithCol
     dialect: "pg";
 }>;
 export declare const insertPaymentSchema: z.ZodObject<{
-    branchId: z.ZodInt;
     status: z.ZodOptional<z.ZodString>;
+    branchId: z.ZodInt;
     staffId: z.ZodOptional<z.ZodNullable<z.ZodInt>>;
     orderId: z.ZodInt;
     amount: z.ZodString;

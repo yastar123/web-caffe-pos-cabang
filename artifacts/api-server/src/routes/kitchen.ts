@@ -72,10 +72,13 @@ router.get("/kitchen/queue", requireAuth, async (req, res): Promise<void> => {
         )
         .where(and(...itemConditions));
 
-      const [table] = await db
-        .select()
-        .from(tablesTable)
-        .where(eq(tablesTable.id, order.tableId));
+      const [table] =
+        order.tableId != null
+          ? await db
+              .select()
+              .from(tablesTable)
+              .where(eq(tablesTable.id, order.tableId))
+          : [undefined];
 
       const result = {
         orderId: order.id,

@@ -1830,9 +1830,9 @@ components:
         orderNumber:
           type: string
         tableId:
-          type: integer
+          type: ["integer", "null"]
         tableNumber:
-          type: string
+          type: ["string", "null"]
         customerId:
           type: ["integer", "null"]
         customerName:
@@ -1868,10 +1868,10 @@ components:
 
     OrderInput:
       type: object
-      required: [tableId, branchId, items]
+      required: [branchId, items]
       properties:
         tableId:
-          type: integer
+          type: ["integer", "null"]
         branchId:
           type: integer
         customerId:

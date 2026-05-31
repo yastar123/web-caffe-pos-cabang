@@ -536,8 +536,8 @@ export const GetOrdersQueryParams = zod.object({
 export const GetOrdersResponseItem = zod.object({
   "id": zod.number(),
   "orderNumber": zod.string(),
-  "tableId": zod.number(),
-  "tableNumber": zod.string(),
+  "tableId": zod.number().nullable(),
+  "tableNumber": zod.string().nullable(),
   "customerId": zod.number().nullish(),
   "customerName": zod.string().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'voided']),
@@ -570,7 +570,7 @@ export const GetOrdersResponse = zod.array(GetOrdersResponseItem)
 
 
 export const CreateOrderBody = zod.object({
-  "tableId": zod.number(),
+  "tableId": zod.number().nullish(),
   "branchId": zod.number(),
   "customerId": zod.number().nullish(),
   "items": zod.array(zod.object({
@@ -590,8 +590,8 @@ export const GetOrderParams = zod.object({
 export const GetOrderResponse = zod.object({
   "id": zod.number(),
   "orderNumber": zod.string(),
-  "tableId": zod.number(),
-  "tableNumber": zod.string(),
+  "tableId": zod.number().nullable(),
+  "tableNumber": zod.string().nullable(),
   "customerId": zod.number().nullish(),
   "customerName": zod.string().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'voided']),
@@ -635,8 +635,8 @@ export const UpdateOrderBody = zod.object({
 export const UpdateOrderResponse = zod.object({
   "id": zod.number(),
   "orderNumber": zod.string(),
-  "tableId": zod.number(),
-  "tableNumber": zod.string(),
+  "tableId": zod.number().nullable(),
+  "tableNumber": zod.string().nullable(),
   "customerId": zod.number().nullish(),
   "customerName": zod.string().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'voided']),
@@ -722,8 +722,8 @@ export const VoidOrderBody = zod.object({
 export const VoidOrderResponse = zod.object({
   "id": zod.number(),
   "orderNumber": zod.string(),
-  "tableId": zod.number(),
-  "tableNumber": zod.string(),
+  "tableId": zod.number().nullable(),
+  "tableNumber": zod.string().nullable(),
   "customerId": zod.number().nullish(),
   "customerName": zod.string().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'voided']),

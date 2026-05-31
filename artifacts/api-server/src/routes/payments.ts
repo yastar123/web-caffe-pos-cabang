@@ -1,11 +1,22 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, paymentsTable, ordersTable, tablesTable, usersTable } from "@workspace/db";
+import {
+  db,
+  paymentsTable,
+  ordersTable,
+  tablesTable,
+  usersTable,
+} from "@workspace/db";
 import { requireAuth, type AuthRequest } from "../middlewares/requireAuth";
 
 const router = Router();
 
-function mapPayment(p: typeof paymentsTable.$inferSelect & { orderNumber?: string | null; staffName?: string | null }) {
+function mapPayment(
+  p: typeof paymentsTable.$inferSelect & {
+    orderNumber?: string | null;
+    staffName?: string | null;
+  },
+) {
   return {
     id: p.id,
     orderId: p.orderId,
@@ -23,7 +34,9 @@ function mapPayment(p: typeof paymentsTable.$inferSelect & { orderNumber?: strin
 }
 
 router.get("/payments", requireAuth, async (req, res): Promise<void> => {
-  const branchId = req.query.branchId ? parseInt(req.query.branchId as string, 10) : undefined;
+  const branchId = req.query.branchId
+    ? parseInt(req.query.branchId as string, 10)
+    : undefined;
   const conditions = branchId ? [eq(paymentsTable.branchId, branchId)] : [];
 
   const rows = await db
@@ -50,38 +63,76 @@ router.get("/payments", requireAuth, async (req, res): Promise<void> => {
   res.json(rows.map(mapPayment));
 });
 
-router.post("/payments", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const { orderId, amount, method, cashReceived, referenceNumber, branchId } = req.body;
-  if (!orderId || !amount || !method || !branchId) {
-    res.status(400).json({ error: "orderId, amount, method, branchId required" });
-    return;
-  }
+router.post(
+  "/payments",
+  requireAuth,
+  async (req: AuthRequest, res): Promise<void> => {
+    const { orderId, amount, method, cashReceived, referenceNumber, branchId } =
+      req.body;
+    if (!orderId || !amount || !method || !branchId) {
+      res
+        .status(400)
+        .json({ error: "orderId, amount, method, branchId required" });
+      return;
+    }
 
-  const change = cashReceived ? cashReceived - amount : null;
+    const change = cashReceived ? cashReceived - amount : null;
 
-  const [payment] = await db.insert(paymentsTable).values({
-    orderId, amount: amount.toFixed(2), method, status: "completed",
-    change: change != null ? change.toFixed(2) : null,
-    referenceNumber, branchId, staffId: req.userId,
-  }).returning();
+    const [payment] = await db
+      .insert(paymentsTable)
+      .values({
+        orderId,
+        amount: amount.toFixed(2),
+        method,
+        status: "completed",
+        change: change != null ? change.toFixed(2) : null,
+        referenceNumber,
+        branchId,
+        staffId: req.userId,
+      })
+      .returning();
 
-  // Mark order completed
-  await db.update(ordersTable).set({ status: "completed", completedAt: new Date() }).where(eq(ordersTable.id, orderId));
+    // Mark order completed
+    await db
+      .update(ordersTable)
+      .set({ status: "completed", completedAt: new Date() })
+      .where(eq(ordersTable.id, orderId));
 
-  // Free table
-  const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, orderId));
-  if (order) {
-    await db.update(tablesTable).set({ status: "available", currentOrderId: null, occupiedAt: null }).where(eq(tablesTable.id, order.tableId));
-  }
+    // Free table
+    const [order] = await db
+      .select()
+      .from(ordersTable)
+      .where(eq(ordersTable.id, orderId));
+    if (order?.tableId != null) {
+      await db
+        .update(tablesTable)
+        .set({ status: "available", currentOrderId: null, occupiedAt: null })
+        .where(eq(tablesTable.id, order.tableId));
+    }
 
-  res.status(201).json(mapPayment(payment));
-});
+    res.status(201).json(mapPayment(payment));
+  },
+);
 
-router.post("/payments/:id/refund", requireAuth, async (req, res): Promise<void> => {
-  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-  const [payment] = await db.update(paymentsTable).set({ status: "refunded" }).where(eq(paymentsTable.id, id)).returning();
-  if (!payment) { res.status(404).json({ error: "Payment not found" }); return; }
-  res.json(mapPayment(payment));
-});
+router.post(
+  "/payments/:id/refund",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const id = parseInt(
+      Array.isArray(req.params.id) ? req.params.id[0] : req.params.id,
+      10,
+    );
+    const [payment] = await db
+      .update(paymentsTable)
+      .set({ status: "refunded" })
+      .where(eq(paymentsTable.id, id))
+      .returning();
+    if (!payment) {
+      res.status(404).json({ error: "Payment not found" });
+      return;
+    }
+    res.json(mapPayment(payment));
+  },
+);
 
 export default router;
