@@ -176,7 +176,7 @@ const BOTTOM_NAV_PRIORITY = [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isDark, toggle: toggleDark } = useDarkMode();
@@ -333,6 +333,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard">← Kembali</Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={async () => {
+                await logout();
+                setLocation("/login");
+              }}
+              title="Keluar"
+              className="h-9 w-9"
+            >
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </header>
