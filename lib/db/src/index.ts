@@ -8,7 +8,7 @@ const rawDatabaseUrl = process.env.DATABASE_URL;
 const databaseUrl = rawDatabaseUrl
   ?.trim()
   .replace(/[\r\n\t]+/gu, "")
-  .replace(/^"(.+)"$|^\'(.+)\'$/u, "$1$2");
+  .replace(/^"(.+)"$|^'(.+)'$/u, "$1$2");
 
 if (!databaseUrl) {
   throw new Error(
