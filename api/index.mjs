@@ -59562,8 +59562,8 @@ var databaseUrl =
     ? void 0
     : rawDatabaseUrl
         .trim()
-        .replace(/[\r\n\t]+/gu, "")
-        .replace(/^"(.+)"$|^\'(.+)\'$/u, "$1$2");
+        .replace(/\s+/gu, "")
+        .replace(/^"(.+)"$|^'(.+)'$/u, "$1$2");
 if (!databaseUrl) {
   throw new Error(
     "DATABASE_URL must be set. Did you forget to provision a database?",
@@ -60790,12 +60790,10 @@ router5.delete("/menu-categories/:id", requireAuth, async (req, res) => {
     res.sendStatus(204);
   } catch (err) {
     if (err.code === "23503") {
-      res
-        .status(400)
-        .json({
-          error:
-            "Tidak dapat menghapus kategori ini karena masih digunakan oleh produk menu.",
-        });
+      res.status(400).json({
+        error:
+          "Tidak dapat menghapus kategori ini karena masih digunakan oleh produk menu.",
+      });
       return;
     }
     throw err;
@@ -60932,12 +60930,10 @@ router5.delete("/menu-items/:id", requireAuth, async (req, res) => {
     res.sendStatus(204);
   } catch (err) {
     if (err.code === "23503") {
-      res
-        .status(400)
-        .json({
-          error:
-            "Tidak dapat menghapus menu ini karena sudah ada di dalam riwayat pesanan (Order).",
-        });
+      res.status(400).json({
+        error:
+          "Tidak dapat menghapus menu ini karena sudah ada di dalam riwayat pesanan (Order).",
+      });
       return;
     }
     throw err;
@@ -62106,19 +62102,17 @@ router11.post("/purchase-orders", requireAuth, async (req, res) => {
       totalCost: item.totalCost.toFixed(2),
     });
   }
-  res
-    .status(201)
-    .json({
-      id: po.id,
-      supplierName: po.supplierName,
-      status: po.status,
-      branchId: po.branchId,
-      items: [],
-      totalAmount,
-      notes: po.notes,
-      expectedDelivery: po.expectedDelivery,
-      createdAt: po.createdAt.toISOString(),
-    });
+  res.status(201).json({
+    id: po.id,
+    supplierName: po.supplierName,
+    status: po.status,
+    branchId: po.branchId,
+    items: [],
+    totalAmount,
+    notes: po.notes,
+    expectedDelivery: po.expectedDelivery,
+    createdAt: po.createdAt.toISOString(),
+  });
 });
 router11.patch("/purchase-orders/:id", requireAuth, async (req, res) => {
   const id = parseInt(

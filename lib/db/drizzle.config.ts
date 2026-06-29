@@ -4,7 +4,8 @@ import path from "path";
 const rawDatabaseUrl = process.env.DATABASE_URL;
 const databaseUrl = rawDatabaseUrl
   ?.trim()
-  .replace(/^"(.+)"$|^\'(.+)\'$/u, "$1$2");
+  .replace(/\s+/gu, "")
+  .replace(/^"(.+)"$|^'(.+)'$/u, "$1$2");
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL, ensure the database is provisioned");
