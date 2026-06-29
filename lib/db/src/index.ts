@@ -7,8 +7,7 @@ const { Pool } = pg;
 const rawDatabaseUrl = process.env.DATABASE_URL;
 const databaseUrl = rawDatabaseUrl
   ?.trim()
-  .replace(/[
-	]+/gu, "")
+  .replace(/[\r\n\t]+/gu, "")
   .replace(/^"(.+)"$|^\'(.+)\'$/u, "$1$2");
 
 if (!databaseUrl) {
