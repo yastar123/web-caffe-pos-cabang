@@ -59564,16 +59564,25 @@ var databaseUrl =
         .trim()
         .replace(/\s+/gu, "")
         .replace(/^"(.+)"$|^'(.+)'$/u, "$1$2");
+var postgresUrlPattern =
+  /^(postgres(?:ql)?:\/\/)([^:@\/\s]+)(?::([^@:\/\s]*))?@([^\/\s]+)(\/.*)$/u;
 if (!databaseUrl) {
   throw new Error(
     "DATABASE_URL must be set. Did you forget to provision a database?",
   );
 }
+var parsedDatabaseUrl;
 try {
-  new URL(databaseUrl);
+  parsedDatabaseUrl = new URL(databaseUrl);
 } catch {
   throw new Error(
     "DATABASE_URL is invalid. Please check the connection string in your environment variables.",
+  );
+}
+if (!postgresUrlPattern.test(databaseUrl)) {
+  throw new Error(
+    "DATABASE_URL is malformed. Use a valid PostgreSQL URL like postgresql://user:password@host:port/db. " +
+      "Encode reserved characters such as '/', '@', and spaces in username/password.",
   );
 }
 var pool = new Pool3({

@@ -7,8 +7,17 @@ const databaseUrl = rawDatabaseUrl
   .replace(/\s+/gu, "")
   .replace(/^"(.+)"$|^'(.+)'$/u, "$1$2");
 
+const postgresUrlPattern =
+  /^(postgres(?:ql)?:\/\/)([^:@\/\s]+)(?::([^@:\/\s]*))?@([^\/\s]+)(\/.*)$/u;
+
 if (!databaseUrl) {
   throw new Error("DATABASE_URL, ensure the database is provisioned");
+}
+
+if (!postgresUrlPattern.test(databaseUrl)) {
+  throw new Error(
+    "DATABASE_URL is malformed. Use a valid PostgreSQL URL like postgresql://user:password@host:port/db.",
+  );
 }
 
 export default defineConfig({
